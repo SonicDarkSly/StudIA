@@ -9,6 +9,7 @@ export interface CatalogModel {
   sizeGb: number;
   ramGb: number;
   capabilities: string[];
+  idealFor: string[];
   description: string;
   pros: string;
   cons: string;

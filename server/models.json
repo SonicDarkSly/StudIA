@@ -14,6 +14,13 @@
         "Code",
         "Long contexte"
       ],
+      "idealFor": [
+        "chat",
+        "skill",
+        "command",
+        "agent",
+        "claudemd"
+      ],
       "description": "Le meilleur généraliste du catalogue pour concevoir des skills, des consignes de projet et des sous-agents. Rapide pour sa taille : seuls 3 Md de paramètres travaillent à chaque token.",
       "pros": "Qualité de rédaction, suit bien les consignes et les formats.",
       "cons": "Environ 19 Go de mémoire ; premier chargement de 10 à 30 secondes.",
@@ -42,6 +49,10 @@
         "TypeScript",
         "Connecteurs MCP",
         "Hooks"
+      ],
+      "idealFor": [
+        "mcp",
+        "hooks"
       ],
       "description": "Spécialiste du code : le meilleur choix pour générer un serveur MCP, des hooks ou des scripts.",
       "pros": "TypeScript et JSON plus fiables, bonne connaissance des SDK et des outils de développement.",
@@ -72,6 +83,11 @@
         "Multilingue",
         "Rédaction"
       ],
+      "idealFor": [
+        "chat",
+        "skill",
+        "claudemd"
+      ],
       "description": "Le plus grand modèle ouvert de Google. Très bon en français et en rédaction structurée.",
       "pros": "Style soigné, bon suivi des consignes, 140 langues.",
       "cons": "Plus lent qu'un MoE de taille comparable (tous les paramètres travaillent).",
@@ -101,6 +117,13 @@
         "Code",
         "Appels d'outils"
       ],
+      "idealFor": [
+        "chat",
+        "skill",
+        "command",
+        "agent",
+        "claudemd"
+      ],
       "description": "Modèle de Mistral AI, entreprise française : excellent en français, précis sur les formats et le code.",
       "pros": "Français naturel, réponses concises, bon compromis qualité / taille.",
       "cons": "Environ 15 Go de mémoire, chargement plus long que les petits modèles.",
@@ -129,6 +152,11 @@
         "Réflexion visible",
         "Raisonnement",
         "Code"
+      ],
+      "idealFor": [
+        "chat",
+        "mcp",
+        "hooks"
       ],
       "description": "Le modèle ouvert d'OpenAI. Il raisonne toujours avant de répondre : on voit sa réflexion, puis la réponse.",
       "pros": "Bon raisonnement, rapide pour sa taille (MoE).",
@@ -160,6 +188,9 @@
         "Logique",
         "Mathématiques"
       ],
+      "idealFor": [
+        "chat"
+      ],
       "description": "Version compacte du célèbre DeepSeek-R1 : il écrit tout son raisonnement avant de conclure. Idéal pour observer comment un modèle « réfléchit ».",
       "pros": "Raisonnement détaillé, pédagogique.",
       "cons": "Réflexion toujours active (plus lent) ; moins bon pour les longues rédactions.",
@@ -189,6 +220,11 @@
         "Multilingue",
         "Équilibré"
       ],
+      "idealFor": [
+        "chat",
+        "skill",
+        "command"
+      ],
       "description": "Le bon compromis pour une machine de 16 Go : qualité proche des gros modèles sur la rédaction courante.",
       "pros": "Bon français, rapide, peu de mémoire pour sa qualité.",
       "cons": "Moins rigoureux que les 24-30B sur le code complexe.",
@@ -216,6 +252,11 @@
         "Réflexion activable",
         "Logique",
         "Pédagogie"
+      ],
+      "idealFor": [
+        "chat",
+        "skill",
+        "command"
       ],
       "description": "Modèle qui peut « réfléchir » avant de répondre, avec un interrupteur pour activer ou couper ce mode : idéal pour comparer les deux.",
       "pros": "Réflexion activable, budget de réflexion réglable, léger.",
@@ -246,6 +287,9 @@
         "Anglais",
         "Rapide"
       ],
+      "idealFor": [
+        "chat"
+      ],
       "description": "Le modèle ouvert de référence de Meta, très répandu. Utile pour comparer les familles entre elles.",
       "pros": "Rapide, fiable sur les tâches simples, très bien documenté.",
       "cons": "Français moins naturel que Mistral ou Gemma.",
@@ -272,6 +316,10 @@
       "capabilities": [
         "Rapide",
         "Généraliste"
+      ],
+      "idealFor": [
+        "chat",
+        "command"
       ],
       "description": "Rapide et polyvalent : bon pour itérer vite sur une commande ou une description de skill.",
       "pros": "Réponses rapides, peu de mémoire.",
@@ -301,6 +349,9 @@
         "Raisonnement",
         "Anglais"
       ],
+      "idealFor": [
+        "chat"
+      ],
       "description": "Petit modèle de Microsoft, étonnamment bon en raisonnement pour sa taille. Tourne sur presque toutes les machines.",
       "pros": "Très léger, bon en logique.",
       "cons": "Français limité, connaissances générales réduites.",
@@ -327,6 +378,9 @@
       "capabilities": [
         "Très léger",
         "Tests"
+      ],
+      "idealFor": [
+        "chat"
       ],
       "description": "Le plus petit Llama : se charge en quelques secondes, parfait pour découvrir les réglages.",
       "pros": "Très rapide, très peu de mémoire.",
@@ -355,6 +409,9 @@
         "Très léger",
         "Tests",
         "Démonstration"
+      ],
+      "idealFor": [
+        "chat"
       ],
       "description": "Très rapide mais limité : utile pour voir l'effet des réglages et comparer avec les gros modèles.",
       "pros": "Se charge en quelques secondes.",

@@ -215,6 +215,7 @@ export default function App() {
               model: (
                 <ModelPanel
                   models={models}
+                  generators={generators}
                   runtime={runtime}
                   machine={machine}
                   selected={conversation.modelKey}

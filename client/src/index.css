@@ -807,6 +807,19 @@ body {
   color: var(--muted);
 }
 
+.model-card .ideal-for {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.model-card .ideal-for .ant-tag {
+  margin: 0;
+}
+
 .setting {
   border-bottom: 1px solid var(--border);
   padding: 10px 0 8px;

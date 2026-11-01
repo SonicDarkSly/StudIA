@@ -48,7 +48,8 @@ Les modèles se téléchargent depuis l'onglet **Modèle** (une seule fois, dans
 parcourt aucun autre dossier de lui-même : un fichier `.gguf` déjà présent dans un projet que l'utilisateur a
 ajouté (`server/data/llm`, `data/llm` ou `models`) ou dans `STUDIA_EXTRA_MODEL_DIRS` est réutilisé sans copie. Un seul modèle est
 gardé en mémoire ; il est libéré après 10 minutes d'inactivité. Chaque modèle reste soumis à sa propre
-licence, affichée dans l'interface.
+licence, affichée dans l'interface. Sa carte indique aussi les modes pour lesquels il est idéal (Discussion
+libre, Skill, Connecteur MCP…, champ `idealFor` de `server/models.json`).
 
 Repères : 8 Go de mémoire → modèles de 3 à 4 Md de paramètres ; 16 Go → jusqu'à 12-14 Md ; 32 Go et plus →
 tout le catalogue.

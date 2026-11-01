@@ -50,6 +50,7 @@ export interface ModelView {
   sizeGb: number;
   ramGb: number;
   capabilities: string[];
+  idealFor: string[];
   description: string;
   pros: string;
   cons: string;

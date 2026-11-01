@@ -1,19 +1,16 @@
-import {
-  CheckCircleFilled,
-  CloudDownloadOutlined,
-  DesktopOutlined,
-  PoweroffOutlined,
-  StopOutlined,
-} from '@ant-design/icons';
+import { CheckCircleFilled, CloudDownloadOutlined, PoweroffOutlined, StopOutlined } from '@ant-design/icons';
 import { Alert, Button, Popconfirm, Progress, Space, Switch, Tag, Tooltip } from 'antd';
 import { useState } from 'react';
-import type { FitLevel, MachineProfile, ModelView, RuntimeStatus } from '../types';
+import type { FitLevel, Generator, MachineProfile, ModelView, RuntimeStatus } from '../types';
 import { fmtNumber, percentOf } from '../utils/format';
 import { isBlocked } from '../utils/models';
+import { generatorIcon } from './icons';
+import { MachineCard } from './MachineCard';
 import { UninstallModelButton } from './UninstallModelButton';
 
 interface Props {
   models: ModelView[];
+  generators: Generator[];
   runtime?: RuntimeStatus;
   machine?: MachineProfile;
   selected: string;
@@ -31,54 +28,9 @@ const FIT_TAG: Record<FitLevel, { color: string; label: string }> = {
   'trop-lourd': { color: 'red', label: 'Trop lourd' },
 };
 
-const GPU_LABEL: Record<string, string> = {
-  metal: 'Metal (Apple)',
-  cuda: 'CUDA (NVIDIA)',
-  vulkan: 'Vulkan',
-};
-
-function MachineCard({ machine }: { machine: MachineProfile }) {
-  return (
-    <div className="glass machine-card" style={{ padding: 12, marginBottom: 12, borderRadius: 14 }}>
-      <div className="section-label">
-        <DesktopOutlined aria-hidden /> Cette machine
-      </div>
-      <div style={{ fontSize: 13, lineHeight: 1.55 }}>
-        <b>{machine.cpu}</b> · {machine.cores} cœurs
-        <br />
-        {fmtNumber(machine.totalRamGb, 0)} Go de mémoire{machine.unifiedMemory ? ' unifiée' : ''}
-        {machine.memoryOverridden && <span className="muted"> (fixée par STUDIA_MEMORY_GB)</span>}
-        <br />
-        {machine.gpu ? (
-          <>
-            Processeur graphique : {GPU_LABEL[machine.gpu] ?? machine.gpu}
-            {machine.vramGb !== undefined && ` · ${fmtNumber(machine.vramGb, 1)} Go utilisables`}
-          </>
-        ) : (
-          <span className="muted">Pas de processeur graphique utilisable : calcul sur le processeur.</span>
-        )}
-      </div>
-      <div
-        style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 8 }}
-        className="muted"
-      >
-        <span>Mémoire laissée aux modèles</span>
-        <span>≈ {fmtNumber(machine.usableGb, 1)} Go</span>
-      </div>
-      <div className="gauge">
-        <span style={{ width: `${percentOf(machine.usableGb, machine.totalRamGb)}%` }} />
-      </div>
-      <div className="muted" style={{ fontSize: 11.5, marginTop: 6, lineHeight: 1.5 }}>
-        Le reste est gardé pour le système et les autres applications. Un modèle « trop lourd » ne peut être
-        ni choisi ni téléchargé.
-        {machine.limitsIgnored && <b> Limites désactivées (STUDIA_IGNORE_LIMITS=1).</b>}
-      </div>
-    </div>
-  );
-}
-
 export function ModelPanel({
   models,
+  generators,
   runtime,
   machine,
   selected,
@@ -216,6 +168,18 @@ export function ModelPanel({
                     </Tag>
                   )}
                 </span>
+                {m.idealFor.length > 0 && (
+                  <span className="ideal-for">
+                    <span className="muted">Idéal pour :</span>
+                    {generators
+                      .filter((g) => m.idealFor.includes(g.key))
+                      .map((g) => (
+                        <Tag key={g.key} icon={generatorIcon(g.key)} color="cyan" variant="filled">
+                          {g.label}
+                        </Tag>
+                      ))}
+                  </span>
+                )}
                 <span className="desc">{m.description}</span>
                 <span className="desc" style={{ marginTop: 4 }}>
                   <b style={{ color: 'var(--cyan)' }}>+</b> {m.pros}
