@@ -13,8 +13,6 @@ interface Props {
   panels: Record<PanelTab, ReactNode>;
 }
 
-const BADGE_STYLE = { marginLeft: 6 };
-
 export function SidePanel({ tab, onTab, projectCount, fileCount, panels }: Props) {
   return (
     <aside className="studia-right glass" aria-label="Panneau latéral">
@@ -48,7 +46,7 @@ export function SidePanel({ tab, onTab, projectCount, fileCount, panels }: Props
             label: (
               <span>
                 <FolderOutlined aria-hidden /> Projets
-                {projectCount > 0 && <Badge count={projectCount} size="small" style={BADGE_STYLE} />}
+                {projectCount > 0 && <Badge count={projectCount} size="small" className="tab-badge" />}
               </span>
             ),
             children: panels.projects,
@@ -59,7 +57,7 @@ export function SidePanel({ tab, onTab, projectCount, fileCount, panels }: Props
               <span>
                 Fichiers
                 {fileCount > 0 && (
-                  <Badge count={fileCount} size="small" color={ACCENT_CYAN} style={BADGE_STYLE} />
+                  <Badge count={fileCount} size="small" color={ACCENT_CYAN} className="tab-badge" />
                 )}
               </span>
             ),

@@ -1,7 +1,8 @@
 import JSZip from 'jszip';
-import type { FileIssue, GeneratedFile, ScaffoldFile, TargetFormat } from '../types';
+import type { FileIssue, GeneratedFile, GeneratorKey, ScaffoldFile, TargetFormat } from '../types';
 import { errorMessage } from './errors';
-import { cleanContent, dropTrailingSeparator, FIX_MESSAGES, frontmatter } from './frontmatter';
+import { FIX_MESSAGES } from './consts';
+import { cleanContent, dropTrailingSeparator, frontmatter } from './frontmatter';
 import { checkSkills, gnuOnlyIssue, isSkillFile } from './skills';
 
 const START = /^=== ?FICHIER ?: ?(.+?) ?===\s*$/;
@@ -59,12 +60,11 @@ export function stripFiles(text: string): { prose: string; count: number } {
   let inside = false;
   const out: string[] = [];
   for (const line of text.split('\n')) {
-    if (START.test(line)) {
+    const start = line.match(START);
+    if (start) {
       inside = true;
       count++;
-      out.push(
-        `\n> **Fichier** \`${safePath(line.match(START)![1]) ?? 'fichier'}\` : voir le panneau Fichiers\n`,
-      );
+      out.push(`\n> **Fichier** \`${safePath(start[1]) ?? 'fichier'}\` : voir le panneau Fichiers\n`);
       continue;
     }
     if (END.test(line)) {
@@ -105,7 +105,7 @@ export function withScaffold(files: GeneratedFile[], scaffold: ScaffoldFile[]): 
 }
 
 export function validateFiles(
-  generatorKey: string,
+  generatorKey: GeneratorKey,
   files: GeneratedFile[],
   format?: TargetFormat,
 ): FileIssue[] {

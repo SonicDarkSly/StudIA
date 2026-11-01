@@ -13,10 +13,10 @@ import { basename, dirname, isAbsolute, join, parse, relative } from 'node:path'
 import { PROJECTS_FILE, REPO_ROOT } from '../../../shared/config/paths.js';
 import { toPrettyJson } from '../../../shared/json.js';
 import { approxTokens } from '../../models/domain/tokens.js';
+import { STACK_MARKERS } from '../domain/consts.js';
 import {
   InvalidProjectFolderError,
   ProjectNotFoundError,
-  STACK_MARKERS,
   type ClaudeItem,
   type ProjectContext,
   type ProjectSummary,

@@ -8,6 +8,8 @@ import { generatorIcon } from './icons';
 import { MachineCard } from './MachineCard';
 import { UninstallModelButton } from './UninstallModelButton';
 
+const FIT_RANK: Record<FitLevel, number> = { ok: 0, limite: 1, 'trop-lourd': 2 };
+
 interface Props {
   models: ModelView[];
   generators: Generator[];
@@ -44,8 +46,7 @@ export function ModelPanel({
   const [hideHeavy, setHideHeavy] = useState(false);
   const loaded = models.find((m) => m.key === runtime?.loadedKey);
   const heavy = models.filter((m) => m.fit.level === 'trop-lourd').length;
-  const rank: Record<FitLevel, number> = { ok: 0, limite: 1, 'trop-lourd': 2 };
-  const sorted = [...models].sort((a, b) => rank[a.fit.level] - rank[b.fit.level]);
+  const sorted = [...models].sort((a, b) => FIT_RANK[a.fit.level] - FIT_RANK[b.fit.level]);
   const shown = hideHeavy ? sorted.filter((m) => m.fit.level !== 'trop-lourd') : sorted;
 
   return (
@@ -56,16 +57,16 @@ export function ModelPanel({
           showIcon
           title="Serveur injoignable"
           description={error}
-          style={{ marginBottom: 10 }}
+          className="block-alert"
         />
       )}
       {machine && <MachineCard machine={machine} />}
 
-      <div className="glass" style={{ padding: 12, marginBottom: 12, borderRadius: 14 }}>
+      <div className="glass panel-box">
         <div className="section-label">En mémoire</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="row">
           <span className={`status-dot${runtime?.busy ? ' busy' : loaded ? ' on' : ''}`} />
-          <span style={{ flex: 1 }}>
+          <span className="grow">
             {runtime?.loadingKey
               ? `Chargement de ${models.find((m) => m.key === runtime.loadingKey)?.label ?? runtime.loadingKey}…`
               : loaded
@@ -85,7 +86,7 @@ export function ModelPanel({
           )}
         </div>
         {loaded && runtime && (
-          <div className="muted" style={{ fontSize: 12, marginTop: 6, lineHeight: 1.5 }}>
+          <div className="muted runtime-details">
             {runtime.totalLayers ? `${runtime.gpuLayers}/${runtime.totalLayers} couches sur le GPU · ` : ''}
             contexte max du modèle {fmtNumber(runtime.trainContextSize ?? 0)} tokens · libéré après{' '}
             {runtime.idleMinutes} min d’inactivité
@@ -93,12 +94,10 @@ export function ModelPanel({
         )}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div className="section-label" style={{ margin: 0 }}>
-          Catalogue ({models.length})
-        </div>
+      <div className="catalog-head">
+        <div className="section-label">Catalogue ({models.length})</div>
         {heavy > 0 && (
-          <span className="muted" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span className="muted hide-heavy">
             Masquer les trop lourds ({heavy})
             <Switch
               size="small"
@@ -109,8 +108,7 @@ export function ModelPanel({
           </span>
         )}
       </div>
-      <div style={{ height: 8 }} />
-      <div role="radiogroup" aria-label="Modèles du catalogue">
+      <div role="radiogroup" aria-label="Modèles du catalogue" className="catalog">
         {shown.map((m) => {
           const blocked = isBlocked(m, machine);
           const fit = FIT_TAG[m.fit.level];
@@ -133,7 +131,7 @@ export function ModelPanel({
                   onChange={() => onSelect(m.key)}
                 />
                 <span className="name">
-                  {m.key === selected && <CheckCircleFilled aria-hidden style={{ color: 'var(--violet)' }} />}
+                  {m.key === selected && <CheckCircleFilled aria-hidden className="selected-mark" />}
                   <span id={`modele-${m.key}-nom`}>{m.label}</span>
                   {m.loaded && (
                     <>
@@ -141,14 +139,9 @@ export function ModelPanel({
                       <span className="sr-only">en mémoire</span>
                     </>
                   )}
-                  <span style={{ flex: 1 }} />
+                  <span className="grow" />
                   <Tooltip title={`Besoin estimé : ${fmtNumber(m.fit.needGb, 1)} Go · ${m.fit.reason}`}>
-                    <Tag
-                      id={`modele-${m.key}-etat`}
-                      color={installed ? 'green' : fit.color}
-                      variant="filled"
-                      style={{ marginRight: 0 }}
-                    >
+                    <Tag id={`modele-${m.key}-etat`} color={installed ? 'green' : fit.color} variant="filled">
                       {installed ? 'Installé' : fit.label}
                     </Tag>
                   </Tooltip>
@@ -156,9 +149,9 @@ export function ModelPanel({
                 <span className="family">
                   <b>{m.publisher}</b> · {m.family}
                 </span>
-                <span style={{ margin: '6px 0' }}>
+                <span className="capabilities">
                   {m.capabilities.map((c) => (
-                    <Tag key={c} variant="filled" color="purple" style={{ marginBottom: 4 }}>
+                    <Tag key={c} variant="filled" color="purple" className="capability-tag">
                       {c}
                     </Tag>
                   ))}
@@ -181,10 +174,10 @@ export function ModelPanel({
                   </span>
                 )}
                 <span className="desc">{m.description}</span>
-                <span className="desc" style={{ marginTop: 4 }}>
-                  <b style={{ color: 'var(--cyan)' }}>+</b> {m.pros}
+                <span className="desc pros-cons">
+                  <b className="pro">+</b> {m.pros}
                   <br />
-                  <b style={{ color: 'var(--magenta)' }}>−</b> {m.cons}
+                  <b className="con">−</b> {m.cons}
                 </span>
                 {m.fit.level !== 'ok' && (
                   <span className={`fit-note ${m.fit.level}`}>
@@ -192,7 +185,7 @@ export function ModelPanel({
                   </span>
                 )}
               </label>
-              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <div className="model-actions">
                 {m.status === 'present' && (
                   <Tag color="green" variant="filled">
                     Disponible{m.foundIn ? ` (fichier de ${m.foundIn})` : ''} · {fmtNumber(m.sizeGb, 1)} Go
@@ -206,7 +199,7 @@ export function ModelPanel({
                   />
                 )}
                 {(m.status === 'absent' || m.status === 'error') && (
-                  <Space orientation="vertical" style={{ width: '100%' }}>
+                  <Space orientation="vertical" className="full-width">
                     {blocked ? (
                       <Tooltip title={m.fit.reason}>
                         <Button size="small" icon={<CloudDownloadOutlined aria-hidden />} disabled>
@@ -226,7 +219,7 @@ export function ModelPanel({
                         </Button>
                       </Popconfirm>
                     )}
-                    {m.error && <Alert type="error" title={m.error} style={{ fontSize: 12 }} />}
+                    {m.error && <Alert type="error" title={m.error} className="small-alert" />}
                   </Space>
                 )}
                 {m.status === 'downloading' && (
@@ -235,22 +228,20 @@ export function ModelPanel({
                       aria-label={`Téléchargement de ${m.label}`}
                       percent={percentOf(m.progress ?? 0, 1)}
                       size="small"
-                      style={{ flex: 1, margin: 0 }}
+                      className="download-progress"
                     />
                     <Button size="small" icon={<StopOutlined aria-hidden />} onClick={() => onCancel(m.key)}>
                       Annuler
                     </Button>
                   </>
                 )}
-                <span className="muted" style={{ fontSize: 11 }}>
-                  Licence {m.license}
-                </span>
+                <span className="muted license">Licence {m.license}</span>
               </div>
             </div>
           );
         })}
       </div>
-      <div className="muted" style={{ fontSize: 11.5, lineHeight: 1.5 }}>
+      <div className="muted note">
         Un seul modèle est chargé à la fois. Les modèles sont rangés dans <code>server/data/llm</code> ; un
         fichier déjà présent dans un projet que tu as ajouté (<code>server/data/llm</code>,{' '}
         <code>data/llm</code> ou <code>models</code>) est réutilisé sans copie. Pour ajouter un modèle au

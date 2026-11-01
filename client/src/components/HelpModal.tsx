@@ -1,6 +1,8 @@
 import { Modal, Tag } from 'antd';
-import { AUTHOR } from '../constants';
+import { AUTHOR } from '../consts';
 import type { AiTarget, Generator, SupportLevel } from '../types';
+
+const HELP_MODAL_WIDTH = 780;
 
 const CELL: Record<SupportLevel, { color: string; label: string }> = {
   natif: { color: 'green', label: 'natif' },
@@ -18,7 +20,13 @@ interface Props {
 export function HelpModal({ open, onClose, generators, targets }: Props) {
   const makers = generators.filter((g) => g.usesFiles);
   return (
-    <Modal open={open} onCancel={onClose} footer={null} width={780} title="Comment utiliser StudIA">
+    <Modal
+      open={open}
+      onCancel={onClose}
+      footer={null}
+      width={HELP_MODAL_WIDTH}
+      title="Comment utiliser StudIA"
+    >
       <div className="markdown">
         <p>
           <b>StudIA</b> est un assistant de conversation qui tourne <b>entièrement sur cet ordinateur</b> : le
@@ -83,7 +91,7 @@ export function HelpModal({ open, onClose, generators, targets }: Props) {
             ))}
           </tbody>
         </table>
-        <p className="muted" style={{ fontSize: 12 }}>
+        <p className="muted help-footnote">
           « Adapté » : l’outil n’a pas ce format, StudIA livre l’équivalent le plus proche (par exemple une
           skill appelable à la place d’une commande). Survoler une case affiche l’emplacement des fichiers.
         </p>

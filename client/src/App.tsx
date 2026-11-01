@@ -11,17 +11,17 @@ import { ProjectsPanel } from './components/ProjectsPanel';
 import { SettingsPanel } from './components/SettingsPanel';
 import { SidePanel } from './components/SidePanel';
 import { Sidebar } from './components/Sidebar';
-import { DEFAULT_GENERATOR, DEFAULT_SETTINGS } from './constants';
+import { DEFAULT_GENERATOR, DEFAULT_SETTINGS, DEFAULT_TARGET } from './consts';
 import { newConversation, useChatSession } from './hooks/useChatSession';
 import { useConversations } from './hooks/useConversations';
 import { useModels } from './hooks/useModels';
 import { useGenerators, useProjects } from './hooks/useStaticData';
 import { useTheme } from './hooks/useTheme';
 import { antdTheme } from './theme';
-import type { GenerationSettings, PanelTab, TargetKey } from './types';
+import type { GenerationSettings, GeneratorKey, PanelTab, TargetKey } from './types';
 import { parseFiles } from './utils/files';
 import { isBlocked } from './utils/models';
-import { DEFAULT_TARGET, loadPreferredTarget, savePreferredTarget } from './utils/targets';
+import { loadPreferredTarget, savePreferredTarget } from './utils/targets';
 
 export default function App() {
   const { mode, toggle } = useTheme();
@@ -39,7 +39,7 @@ export default function App() {
   const [filesIndex, setFilesIndex] = useState<number>();
 
   const pickModel = useCallback(
-    (generatorKey: string) => {
+    (generatorKey: GeneratorKey) => {
       const g = generators.find((x) => x.key === generatorKey);
       const usable = models.filter((m) => !isBlocked(m, machine));
       const preferred = usable.find((m) => m.key === g?.recommendedModel);
@@ -61,7 +61,7 @@ export default function App() {
   }, []);
 
   const initialSettings = useCallback(
-    (generatorKey: string, modelKey: string): Partial<GenerationSettings> => ({
+    (generatorKey: GeneratorKey, modelKey: string): Partial<GenerationSettings> => ({
       ...(models.find((m) => m.key === modelKey)?.recommended ?? {}),
       ...(generators.find((g) => g.key === generatorKey)?.recommendedSettings ?? {}),
     }),
@@ -113,8 +113,8 @@ export default function App() {
     return (
       <ConfigProvider locale={frFR} theme={antdTheme('dark')}>
         <div className="studia-bg" aria-hidden />
-        <main style={{ position: 'relative', display: 'grid', placeItems: 'center', height: '100vh' }}>
-          <div style={{ textAlign: 'center' }}>
+        <main className="startup">
+          <div className="startup-content">
             <h1 className="sr-only">StudIA</h1>
             <Logo />
             <p className="muted" role="status">
@@ -133,7 +133,7 @@ export default function App() {
     if (conversation.messages.length) startNew(conversation.generatorKey, conversation.projectNames, key);
     else update((c) => ({ ...c, targetKey: key }));
   };
-  const changeGenerator = (key: string) => {
+  const changeGenerator = (key: GeneratorKey) => {
     const modelKey = pickModel(key);
     update((c) => ({ ...c, generatorKey: key, modelKey, settings: initialSettings(key, modelKey) }));
   };

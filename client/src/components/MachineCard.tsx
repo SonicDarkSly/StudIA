@@ -10,11 +10,11 @@ const GPU_LABEL: Record<string, string> = {
 
 export function MachineCard({ machine }: { machine: MachineProfile }) {
   return (
-    <div className="glass machine-card" style={{ padding: 12, marginBottom: 12, borderRadius: 14 }}>
+    <div className="glass panel-box machine-card">
       <div className="section-label">
         <DesktopOutlined aria-hidden /> Cette machine
       </div>
-      <div style={{ fontSize: 13, lineHeight: 1.55 }}>
+      <div className="specs">
         <b>{machine.cpu}</b> · {machine.cores} cœurs
         <br />
         {fmtNumber(machine.totalRamGb, 0)} Go de mémoire{machine.unifiedMemory ? ' unifiée' : ''}
@@ -29,17 +29,14 @@ export function MachineCard({ machine }: { machine: MachineProfile }) {
           <span className="muted">Pas de processeur graphique utilisable : calcul sur le processeur.</span>
         )}
       </div>
-      <div
-        style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 8 }}
-        className="muted"
-      >
+      <div className="muted usable">
         <span>Mémoire laissée aux modèles</span>
         <span>≈ {fmtNumber(machine.usableGb, 1)} Go</span>
       </div>
       <div className="gauge">
         <span style={{ width: `${percentOf(machine.usableGb, machine.totalRamGb)}%` }} />
       </div>
-      <div className="muted" style={{ fontSize: 11.5, marginTop: 6, lineHeight: 1.5 }}>
+      <div className="muted note">
         Le reste est gardé pour le système et les autres applications. Un modèle « trop lourd » ne peut être
         ni choisi ni téléchargé.
         {machine.limitsIgnored && <b> Limites désactivées (STUDIA_IGNORE_LIMITS=1).</b>}

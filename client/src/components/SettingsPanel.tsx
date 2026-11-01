@@ -12,19 +12,22 @@ import {
   Tag,
   Tooltip,
 } from 'antd';
-import { SETTINGS_HELP, type SettingHelp } from '../constants';
+import { SETTINGS_HELP } from '../consts';
 import type {
   AiTarget,
   GenerationSettings,
   Generator,
+  GeneratorKey,
   ModelView,
   NumericSettingKey,
+  SettingHelp,
   TargetKey,
 } from '../types';
 import { fmtNumber } from '../utils/format';
 import { generatorIcon } from './icons';
 
 const FRACTION_DIGITS = 2;
+const INSTRUCTIONS_ROWS = { minRows: 3, maxRows: 10 };
 
 function settingPatch<K extends NumericSettingKey>(
   key: K,
@@ -38,14 +41,14 @@ function settingPatch<K extends NumericSettingKey>(
 interface Props {
   generators: Generator[];
   targets: AiTarget[];
-  generatorKey: string;
+  generatorKey: GeneratorKey;
   targetKey: TargetKey;
   onTarget: (key: TargetKey) => void;
   model: ModelView | undefined;
   settings: GenerationSettings;
   extraInstructions: string;
   locked: boolean;
-  onGenerator: (key: string) => void;
+  onGenerator: (key: GeneratorKey) => void;
   onChange: (patch: Partial<GenerationSettings>) => void;
   onReset: () => void;
   onInstructions: (text: string) => void;
@@ -69,12 +72,12 @@ function SettingRow({
           <Tooltip
             trigger={['hover', 'focus']}
             title={
-              <div>
-                <p style={{ margin: '0 0 6px' }}>{help.what}</p>
-                <p style={{ margin: '0 0 6px' }}>
+              <div className="setting-tooltip">
+                <p>{help.what}</p>
+                <p>
                   <b>Effet :</b> {help.effect}
                 </p>
-                <p style={{ margin: 0 }}>
+                <p>
                   <b>Repère :</b> {help.tip}
                 </p>
               </div>
@@ -94,7 +97,7 @@ function SettingRow({
             value={value}
             placeholder={help.key === 'seed' ? 'aléatoire' : 'illimité'}
             onChange={(v) => onChange(v === null || v === undefined ? undefined : Number(v))}
-            style={{ width: 110 }}
+            className="optional-number"
           />
         ) : (
           <span className="val">
@@ -139,9 +142,9 @@ export function SettingsPanel(props: Props) {
   return (
     <div>
       <div className="section-label">Mode</div>
-      <Select
+      <Select<GeneratorKey>
         aria-label="Mode"
-        style={{ width: '100%' }}
+        className="full-width"
         value={props.generatorKey}
         disabled={props.locked}
         onChange={props.onGenerator}
@@ -155,17 +158,15 @@ export function SettingsPanel(props: Props) {
         }))}
       />
       {props.locked && (
-        <div className="muted" style={{ fontSize: 11.5, marginTop: 4 }}>
+        <div className="muted note locked-note">
           Le mode est fixé pour cette conversation : ouvre une nouvelle conversation pour en changer.
         </div>
       )}
 
-      <div className="section-label" style={{ marginTop: 14 }}>
-        IA cible
-      </div>
+      <div className="section-label target-label">IA cible</div>
       <Select
         aria-label="IA cible"
-        style={{ width: '100%' }}
+        className="full-width"
         value={props.targetKey}
         onChange={props.onTarget}
         options={props.targets.map((t) => {
@@ -176,12 +177,12 @@ export function SettingsPanel(props: Props) {
               <span>
                 {t.label} <span className="muted">· {t.vendor}</span>
                 {status === 'adapte' && (
-                  <Tag color="gold" variant="filled" style={{ marginLeft: 6 }}>
+                  <Tag color="gold" variant="filled" className="status-tag">
                     adapté
                   </Tag>
                 )}
                 {status === 'indisponible' && (
-                  <Tag color="red" variant="filled" style={{ marginLeft: 6 }}>
+                  <Tag color="red" variant="filled" className="status-tag">
                     indisponible
                   </Tag>
                 )}
@@ -191,7 +192,7 @@ export function SettingsPanel(props: Props) {
         })}
       />
       {format && (
-        <div className="muted" style={{ fontSize: 12, marginTop: 6, lineHeight: 1.5 }}>
+        <div className="muted runtime-details">
           {format.summary}
           {props.locked && ' Changer d’IA ouvre une nouvelle conversation avec les mêmes projets.'}
         </div>
@@ -228,10 +229,8 @@ export function SettingsPanel(props: Props) {
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
-        <div className="section-label" style={{ margin: 0 }}>
-          Réglages du modèle
-        </div>
+      <div className="catalog-head settings-head">
+        <div className="section-label">Réglages du modèle</div>
         <Tooltip title="Revenir aux valeurs conseillées pour ce modèle et ce mode">
           <Button size="small" icon={<UndoOutlined aria-hidden />} onClick={props.onReset}>
             Conseillés
@@ -240,7 +239,7 @@ export function SettingsPanel(props: Props) {
       </div>
       {settings.temperature === 0 && (
         <Alert
-          style={{ marginTop: 8 }}
+          className="top-alert"
           type="info"
           showIcon
           title="Température 0 : le modèle prend toujours le mot le plus probable (top-p, top-k et min-p n’ont plus d’effet)."
@@ -258,7 +257,7 @@ export function SettingsPanel(props: Props) {
       <Collapse
         ghost
         size="small"
-        style={{ marginTop: 6 }}
+        className="advanced-settings"
         items={[
           {
             key: 'adv',
@@ -276,15 +275,15 @@ export function SettingsPanel(props: Props) {
             key: 'sys',
             label: <span className="muted">Consignes personnelles (ajoutées au prompt système)</span>,
             children: (
-              <Space orientation="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" className="full-width">
                 <Input.TextArea
                   aria-label="Consignes personnelles"
-                  autoSize={{ minRows: 3, maxRows: 10 }}
+                  autoSize={INSTRUCTIONS_ROWS}
                   value={props.extraInstructions}
                   onChange={(e) => props.onInstructions(e.target.value)}
                   placeholder="Ex. : Réponds de façon concise. Commits sans accents. Pas d'emoji dans le code."
                 />
-                <div className="muted" style={{ fontSize: 11.5 }}>
+                <div className="muted note">
                   S’ajoutent aux consignes du mode, à chaque message de cette conversation.
                 </div>
               </Space>
@@ -297,11 +296,7 @@ export function SettingsPanel(props: Props) {
                 Voir le prompt système (« {generator?.label} » pour {target?.label})
               </span>
             ),
-            children: (
-              <div className="code-view" style={{ whiteSpace: 'pre-wrap', maxHeight: 360 }}>
-                {fullPrompt}
-              </div>
-            ),
+            children: <div className="code-view prompt-preview">{fullPrompt}</div>,
           },
         ]}
       />

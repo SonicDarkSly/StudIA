@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { EventsHandler, type IEventHandler } from '@nestjs/cqrs';
-import { STOP_REASONS } from '../../domain/stop-reasons.js';
+import { STOP_REASONS } from '../../domain/consts.js';
 import { ReplyGeneratedEvent } from '../../domain/events/reply-generated.event.js';
 
 @EventsHandler(ReplyGeneratedEvent)

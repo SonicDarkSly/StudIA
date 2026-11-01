@@ -1,23 +1,22 @@
 import { useCallback, useRef, useState } from 'react';
 import { streamChat } from '../api';
-import { DEFAULT_SETTINGS } from '../constants';
-import type { ChatEvent, ChatMessage, Conversation, GenerationSettings, TargetKey } from '../types';
+import { DEFAULT_SETTINGS, DEFAULT_TARGET } from '../consts';
+import type {
+  ChatEvent,
+  ChatMessage,
+  Conversation,
+  GenerationSettings,
+  GeneratorKey,
+  StreamState,
+  TargetKey,
+} from '../types';
 import { errorMessage } from '../utils/errors';
 import { uid } from '../utils/format';
-import { DEFAULT_TARGET } from '../utils/targets';
 
 const MAX_TITLE_LENGTH = 70;
 
-export interface StreamState {
-  active: boolean;
-  phase?: string;
-  detail?: string;
-  systemTokens?: number;
-  announcement?: string;
-}
-
 export function newConversation(
-  generatorKey: string,
+  generatorKey: GeneratorKey,
   targetKey: TargetKey,
   modelKey: string,
   settings: Partial<GenerationSettings>,

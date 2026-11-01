@@ -8,8 +8,9 @@ import {
   ThunderboltOutlined,
 } from '@ant-design/icons';
 import type { ReactNode } from 'react';
+import type { GeneratorKey } from '../types';
 
-const ICONS: Record<string, ReactNode> = {
+const ICONS: Record<GeneratorKey, ReactNode> = {
   chat: <MessageOutlined aria-hidden />,
   skill: <ExperimentOutlined aria-hidden />,
   mcp: <ApiOutlined aria-hidden />,
@@ -19,4 +20,4 @@ const ICONS: Record<string, ReactNode> = {
   hooks: <ThunderboltOutlined aria-hidden />,
 };
 
-export const generatorIcon = (key: string): ReactNode => ICONS[key] ?? <MessageOutlined aria-hidden />;
+export const generatorIcon = (key: GeneratorKey): ReactNode => ICONS[key];

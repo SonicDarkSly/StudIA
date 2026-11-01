@@ -1,10 +1,19 @@
 import { ArrowUpOutlined, FolderOutlined, LoadingOutlined, StopOutlined } from '@ant-design/icons';
 import { Button, Input, Space, Tag, Tooltip } from 'antd';
 import { useState } from 'react';
-import { DEFAULT_GENERATOR, PHASES } from '../constants';
-import type { StreamState } from '../hooks/useChatSession';
-import type { AiTarget, Conversation, Generator, ModelView, PanelTab, TargetKey } from '../types';
+import { DEFAULT_GENERATOR, PHASES } from '../consts';
+import type {
+  AiTarget,
+  Conversation,
+  Generator,
+  ModelView,
+  PanelTab,
+  StreamState,
+  TargetKey,
+} from '../types';
 import { generatorIcon } from './icons';
+
+const COMPOSER_ROWS = { minRows: 2, maxRows: 10 };
 
 interface Props {
   conversation: Conversation;
@@ -41,7 +50,7 @@ export function Composer(props: Props) {
           onChange={(e) => props.onDraftChange(e.target.value)}
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
-          autoSize={{ minRows: 2, maxRows: 10 }}
+          autoSize={COMPOSER_ROWS}
           placeholder={
             generator?.key === DEFAULT_GENERATOR
               ? 'Écris comme à un collègue : contexte, objectif, format attendu…'
@@ -104,9 +113,9 @@ export function Composer(props: Props) {
               <span className="sr-only">, choisir les projets</span>
             </button>
           </Tooltip>
-          <span style={{ flex: 1 }} />
+          <span className="grow" />
           {stream.active && (
-            <span className="muted" style={{ fontSize: 12 }} aria-hidden>
+            <span className="muted phase" aria-hidden>
               <LoadingOutlined aria-hidden /> {stream.phase ? PHASES[stream.phase] : 'En cours…'}
               {stream.detail ? ` (${stream.detail})` : ''}
             </span>

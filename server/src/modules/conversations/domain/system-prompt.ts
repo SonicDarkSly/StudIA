@@ -1,4 +1,4 @@
-import { CHARS_PER_TOKEN } from '../../models/domain/tokens.js';
+import { CHARS_PER_TOKEN } from '../../models/domain/consts.js';
 
 export interface ProjectExtract {
   name: string;

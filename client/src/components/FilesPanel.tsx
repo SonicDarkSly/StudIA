@@ -8,9 +8,9 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import { Alert, Button, Empty, Space, Tag, Tooltip, message as toast } from 'antd';
-import { useMemo, useState } from 'react';
-import { DEFAULT_GENERATOR } from '../constants';
-import type { GeneratedFile, Generator, TargetKey } from '../types';
+import { type ReactNode, useMemo, useState } from 'react';
+import { DEFAULT_GENERATOR } from '../consts';
+import type { FileIssue, GeneratedFile, Generator, TargetKey } from '../types';
 import {
   archiveName,
   downloadFile,
@@ -20,6 +20,12 @@ import {
   withScaffold,
 } from '../utils/files';
 import { placeSkillFiles } from '../utils/skills';
+
+const ISSUE_LEVELS: Record<FileIssue['level'], { label: string; icon: ReactNode }> = {
+  error: { label: 'Erreur', icon: <CloseCircleOutlined aria-hidden className="issue-icon" /> },
+  warning: { label: 'Avertissement', icon: <WarningOutlined aria-hidden className="issue-icon" /> },
+  ok: { label: 'Correct', icon: <CheckCircleOutlined aria-hidden className="issue-icon" /> },
+};
 
 interface Props {
   text?: string;
@@ -80,13 +86,13 @@ export function FilesPanel({ text, generator, targetKey, live }: Props) {
         <Alert
           type={live ? 'info' : 'warning'}
           showIcon
-          style={{ marginBottom: 10 }}
+          className="block-alert"
           title={
             live ? 'Écriture en cours…' : 'Le dernier fichier semble coupé (longueur maximale atteinte ?).'
           }
         />
       )}
-      <Space wrap style={{ marginBottom: 10 }}>
+      <Space wrap className="files-actions">
         <Button
           type="primary"
           className="neon-btn"
@@ -116,11 +122,11 @@ export function FilesPanel({ text, generator, targetKey, live }: Props) {
           aria-pressed={f.path === current.path}
           onClick={() => setSelected(f.path)}
         >
-          <FileOutlined aria-hidden style={{ color: 'var(--cyan)' }} />
-          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.path}</span>
+          <FileOutlined aria-hidden className="accent" />
+          <span className="file-path">{f.path}</span>
           {f.origin === 'gabarit' && (
             <Tooltip title="Fichier ajouté par StudIA (gabarit), pas par le modèle">
-              <Tag variant="filled" style={{ marginRight: 0 }}>
+              <Tag variant="filled" className="scaffold-tag">
                 gabarit
               </Tag>
             </Tooltip>
@@ -128,17 +134,8 @@ export function FilesPanel({ text, generator, targetKey, live }: Props) {
         </button>
       ))}
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          margin: '12px 0 6px',
-        }}
-      >
-        <div className="section-label" style={{ margin: 0 }}>
-          Aperçu
-        </div>
+      <div className="preview-head">
+        <div className="section-label">Aperçu</div>
         <Space>
           <Tooltip title="Copier">
             <Button
@@ -162,27 +159,24 @@ export function FilesPanel({ text, generator, targetKey, live }: Props) {
 
       {!live && (
         <>
-          <div className="section-label" style={{ marginTop: 12 }}>
+          <div className="section-label checks-label" id="controles-automatiques">
             Contrôles automatiques
           </div>
-          {issues.map((i, idx) => (
-            <div
-              key={idx}
-              style={{ display: 'flex', gap: 8, fontSize: 12.5, marginBottom: 6, lineHeight: 1.45 }}
-            >
-              {i.level === 'error' ? (
-                <CloseCircleOutlined aria-hidden style={{ color: '#ff4d6d', marginTop: 3 }} />
-              ) : i.level === 'warning' ? (
-                <WarningOutlined aria-hidden style={{ color: '#fbbf24', marginTop: 3 }} />
-              ) : (
-                <CheckCircleOutlined aria-hidden style={{ color: 'var(--cyan)', marginTop: 3 }} />
-              )}
-              <span>
-                {i.path && <code style={{ fontSize: 11 }}>{i.path}</code>} {i.message}
-              </span>
-            </div>
-          ))}
-          <div className="muted" style={{ fontSize: 11.5, marginTop: 8, lineHeight: 1.5 }}>
+          <ul className="issues" aria-labelledby="controles-automatiques">
+            {issues.map((i, idx) => {
+              const level = ISSUE_LEVELS[i.level];
+              return (
+                <li key={idx} className={`issue ${i.level}`}>
+                  {level.icon}
+                  <span>
+                    <span className="sr-only">{level.label} : </span>
+                    {i.path && <code>{i.path}</code>} {i.message}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="muted note files-note">
             StudIA ne modifie jamais tes projets : relis les fichiers, puis copie-les toi-même à leur place
             dans le projet visé (le .zip respecte déjà l’arborescence).
             {format?.summary && (

@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { llamaCpp, llamaInstance } from '../../../shared/config/esm.js';
-import { MS_PER_MINUTE, secondsSince } from '../../../shared/time.js';
+import { MS_PER_MINUTE } from '../../../shared/consts.js';
+import { secondsSince } from '../../../shared/time.js';
 import type { ChatHistoryItem, LlamaModel } from 'node-llama-cpp';
 import type { CatalogModel } from '../domain/catalog-model.js';
 import type {

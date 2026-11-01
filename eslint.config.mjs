@@ -57,6 +57,18 @@ const NULL_ALLOWED_REACT = [
   'ReturnStatement > Literal',
 ];
 
+const INLINE_STYLE_VALUE = {
+  selector:
+    "JSXAttribute[name.name='style'] Property > :matches(Literal, TemplateLiteral[expressions.length=0])",
+  message:
+    'Style en dur interdit : déplacer la valeur dans une classe CSS de index.css (thèmes et contraste au même endroit).',
+};
+
+const JSX_MAGIC_NUMBER = {
+  selector: 'JSXAttribute Literal[raw=/^(?!-?[01]$)-?\\.?\\d/]',
+  message: 'Nombre magique dans un attribut JSX : utiliser une constante nommée.',
+};
+
 const RELATIVE_IMPORT_WITH_JS = {
   selector: 'ImportDeclaration[source.value=/^\\.\\.?\\//]:not([source.value=/\\.js$/])',
   message: 'Import relatif côté serveur : ajouter le suffixe .js (sortie CommonJS).',
@@ -105,6 +117,7 @@ export default defineConfig([
       '@typescript-eslint/no-deprecated': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
+      '@typescript-eslint/no-non-null-assertion': 'error',
       'no-magic-numbers': 'off',
       '@typescript-eslint/no-magic-numbers': [
         'error',
@@ -177,7 +190,14 @@ export default defineConfig([
       jsxA11y.configs.strict,
     ],
     rules: {
-      'no-restricted-syntax': ['error', NO_ENUM, NULL_TYPE, nullLiteral(NULL_ALLOWED_REACT)],
+      'no-restricted-syntax': [
+        'error',
+        NO_ENUM,
+        NULL_TYPE,
+        nullLiteral(NULL_ALLOWED_REACT),
+        INLINE_STYLE_VALUE,
+        JSX_MAGIC_NUMBER,
+      ],
     },
   },
   {

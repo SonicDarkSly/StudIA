@@ -3,7 +3,8 @@ import { existsSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join } from 'node:path';
 import type { FolderBrowser, FolderEntry, FolderListing } from '../domain/folder-browser.js';
-import { InvalidProjectFolderError, PROJECT_MARKERS } from '../domain/project.js';
+import { PROJECT_MARKERS } from '../domain/consts.js';
+import { InvalidProjectFolderError } from '../domain/project.js';
 
 const MAX_FOLDER_ENTRIES = 400;
 const HIDDEN = new Set(['node_modules', 'Library', 'AppData', '$RECYCLE.BIN', 'System Volume Information']);

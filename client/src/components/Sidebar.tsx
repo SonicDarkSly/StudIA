@@ -1,7 +1,7 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Empty, Popconfirm } from 'antd';
-import { AUTHOR } from '../constants';
-import type { ConversationSummary, Generator } from '../types';
+import { AUTHOR } from '../consts';
+import type { ConversationSummary, Generator, GeneratorKey } from '../types';
 import { fmtDate } from '../utils/format';
 import { generatorIcon } from './icons';
 
@@ -22,7 +22,7 @@ interface Props {
 }
 
 export function Sidebar({ conversations, activeId, generators, onNew, onOpen, onDelete }: Props) {
-  const label = (key: string) => generators.find((g) => g.key === key)?.label ?? key;
+  const label = (key: GeneratorKey) => generators.find((g) => g.key === key)?.label ?? key;
   return (
     <aside className="studia-left glass" aria-label="Conversations">
       <Button
@@ -48,14 +48,12 @@ export function Sidebar({ conversations, activeId, generators, onNew, onOpen, on
               aria-current={c.id === activeId ? 'true' : undefined}
               onClick={() => onOpen(c.id)}
             >
-              <span style={{ color: 'var(--cyan)', marginTop: 2 }} title={label(c.generatorKey)}>
+              <span className="conv-icon" title={label(c.generatorKey)}>
                 {generatorIcon(c.generatorKey)}
               </span>
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span className="title" style={{ display: 'block' }}>
-                  {c.title}
-                </span>
-                <span className="meta" style={{ display: 'block' }}>
+              <span className="conv-text">
+                <span className="title">{c.title}</span>
+                <span className="meta">
                   <span className="sr-only">{label(c.generatorKey)}, </span>
                   {fmtDate(c.updatedAt)} · {exchangeLabel(c.messageCount)}
                 </span>
@@ -82,7 +80,7 @@ export function Sidebar({ conversations, activeId, generators, onNew, onOpen, on
           </div>
         ))}
       </div>
-      <div className="muted" style={{ fontSize: 11, lineHeight: 1.4 }}>
+      <div className="muted sidebar-footer">
         100 % local : les conversations restent dans <code>server/data/conversations</code>.
         <div className="credit">
           StudIA · créé par{' '}

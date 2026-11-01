@@ -7,9 +7,11 @@ import type {
   FolderListing,
   GenerationSettings,
   Generator,
+  GeneratorKey,
   MachineProfile,
   ModelView,
   ProjectContext,
+  TargetKey,
   ProjectSummary,
   RuntimeStatus,
 } from './types';
@@ -56,10 +58,10 @@ export const api = {
   info: () => request<{ name: string; author: string; lan: boolean; node: string }>('/api/info'),
 };
 
-export interface StreamRequest {
+interface StreamRequest {
   modelKey: string;
-  generatorKey: string;
-  targetKey: string;
+  generatorKey: GeneratorKey;
+  targetKey: TargetKey;
   projectNames: string[];
   settings: GenerationSettings;
   extraInstructions?: string;

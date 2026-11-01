@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
+import type { ThemeMode } from '../types';
 
-export type ThemeMode = 'dark' | 'light';
 const KEY = 'studia-theme';
 
 export function useTheme() {

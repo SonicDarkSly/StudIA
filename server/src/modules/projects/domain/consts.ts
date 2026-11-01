@@ -1,0 +1,31 @@
+export const STACK_MARKERS: Record<string, string> = {
+  '@nestjs/core': 'NestJS',
+  '@nestjs/cqrs': 'CQRS',
+  react: 'React',
+  vite: 'Vite',
+  antd: 'Ant Design',
+  next: 'Next.js',
+  typescript: 'TypeScript',
+  'node-llama-cpp': 'node-llama-cpp',
+  cesium: 'Cesium',
+  'satellite.js': 'satellite.js',
+  'pdfjs-dist': 'PDF',
+  mammoth: 'DOCX',
+  express: 'Express',
+  '@modelcontextprotocol/sdk': 'MCP',
+  zod: 'zod',
+  tailwindcss: 'Tailwind',
+};
+
+export const PROJECT_MARKERS = [
+  'package.json',
+  'CLAUDE.md',
+  'AGENTS.md',
+  'GEMINI.md',
+  'README.md',
+  '.git',
+  'pyproject.toml',
+  'Cargo.toml',
+  'go.mod',
+  'pom.xml',
+];

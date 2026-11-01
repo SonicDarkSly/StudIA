@@ -6,8 +6,7 @@ import {
   SunOutlined,
 } from '@ant-design/icons';
 import { Button, Tooltip } from 'antd';
-import type { ThemeMode } from '../hooks/useTheme';
-import type { MachineProfile, ModelView, PanelTab, RuntimeStatus } from '../types';
+import type { MachineProfile, ModelView, PanelTab, RuntimeStatus, ThemeMode } from '../types';
 import { fmtNumber } from '../utils/format';
 import { Logo } from './Logo';
 
@@ -40,9 +39,7 @@ export function AppHeader({ mode, machine, runtime, models, showRight, ...action
     <header className="studia-header glass">
       <h1 className="sr-only">StudIA, studio d’éléments pour l’IA</h1>
       <Logo />
-      <span className="muted" style={{ fontSize: 13 }}>
-        Studio d’éléments pour l’IA · 100 % local
-      </span>
+      <span className="muted tagline">Studio d’éléments pour l’IA · 100 % local</span>
       <span className="spacer" />
       {machine && (
         <Tooltip
@@ -60,7 +57,7 @@ export function AppHeader({ mode, machine, runtime, models, showRight, ...action
         </Tooltip>
       )}
       <Tooltip title={runtime?.loadedKey ? 'Modèle en mémoire' : 'Aucun modèle en mémoire'}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+        <span className="row runtime-chip">
           <span className={`status-dot${dotState}`} aria-hidden />
           <span className="muted">{runtimeLabel}</span>
         </span>

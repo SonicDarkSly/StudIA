@@ -1,5 +1,5 @@
 import type { TargetFormat, TargetKey } from './ai-target.js';
-import type { ScaffoldFile } from './generator.js';
+import type { GeneratorKey, ScaffoldFile } from './generator.js';
 
 type Formats = Record<TargetKey, TargetFormat>;
 
@@ -584,7 +584,7 @@ const CHAT: Formats = {
   portable: CHAT_FORMAT,
 };
 
-export const TARGET_FORMATS: Record<string, Formats> = {
+export const TARGET_FORMATS: Record<GeneratorKey, Formats> = {
   chat: CHAT,
   skill: SKILL,
   mcp: MCP,

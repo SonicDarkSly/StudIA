@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import type { ProjectContext, ProjectSummary } from '../types';
 import { AddProjectModal } from './AddProjectModal';
-import { PROJECTS_CONTEXT_SHARE } from '../constants';
+import { PROJECTS_CONTEXT_SHARE } from '../consts';
 import { fmtNumber, percentOf } from '../utils/format';
+
+const PREVIEW_MODAL_WIDTH = 860;
 
 interface Props {
   projects: ProjectSummary[];
@@ -38,10 +40,8 @@ export function ProjectsPanel({ projects, loading, selected, contextSize, onChan
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div className="section-label" style={{ margin: 0 }}>
-          Projets en contexte
-        </div>
+      <div className="catalog-head">
+        <div className="section-label">Projets en contexte</div>
         <span>
           <Tooltip title="Relire les projets">
             <Button
@@ -57,14 +57,14 @@ export function ProjectsPanel({ projects, loading, selected, contextSize, onChan
           </Button>
         </span>
       </div>
-      <div className="muted" style={{ fontSize: 12, margin: '8px 0 10px', lineHeight: 1.5 }}>
+      <div className="muted projects-intro">
         StudIA ne lit que les projets que tu ajoutes ici. Les projets cochés sont lus (en lecture seule) et
         donnés au modèle : consignes (CLAUDE.md, AGENTS.md…), README, package.json, arborescence et éléments{' '}
         <code>.claude</code> existants. Les fichiers <code>.env</code>, les clés et les dossiers{' '}
         <code>data</code> ne sont jamais lus.
       </div>
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }} className="muted">
+      <div className="context-budget">
+        <div className="muted budget-line">
           <span>Contexte des projets ≈ {fmtNumber(total)} tokens</span>
           <span>budget ≈ {fmtNumber(budget)}</span>
         </div>
@@ -72,7 +72,7 @@ export function ProjectsPanel({ projects, loading, selected, contextSize, onChan
           <span style={{ width: `${percentOf(total, budget)}%` }} />
         </div>
         {total > budget && (
-          <div style={{ fontSize: 12, color: 'var(--magenta)', marginTop: 4 }}>
+          <div className="budget-overflow">
             Au-delà du budget, le contexte sera tronqué : augmente la taille du contexte ou coche moins de
             projets.
           </div>
@@ -104,7 +104,7 @@ export function ProjectsPanel({ projects, loading, selected, contextSize, onChan
             <Checkbox checked={selected.includes(p.name)} onChange={(e) => toggle(p.name, e.target.checked)}>
               <b>{p.name}</b>
             </Checkbox>
-            <span style={{ flex: 1 }} />
+            <span className="grow" />
             <Tooltip title="Voir exactement ce qui sera donné au modèle">
               <Button
                 size="small"
@@ -138,14 +138,10 @@ export function ProjectsPanel({ projects, loading, selected, contextSize, onChan
           <div className="path" title={p.path}>
             {p.path}
           </div>
-          {p.description && (
-            <div className="desc" style={{ margin: '4px 0' }}>
-              {p.description}
-            </div>
-          )}
+          {p.description && <div className="desc project-desc">{p.description}</div>}
           <div>
             {p.stack.map((s) => (
-              <Tag key={s} variant="filled" color="cyan" style={{ marginBottom: 4 }}>
+              <Tag key={s} variant="filled" color="cyan" className="stack-tag">
                 {s}
               </Tag>
             ))}
@@ -170,12 +166,10 @@ export function ProjectsPanel({ projects, loading, selected, contextSize, onChan
         open={!!preview}
         onCancel={() => setPreview(undefined)}
         footer={null}
-        width={860}
+        width={PREVIEW_MODAL_WIDTH}
         title={preview ? `Contexte de ${preview.name} · ≈ ${fmtNumber(preview.approxTokens)} tokens` : ''}
       >
-        <div className="code-view" style={{ whiteSpace: 'pre-wrap', maxHeight: '70vh' }}>
-          {preview?.text}
-        </div>
+        <div className="code-view context-preview">{preview?.text}</div>
       </Modal>
     </div>
   );

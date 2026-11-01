@@ -6,6 +6,7 @@ import type { FolderListing } from '../types';
 import { errorMessage } from '../utils/errors';
 
 const MAX_MARKERS_SHOWN = 3;
+const ADD_MODAL_WIDTH = 720;
 
 interface Props {
   open: boolean;
@@ -68,14 +69,14 @@ export function AddProjectModal({ open, onClose, onAdded }: Props) {
         if (visible && !listing) void go();
       }}
       footer={null}
-      width={720}
+      width={ADD_MODAL_WIDTH}
       title="Ajouter un projet"
     >
-      <div className="muted" style={{ fontSize: 12.5, marginBottom: 10, lineHeight: 1.5 }}>
+      <div className="muted add-project-intro">
         StudIA ne lit que les projets ajoutés ici, en lecture seule. Les dossiers marqués d’une étiquette
         contiennent un repère de projet (package.json, CLAUDE.md, .git…).
       </div>
-      <Space.Compact style={{ width: '100%', marginBottom: 10 }}>
+      <Space.Compact className="full-width path-bar">
         <Button
           icon={<HomeOutlined aria-hidden />}
           aria-label="Dossier personnel"
@@ -98,9 +99,9 @@ export function AddProjectModal({ open, onClose, onAdded }: Props) {
         />
         <Button onClick={() => void go(path)}>Ouvrir</Button>
       </Space.Compact>
-      {error && <Alert type="error" showIcon title={error} style={{ marginBottom: 10 }} />}
+      {error && <Alert type="error" showIcon title={error} className="block-alert" />}
       <div className="folder-list">
-        {loading && <Spin style={{ margin: 20 }} />}
+        {loading && <Spin className="folder-spin" />}
         {!loading &&
           listing?.entries.map((e) => (
             <div key={e.path} className="folder-row">
@@ -111,18 +112,18 @@ export function AddProjectModal({ open, onClose, onAdded }: Props) {
                 onClick={() => void go(e.path)}
               >
                 {e.markers.length ? (
-                  <FolderFilled aria-hidden style={{ color: 'var(--violet)' }} />
+                  <FolderFilled aria-hidden className="project-folder" />
                 ) : (
                   <FolderOpenOutlined aria-hidden />
                 )}{' '}
                 {e.name}
               </button>
               {e.markers.slice(0, MAX_MARKERS_SHOWN).map((m) => (
-                <Tag key={m} variant="filled" color="purple" style={{ fontSize: 11 }}>
+                <Tag key={m} variant="filled" color="purple" className="marker-tag">
                   {m}
                 </Tag>
               ))}
-              <span style={{ flex: 1 }} />
+              <span className="grow" />
               {e.markers.length > 0 && (
                 <Button size="small" onClick={() => void add(e.path)}>
                   Ajouter
@@ -131,12 +132,10 @@ export function AddProjectModal({ open, onClose, onAdded }: Props) {
             </div>
           ))}
         {!loading && listing && listing.entries.length === 0 && (
-          <div className="muted" style={{ padding: 16 }}>
-            Aucun sous-dossier.
-          </div>
+          <div className="muted folder-empty">Aucun sous-dossier.</div>
         )}
       </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+      <div className="modal-actions">
         <Button
           type="primary"
           className="neon-btn"

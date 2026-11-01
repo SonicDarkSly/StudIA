@@ -1,6 +1,7 @@
 import type { FileIssue, GeneratedFile, TargetFormat } from '../types';
 import { fmtNumber } from './format';
-import { frontmatter, KEBAB, listValue, markdownBody } from './frontmatter';
+import { KEBAB } from './consts';
+import { frontmatter, listValue, markdownBody } from './frontmatter';
 
 const SKILL_FILE = 'SKILL.md';
 const SKILL_PATH = /(^|\/)SKILL\.md$/;

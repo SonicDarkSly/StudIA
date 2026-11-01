@@ -4,7 +4,12 @@ import { mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promise
 import { basename, join } from 'node:path';
 import { CONVERSATIONS_DIR } from '../../../shared/config/paths.js';
 import { toPrettyJson } from '../../../shared/json.js';
-import { Conversation, type ConversationSnapshot, type ConversationSummary } from '../domain/conversation.js';
+import {
+  Conversation,
+  InvalidConversationError,
+  type ConversationSnapshot,
+  type ConversationSummary,
+} from '../domain/conversation.js';
 import type { ConversationRepository } from '../domain/conversation.repository.js';
 
 const MAX_CONVERSATIONS = 300;
@@ -17,7 +22,9 @@ export class FileConversationRepository implements ConversationRepository {
 
   async save(conversation: Conversation): Promise<void> {
     await mkdir(CONVERSATIONS_DIR, { recursive: true });
-    const path = this.path(conversation.id)!;
+    const path = this.path(conversation.id);
+    if (!path)
+      throw new InvalidConversationError(`Identifiant de conversation invalide : ${conversation.id}`);
     const tmp = `${path}.tmp`;
     await writeFile(tmp, toPrettyJson(conversation.snapshot()));
     await rename(tmp, path);

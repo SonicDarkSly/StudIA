@@ -1,16 +1,17 @@
 import { Alert, Button, Segmented, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import type { StreamState } from '../hooks/useChatSession';
 import type {
   AiTarget,
   Conversation,
   Generator,
+  GeneratorKey,
   MachineProfile,
   ModelView,
   PanelTab,
+  StreamState,
   TargetKey,
 } from '../types';
-import { DEFAULT_TARGET } from '../utils/targets';
+import { DEFAULT_TARGET } from '../consts';
 import { isBlocked } from '../utils/models';
 import { generatorIcon } from './icons';
 import { Composer } from './Composer';
@@ -24,7 +25,7 @@ interface Props {
   machine?: MachineProfile;
   stream: StreamState;
   onPickTarget: (key: TargetKey) => void;
-  onPickGenerator: (key: string) => void;
+  onPickGenerator: (key: GeneratorKey) => void;
   onSend: (text: string) => void;
   onStop: () => void;
   onRegenerate: () => void;
@@ -111,22 +112,17 @@ export function ChatView(props: Props) {
                 })}
               </div>
               {generator && (
-                <div className="glass" style={{ marginTop: 18, padding: 16, textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700, marginBottom: 4 }}>
-                    <span style={{ color: 'var(--cyan)' }}>{generatorIcon(generator.key)}</span>{' '}
-                    {generator.label}
+                <div className="glass mode-details">
+                  <div className="mode-title">
+                    <span className="accent">{generatorIcon(generator.key)}</span> {generator.label}
                   </div>
-                  <div className="muted" style={{ fontSize: 13 }}>
-                    {generator.description}
-                  </div>
+                  <div className="muted mode-description">{generator.description}</div>
                   {format && generator.usesFiles && (
-                    <div style={{ fontSize: 13, marginTop: 8 }}>
-                      <b style={{ color: 'var(--cyan)' }}>Pour {target?.label} :</b> {format.summary}
+                    <div className="mode-target">
+                      <b className="accent">Pour {target?.label} :</b> {format.summary}
                     </div>
                   )}
-                  <div className="section-label" style={{ marginTop: 12 }}>
-                    Exemples à essayer
-                  </div>
+                  <div className="section-label examples-label">Exemples à essayer</div>
                   {generator.examples.map((ex) => (
                     <button type="button" key={ex} className="example" onClick={() => setDraft(ex)}>
                       {ex}
@@ -152,7 +148,7 @@ export function ChatView(props: Props) {
       </div>
 
       <div className="composer-wrap">
-        <div style={{ maxWidth: 880, margin: '0 auto 8px' }}>
+        <div className="composer-alerts">
           {unavailable && (
             <Alert
               type="error"

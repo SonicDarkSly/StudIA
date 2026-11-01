@@ -8,7 +8,7 @@ import {
 import { Alert, Button, Collapse, Tag, Tooltip, message as toast } from 'antd';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { STOP_REASONS } from '../constants';
+import { STOP_REASONS } from '../consts';
 import type { ChatMessage, ModelView } from '../types';
 import { stripFiles } from '../utils/files';
 import { approxTokens, fmtNumber, percentOf } from '../utils/format';
@@ -47,9 +47,7 @@ export function Message({ message, live, isLast, models, onShowFiles, onRegenera
   return (
     <div className="msg assistant">
       <div className="who">
-        <span className="neon-text" style={{ fontWeight: 700 }}>
-          StudIA
-        </span>
+        <span className="neon-text author">StudIA</span>
         {modelLabel && <Tag variant="filled">{modelLabel}</Tag>}
       </div>
       <div className="body">
@@ -84,7 +82,7 @@ export function Message({ message, live, isLast, models, onShowFiles, onRegenera
             showIcon
             icon={<WarningOutlined aria-hidden />}
             title={message.error}
-            style={{ marginTop: 8 }}
+            className="top-alert"
           />
         )}
         {!live && (count > 0 || stats) && (

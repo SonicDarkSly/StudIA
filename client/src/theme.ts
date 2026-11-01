@@ -1,5 +1,5 @@
+import type { ThemeMode } from './types';
 import { theme, type ThemeConfig } from 'antd';
-import type { ThemeMode } from './hooks/useTheme';
 
 const PALETTE = {
   dark: { primary: '#a855f7', info: '#22d3ee', elevated: '#141029' },

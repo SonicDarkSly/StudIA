@@ -1,6 +1,7 @@
-import type { GenerationSettings, NumericSettingKey } from './types';
+import type { GenerationSettings, GeneratorKey, SettingHelp, TargetKey } from './types';
 
-export const DEFAULT_GENERATOR = 'chat';
+export const DEFAULT_GENERATOR: GeneratorKey = 'chat';
+export const DEFAULT_TARGET: TargetKey = 'claude';
 
 export const DEFAULT_SETTINGS: GenerationSettings = {
   temperature: 0.7,
@@ -15,18 +16,6 @@ export const DEFAULT_SETTINGS: GenerationSettings = {
   contextSize: 8192,
   thinking: true,
 };
-
-export interface SettingHelp {
-  key: NumericSettingKey;
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  what: string;
-  effect: string;
-  tip: string;
-  advanced?: boolean;
-}
 
 export const SETTINGS_HELP: SettingHelp[] = [
   {

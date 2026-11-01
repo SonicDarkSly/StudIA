@@ -1,6 +1,8 @@
 import { AggregateRoot } from '@nestjs/cqrs';
 import type { GenerationSettings } from '../../models/domain/generation-settings.js';
-import { TARGETS } from '../../generators/domain/ai-target.js';
+import { isTargetKey, type TargetKey } from '../../generators/domain/ai-target.js';
+import { DEFAULT_GENERATOR, DEFAULT_TARGET } from '../../generators/domain/consts.js';
+import { isGeneratorKey, type GeneratorKey } from '../../generators/domain/generator.js';
 import type { ChatMessage } from './chat-message.js';
 
 export interface ConversationSnapshot {
@@ -8,8 +10,8 @@ export interface ConversationSnapshot {
   title: string;
   createdAt: string;
   updatedAt: string;
-  generatorKey: string;
-  targetKey: string;
+  generatorKey: GeneratorKey;
+  targetKey: TargetKey;
   modelKey: string;
   projectNames: string[];
   settings: Partial<GenerationSettings>;
@@ -21,8 +23,8 @@ export interface ConversationSummary {
   id: string;
   title: string;
   updatedAt: string;
-  generatorKey: string;
-  targetKey: string;
+  generatorKey: GeneratorKey;
+  targetKey: TargetKey;
   modelKey: string;
   messageCount: number;
 }
@@ -53,8 +55,8 @@ export class Conversation extends AggregateRoot {
       title: String(raw.title || 'Sans titre').slice(0, MAX_TITLE_LENGTH),
       createdAt: raw.createdAt || now,
       updatedAt: raw.updatedAt || now,
-      generatorKey: String(raw.generatorKey || 'chat'),
-      targetKey: TARGETS.some((t) => t.key === raw.targetKey) ? raw.targetKey : 'claude',
+      generatorKey: isGeneratorKey(raw.generatorKey) ? raw.generatorKey : DEFAULT_GENERATOR,
+      targetKey: isTargetKey(raw.targetKey) ? raw.targetKey : DEFAULT_TARGET,
       modelKey: String(raw.modelKey || ''),
       projectNames: Array.isArray(raw.projectNames)
         ? raw.projectNames.map(String).slice(0, MAX_PROJECTS)

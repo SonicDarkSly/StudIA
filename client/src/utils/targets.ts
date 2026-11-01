@@ -1,8 +1,8 @@
+import { DEFAULT_TARGET } from '../consts';
 import type { TargetKey } from '../types';
 
 const TARGET_KEYS: readonly TargetKey[] = ['claude', 'codex', 'copilot', 'cursor', 'gemini', 'portable'];
 const STORAGE_KEY = 'studia-target';
-export const DEFAULT_TARGET: TargetKey = 'claude';
 
 export function isTargetKey(value: unknown): value is TargetKey {
   return TARGET_KEYS.some((key) => key === value);

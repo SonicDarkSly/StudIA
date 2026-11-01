@@ -122,6 +122,8 @@ export interface ScaffoldFile {
 
 export type TargetKey = 'claude' | 'codex' | 'copilot' | 'cursor' | 'gemini' | 'portable';
 
+export type GeneratorKey = 'chat' | 'skill' | 'mcp' | 'command' | 'agent' | 'claudemd' | 'hooks';
+
 export interface AiTarget {
   key: TargetKey;
   label: string;
@@ -149,7 +151,7 @@ export interface TargetFormat {
 }
 
 export interface Generator {
-  key: string;
+  key: GeneratorKey;
   label: string;
   short: string;
   description: string;
@@ -189,7 +191,7 @@ export interface Conversation {
   title: string;
   createdAt: string;
   updatedAt: string;
-  generatorKey: string;
+  generatorKey: GeneratorKey;
   targetKey: TargetKey;
   modelKey: string;
   projectNames: string[];
@@ -202,7 +204,7 @@ export interface ConversationSummary {
   id: string;
   title: string;
   updatedAt: string;
-  generatorKey: string;
+  generatorKey: GeneratorKey;
   targetKey?: TargetKey;
   modelKey: string;
   messageCount: number;
@@ -229,3 +231,25 @@ export interface FileIssue {
 }
 
 export type PanelTab = 'model' | 'settings' | 'projects' | 'files';
+
+export interface SettingHelp {
+  key: NumericSettingKey;
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  what: string;
+  effect: string;
+  tip: string;
+  advanced?: boolean;
+}
+
+export type ThemeMode = 'dark' | 'light';
+
+export interface StreamState {
+  active: boolean;
+  phase?: string;
+  detail?: string;
+  systemTokens?: number;
+  announcement?: string;
+}

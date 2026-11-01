@@ -58,6 +58,8 @@ export const TARGETS: AiTarget[] = [
   },
 ];
 
+export const isTargetKey = (value: unknown): value is TargetKey => TARGETS.some((t) => t.key === value);
+
 export function findTarget(key: string | undefined): AiTarget {
   return TARGETS.find((t) => t.key === key) ?? TARGETS[0];
 }
