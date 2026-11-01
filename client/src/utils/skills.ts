@@ -12,6 +12,10 @@ const SKILL_SUBFOLDER = /(^|[\s"'=(`])\.?\/?(assets|references|scripts)\//m;
 const SCRIPT_LOCATION = /dirname|BASH_SOURCE|__dirname|import\.meta|__file__|CLAUDE_SKILL_DIR/;
 const WRITE_INTO_SKILL =
   /(génér|écri|enregistr|sauvegard|produi)[^\n]*\bdans\s+`?\.?\/?(assets|references|scripts)\//i;
+const PROJECT_FROM_SCRIPT =
+  /^\s*(?:export\s+|const\s+|let\s+)?\w*(PROJECT|ROOT|REPO)\w*\s*=.*(dirname|SCRIPT_DIR|SKILL_DIR|__dirname|__file__|\.\.\/)/im;
+const SUPPORT_FOLDER = /(^|\/)((?:scripts|references|assets|agents)\/.+)$/;
+const SKILL_DIR_TOKEN = '{{dossier}}';
 const MCP_TOOL_PREFIX = 'mcp__';
 const ALLOWED_TOOLS = 'allowed-tools';
 
@@ -36,11 +40,12 @@ export function placeSkillFiles(files: GeneratedFile[], format?: TargetFormat): 
   const base = skillBase(misplaced[0].path);
   const target = `${root}${skillName(misplaced[0])}/`;
   const fix = `Placé dans ${target} : le modèle avait oublié le dossier attendu par l’IA choisie.`;
-  return files.map((f) =>
-    f.origin !== 'modele' || !f.path.startsWith(base) || inExpected(f.path)
-      ? f
-      : { ...f, path: target + f.path.slice(base.length), fixes: [...(f.fixes ?? []), fix] },
-  );
+  const relative = (path: string) =>
+    path.startsWith(base) ? path.slice(base.length) : path.match(SUPPORT_FOLDER)?.[2];
+  return files.map((f) => {
+    const rel = f.origin === 'modele' && !inExpected(f.path) ? relative(f.path) : undefined;
+    return rel === undefined ? f : { ...f, path: target + rel, fixes: [...(f.fixes ?? []), fix] };
+  });
 }
 
 function checkHeader(file: GeneratedFile, fm: Record<string, string>, format?: TargetFormat): FileIssue[] {
@@ -77,7 +82,7 @@ function checkHeader(file: GeneratedFile, fm: Record<string, string>, format?: T
         message: 'Description très courte : dire QUAND l’utiliser et ce qu’elle produit.',
       });
   }
-  const rules = format?.frontmatter;
+  const rules = format?.skill;
   if (!rules) return issues;
   const unknown = Object.keys(fm).filter((key) => !rules.fields.includes(key));
   if (unknown.length)
@@ -103,11 +108,17 @@ function checkHeader(file: GeneratedFile, fm: Record<string, string>, format?: T
   return issues;
 }
 
+function scriptCitation(format: TargetFormat | undefined, base: string, rel: string): string | undefined {
+  const prefix = format?.skill?.scriptPrefix;
+  if (!prefix) return undefined;
+  return `${prefix.split(SKILL_DIR_TOKEN).join(base)}${rel}`;
+}
+
 function checkResources(skill: GeneratedFile, files: GeneratedFile[], format?: TargetFormat): FileIssue[] {
   const issues: FileIssue[] = [];
   const base = skillBase(skill.path);
   const body = markdownBody(skill.content);
-  const configFiles = format?.frontmatter?.configFiles ?? [];
+  const configFiles = format?.skill?.configFiles ?? [];
   for (const other of files) {
     if (other === skill || !other.path.startsWith(base)) continue;
     const rel = other.path.slice(base.length);
@@ -121,6 +132,20 @@ function checkResources(skill: GeneratedFile, files: GeneratedFile[], format?: T
     if (!rel.startsWith(SCRIPTS_DIR)) continue;
     if (other.path.endsWith('.sh') && !other.content.startsWith('#!'))
       issues.push({ level: 'warning', path: other.path, message: 'Ligne #! manquante en tête du script.' });
+    if (PROJECT_FROM_SCRIPT.test(other.content))
+      issues.push({
+        level: 'warning',
+        path: other.path,
+        message:
+          'Le script déduit le dossier du projet de son propre emplacement : il cherchera les fichiers du projet dans le dossier de la skill. Les fichiers du projet se lisent dans le dossier courant ou se passent en argument.',
+      });
+    const cited = scriptCitation(format, base, rel);
+    if (cited && !body.includes(cited))
+      issues.push({
+        level: 'warning',
+        path: other.path,
+        message: `Pour l’IA choisie, citer le script sous la forme ${cited} : un autre chemin serait cherché dans le dossier courant du projet.`,
+      });
     if (SKILL_SUBFOLDER.test(other.content) && !SCRIPT_LOCATION.test(other.content))
       issues.push({
         level: 'warning',

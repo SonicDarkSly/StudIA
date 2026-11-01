@@ -75,7 +75,8 @@ Write, Edit, Glob, Grep, Bash(commande *), WebFetch. Exemple : allowed-tools: Re
 Un script de la skill se cite avec \${CLAUDE_SKILL_DIR} (dossier de la skill) :
 « Lancer \`bash \${CLAUDE_SKILL_DIR}/scripts/verifier.sh <fichier>\` », et s'autorise par
 allowed-tools: Bash(bash \${CLAUDE_SKILL_DIR}/scripts/verifier.sh *)`,
-    frontmatter: {
+    skill: {
+      scriptPrefix: '${CLAUDE_SKILL_DIR}/',
       fields: [
         'name',
         'description',
@@ -112,7 +113,7 @@ Pour qu'elle ne se déclenche que sur demande ($nom), ajouter agents/openai.yaml
 policy:
   allow_implicit_invocation: false
 Un script de la skill se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/verifier.sh\` ».`,
-    frontmatter: { fields: ['name', 'description'], configFiles: ['agents/openai.yaml'] },
+    skill: { fields: ['name', 'description'], configFiles: ['agents/openai.yaml'] },
   },
   copilot: {
     status: 'natif',
@@ -124,7 +125,7 @@ Emplacement : .github/skills/<nom>/SKILL.md
 Attention : un name invalide fait ignorer la skill sans message d'erreur. Champs facultatifs : argument-hint,
 user-invocable, disable-model-invocation. Pas de champ allowed-tools.
 Les fichiers de la skill se citent par un chemin relatif à SKILL.md : [script de vérification](./scripts/verifier.sh).`,
-    frontmatter: {
+    skill: {
       fields: [
         'name',
         'description',
@@ -144,7 +145,7 @@ Emplacement : .cursor/skills/<nom>/SKILL.md
 Champs facultatifs : paths, liste de motifs de fichiers (ex. ["src/**/*.tsx"]) pour limiter le déclenchement ;
 disable-model-invocation (true = seulement via /nom). Pas de champ allowed-tools.
 Un script de la skill se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/verifier.sh\` ».`,
-    frontmatter: {
+    skill: {
       fields: [
         'name',
         'description',
@@ -165,7 +166,7 @@ Un script de la skill se cite par son chemin depuis la racine de la skill : « L
 Emplacement : .gemini/skills/<nom>/SKILL.md. N'utiliser que name et description dans l'en-tête.
 Un script de la skill se cite par son chemin complet depuis le projet :
 « Lancer \`bash .gemini/skills/<nom>/scripts/verifier.sh\` ».`,
-    frontmatter: { fields: ['name', 'description'] },
+    skill: { fields: ['name', 'description'], scriptPrefix: '{{dossier}}' },
   },
   portable: {
     status: 'natif',
@@ -177,7 +178,7 @@ Emplacement : .agents/skills/<nom>/SKILL.md. N'utiliser que les champs du standa
 license, compatibility, metadata). Aucune syntaxe propre à un outil dans le corps.
 Un script de la skill se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/verifier.sh\` ».
 Dans « À vérifier », rappeler que Claude Code ne lit que .claude/skills/ : y copier le même dossier.`,
-    frontmatter: { fields: ['name', 'description', 'license', 'compatibility', 'metadata', 'allowed-tools'] },
+    skill: { fields: ['name', 'description', 'license', 'compatibility', 'metadata', 'allowed-tools'] },
   },
 };
 

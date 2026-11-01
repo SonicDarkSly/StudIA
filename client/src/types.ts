@@ -132,10 +132,11 @@ export interface AiTarget {
 
 export type SupportLevel = 'natif' | 'adapte' | 'indisponible';
 
-export interface FrontmatterRules {
+export interface SkillRules {
   fields: string[];
   toolNames?: string[];
   configFiles?: string[];
+  scriptPrefix?: string;
 }
 
 export interface TargetFormat {
@@ -144,7 +145,7 @@ export interface TargetFormat {
   paths: string[];
   instructions: string;
   scaffold?: ScaffoldFile[];
-  frontmatter?: FrontmatterRules;
+  skill?: SkillRules;
 }
 
 export interface Generator {
