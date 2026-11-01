@@ -1,0 +1,91 @@
+.file-tree-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', Menlo, monospace;
+  font-size: 12px;
+}
+
+.file-tree-item:hover {
+  background: rgba(168, 85, 247, 0.08);
+}
+
+.file-tree-item.active {
+  background: rgba(168, 85, 247, 0.16);
+  box-shadow: inset 2px 0 0 var(--cyan);
+}
+
+.file-tree-item {
+  width: 100%;
+  text-align: left;
+}
+
+.files-actions {
+  margin-bottom: 10px;
+}
+
+.file-path {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ant-tag.scaffold-tag {
+  margin-inline-end: 0;
+}
+
+.preview-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0 6px;
+}
+
+.preview-head .section-label {
+  margin: 0;
+}
+
+.section-label.checks-label {
+  margin-top: 12px;
+}
+
+.issues {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.issue {
+  display: flex;
+  gap: 8px;
+  font-size: 12.5px;
+  margin-bottom: 6px;
+  line-height: 1.45;
+}
+
+.issue code {
+  font-size: 11px;
+}
+
+.issue-icon {
+  margin-top: 3px;
+}
+
+.issue.error .issue-icon {
+  color: var(--danger);
+}
+
+.issue.warning .issue-icon {
+  color: var(--warning);
+}
+
+.issue.ok .issue-icon {
+  color: var(--cyan);
+}
+
+.files-note {
+  margin-top: 8px;
+}

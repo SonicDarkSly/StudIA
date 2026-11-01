@@ -1,0 +1,17 @@
+.studia-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  user-select: none;
+}
+
+.studia-logo .mark {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 10px;
+  box-shadow: var(--glow-violet);
+}

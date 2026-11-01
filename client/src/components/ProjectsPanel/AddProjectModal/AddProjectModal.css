@@ -1,0 +1,59 @@
+.folder-list {
+  max-height: 46vh;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.folder-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.folder-row:last-child {
+  border-bottom: 0;
+}
+
+.folder-row .folder-name {
+  cursor: pointer;
+}
+
+.folder-row:hover {
+  background: rgba(168, 85, 247, 0.06);
+}
+
+.add-project-intro {
+  font-size: 12.5px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.path-bar {
+  margin-bottom: 10px;
+}
+
+.ant-spin.folder-spin {
+  margin: 20px;
+}
+
+.project-folder {
+  color: var(--violet);
+}
+
+.ant-tag.marker-tag {
+  font-size: 11px;
+}
+
+.folder-empty {
+  padding: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}

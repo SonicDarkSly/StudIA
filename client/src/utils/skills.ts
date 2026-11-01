@@ -1,4 +1,4 @@
-import type { FileIssue, GeneratedFile, TargetFormat } from '../types';
+import type { FileIssue, GeneratedFile, TargetFormat } from '@/types';
 import { fmtNumber } from './format';
 import { KEBAB } from './consts';
 import { frontmatter, listValue, markdownBody } from './frontmatter';

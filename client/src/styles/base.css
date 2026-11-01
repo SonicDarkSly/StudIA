@@ -1,0 +1,244 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.neon-text {
+  background: linear-gradient(90deg, var(--cyan), var(--violet), var(--magenta));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.55));
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  background: var(--muted);
+}
+
+.status-dot.on {
+  background: var(--cyan);
+  box-shadow: var(--glow-cyan);
+  animation: studia-pulse 2s ease-in-out infinite;
+}
+
+.status-dot.busy {
+  background: var(--magenta);
+  box-shadow: 0 0 16px rgba(236, 72, 153, 0.7);
+  animation: studia-pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes studia-pulse {
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+
+.section-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  margin: 4px 2px;
+}
+
+.neon-btn.ant-btn-primary {
+  background: linear-gradient(135deg, var(--violet), var(--magenta)) !important;
+  border: none !important;
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
+}
+
+.neon-btn.ant-btn-primary:hover {
+  box-shadow: 0 0 26px rgba(236, 72, 153, 0.6);
+  filter: brightness(1.08);
+}
+
+.code-view {
+  background: var(--code-bg);
+  color: #e6e3ff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  font-family: 'JetBrains Mono', Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre;
+  overflow: auto;
+  max-height: 46vh;
+}
+
+.gauge {
+  height: 6px;
+  border-radius: 6px;
+  background: rgba(168, 85, 247, 0.15);
+  overflow: hidden;
+}
+
+.gauge > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--violet), var(--magenta));
+  box-shadow: var(--glow-violet);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.25);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:where(.plain-button) {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+:where(.plain-button):disabled {
+  cursor: not-allowed;
+}
+
+.plain-button:focus-visible,
+.code-view:focus-visible,
+.mode-card:focus-visible,
+.file-tree-item:focus-visible,
+.machine-chip:focus-visible,
+.skip-link:focus-visible,
+.conv-item:has(.stretched:focus-visible),
+.model-card:has(.card-select input:focus-visible) {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.panel-box {
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+}
+
+.note {
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.grow {
+  flex: 1;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.ant-alert.block-alert {
+  margin-bottom: 10px;
+}
+
+.ant-alert.small-alert {
+  font-size: 12px;
+}
+
+.runtime-details {
+  font-size: 12px;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.catalog-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.catalog-head .section-label {
+  margin: 0;
+}
+
+.ant-alert.top-alert {
+  margin-top: 8px;
+}
+
+.accent {
+  color: var(--cyan);
+}

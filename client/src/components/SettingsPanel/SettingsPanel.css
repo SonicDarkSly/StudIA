@@ -1,0 +1,24 @@
+.locked-note {
+  margin-top: 4px;
+}
+
+.section-label.target-label {
+  margin-top: 14px;
+}
+
+.ant-tag.status-tag {
+  margin-inline-start: 6px;
+}
+
+.settings-head {
+  margin-top: 12px;
+}
+
+.ant-collapse.advanced-settings {
+  margin-top: 6px;
+}
+
+.prompt-preview {
+  white-space: pre-wrap;
+  max-height: 360px;
+}

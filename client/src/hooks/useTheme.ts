@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { ThemeMode } from '../types';
+import type { ThemeMode } from '@/types';
 
 const KEY = 'studia-theme';
 

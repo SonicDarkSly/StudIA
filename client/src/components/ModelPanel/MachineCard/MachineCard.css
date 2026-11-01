@@ -1,0 +1,50 @@
+.machine-card .specs {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.machine-card .usable {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.machine-card .usable > span:last-child {
+  white-space: nowrap;
+}
+
+.machine-card .note {
+  margin-top: 6px;
+}
+
+.model-memory {
+  margin-top: 10px;
+}
+
+.model-memory-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.machine-card .model-memory .usable {
+  margin-top: 2px;
+}
+
+.model-memory.over .model-memory-left {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.gauge.model-share > span {
+  background: var(--success);
+  box-shadow: none;
+}
+
+.model-memory.over .gauge.model-share > span {
+  background: var(--danger);
+}

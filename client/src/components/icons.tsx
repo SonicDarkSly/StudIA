@@ -8,7 +8,7 @@ import {
   ThunderboltOutlined,
 } from '@ant-design/icons';
 import type { ReactNode } from 'react';
-import type { GeneratorKey } from '../types';
+import type { GeneratorKey } from '@/types';
 
 const ICONS: Record<GeneratorKey, ReactNode> = {
   chat: <MessageOutlined aria-hidden />,

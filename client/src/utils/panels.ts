@@ -1,4 +1,4 @@
-import type { PanelTab } from '../types';
+import type { PanelTab } from '@/types';
 
 const PANEL_TABS: readonly PanelTab[] = ['model', 'settings', 'projects', 'files'];
 

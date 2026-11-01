@@ -1,0 +1,15 @@
+.hide-heavy {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.catalog {
+  margin-top: 8px;
+}
+
+.catalog {
+  list-style: none;
+  padding: 0;
+}

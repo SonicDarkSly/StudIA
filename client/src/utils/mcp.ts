@@ -1,4 +1,4 @@
-import type { FileIssue, GeneratedFile } from '../types';
+import type { FileIssue, GeneratedFile } from '@/types';
 
 const SERVER_FILE = 'src/index.ts';
 const README_FILE = /(^|\/)README\.md$/;

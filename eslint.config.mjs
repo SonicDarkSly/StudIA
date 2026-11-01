@@ -61,7 +61,7 @@ const INLINE_STYLE_VALUE = {
   selector:
     "JSXAttribute[name.name='style'] Property > :matches(Literal, TemplateLiteral[expressions.length=0])",
   message:
-    'Style en dur interdit : déplacer la valeur dans une classe CSS de index.css (thèmes et contraste au même endroit).',
+    'Style en dur interdit : déplacer la valeur dans une classe CSS (Composant.css ou styles/), thèmes et contraste au même endroit.',
 };
 
 const JSX_MAGIC_NUMBER = {
@@ -197,6 +197,10 @@ export default defineConfig([
         nullLiteral(NULL_ALLOWED_REACT),
         INLINE_STYLE_VALUE,
         JSX_MAGIC_NUMBER,
+      ],
+      'jsx-a11y-x/no-noninteractive-tabindex': [
+        'error',
+        { tags: [], roles: ['tabpanel', 'region'], allowExpressionValues: true },
       ],
     },
   },

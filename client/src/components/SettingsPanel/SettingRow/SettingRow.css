@@ -1,0 +1,40 @@
+.setting {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0 8px;
+}
+
+.setting .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.setting .val {
+  font-family: 'JetBrains Mono', Menlo, monospace;
+  color: var(--cyan);
+  text-shadow: var(--glow-cyan);
+}
+
+.setting .help {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.help-button {
+  color: var(--muted);
+}
+
+.setting-tooltip p {
+  margin: 0 0 6px;
+}
+
+.setting-tooltip p:last-child {
+  margin: 0;
+}
+
+.ant-input-number.optional-number {
+  width: 110px;
+}

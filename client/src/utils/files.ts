@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import type { FileIssue, GeneratedFile, GeneratorKey, ScaffoldFile, TargetFormat } from '../types';
+import type { FileIssue, GeneratedFile, GeneratorKey, ScaffoldFile, TargetFormat } from '@/types';
 import { errorMessage } from './errors';
 import { FIX_MESSAGES } from './consts';
 import { cleanContent, dropTrailingSeparator, frontmatter } from './frontmatter';

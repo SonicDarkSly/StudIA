@@ -1,0 +1,37 @@
+.studia-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 18px;
+}
+
+.studia-header .spacer {
+  flex: 1;
+}
+
+.machine-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.machine-chip:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.tagline {
+  font-size: 13px;
+}
+
+.runtime-chip {
+  font-size: 13px;
+}

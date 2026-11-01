@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api } from '../api';
-import type { Conversation, ConversationSummary } from '../types';
+import { api } from '@/api';
+import type { Conversation, ConversationSummary } from '@/types';
 
 const fetchConversations = () => api.conversations().catch((): ConversationSummary[] => []);
 

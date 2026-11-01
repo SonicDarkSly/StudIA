@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api } from '../api';
-import type { AiTarget, Generator, ProjectSummary } from '../types';
+import { api } from '@/api';
+import type { AiTarget, Generator, ProjectSummary } from '@/types';
 
 export function useGenerators() {
   const [data, setData] = useState<{ generators: Generator[]; targets: AiTarget[] }>({

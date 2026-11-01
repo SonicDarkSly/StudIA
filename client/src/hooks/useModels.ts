@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { api } from '../api';
+import { api } from '@/api';
 import { message } from 'antd';
-import type { MachineProfile, ModelView, RuntimeStatus } from '../types';
-import { errorMessage } from '../utils/errors';
+import type { MachineProfile, ModelView, RuntimeStatus } from '@/types';
+import { errorMessage } from '@/utils/errors';
 
 const ACTIVE_POLL_MS = 1500;
 const IDLE_POLL_MS = 8000;

@@ -1,0 +1,87 @@
+:root[data-theme='dark'] .ant-tag.ant-tag-purple {
+  color: #b37feb;
+}
+
+:root[data-theme='dark'] .ant-tag.ant-tag-geekblue {
+  color: #85a5ff;
+}
+
+:root[data-theme='dark'] .ant-tag.ant-tag-cyan {
+  color: #5cdbd3;
+}
+
+:root[data-theme='dark'] .ant-tag.ant-tag-green {
+  color: #95de64;
+}
+
+:root[data-theme='dark'] .ant-tag.ant-tag-magenta {
+  color: #ff85c0;
+}
+
+:root[data-theme='dark'] .ant-tag.ant-tag-red {
+  color: #ff7875;
+}
+
+:root[data-theme='dark'] .ant-tag.ant-tag-gold {
+  color: #ffd666;
+}
+
+:root[data-theme='dark'] .ant-tag.ant-tag-blue {
+  color: #69b1ff;
+}
+
+:root[data-theme='dark'] .ant-tag.ant-tag-orange {
+  color: #ffc069;
+}
+
+:root[data-theme='dark'] .ant-tag.ant-tag-volcano {
+  color: #ff9c6e;
+}
+
+:root[data-theme='dark'] .ant-tag.ant-tag-lime {
+  color: #d3f261;
+}
+
+:root[data-theme='light'] .ant-tag.ant-tag-purple {
+  color: #531dab;
+}
+
+:root[data-theme='light'] .ant-tag.ant-tag-geekblue {
+  color: #1d39c4;
+}
+
+:root[data-theme='light'] .ant-tag.ant-tag-cyan {
+  color: #006d75;
+}
+
+:root[data-theme='light'] .ant-tag.ant-tag-green {
+  color: #237804;
+}
+
+:root[data-theme='light'] .ant-tag.ant-tag-magenta {
+  color: #9e1068;
+}
+
+:root[data-theme='light'] .ant-tag.ant-tag-red {
+  color: #a8071a;
+}
+
+:root[data-theme='light'] .ant-tag.ant-tag-gold {
+  color: #874d00;
+}
+
+:root[data-theme='light'] .ant-tag.ant-tag-blue {
+  color: #0958d9;
+}
+
+:root[data-theme='light'] .ant-tag.ant-tag-orange {
+  color: #ad4e00;
+}
+
+:root[data-theme='light'] .ant-tag.ant-tag-volcano {
+  color: #ad2102;
+}
+
+:root[data-theme='light'] .ant-tag.ant-tag-lime {
+  color: #3f6600;
+}

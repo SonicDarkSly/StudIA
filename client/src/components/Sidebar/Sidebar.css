@@ -1,0 +1,100 @@
+.credit {
+  margin-top: 6px;
+  font-size: 11px;
+}
+
+.credit a {
+  color: var(--violet);
+}
+
+.conv-list {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+
+.conv-item {
+  padding: 9px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.conv-item:hover {
+  background: rgba(168, 85, 247, 0.08);
+}
+
+.conv-item.active {
+  background: rgba(168, 85, 247, 0.14);
+  border-color: var(--border-strong);
+  box-shadow: inset 2px 0 0 var(--violet);
+}
+
+.conv-item .title {
+  font-size: 13px;
+  line-height: 1.35;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.conv-item .meta {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.conv-item {
+  position: relative;
+}
+
+.conv-item .ant-btn {
+  position: relative;
+  z-index: 1;
+}
+
+.stretched::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.conv-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.stretched:focus-visible {
+  outline: none;
+}
+
+.conv-icon {
+  color: var(--cyan);
+  margin-top: 2px;
+}
+
+.conv-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.conv-item .meta {
+  display: block;
+}
+
+.sidebar-footer {
+  font-size: 11px;
+  line-height: 1.4;
+}

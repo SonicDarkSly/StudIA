@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
-import { streamChat } from '../api';
-import { DEFAULT_SETTINGS, DEFAULT_TARGET } from '../consts';
+import { streamChat } from '@/api';
+import { DEFAULT_SETTINGS, DEFAULT_TARGET } from '@/consts';
 import type {
   ChatEvent,
   ChatMessage,
@@ -9,9 +9,9 @@ import type {
   GeneratorKey,
   StreamState,
   TargetKey,
-} from '../types';
-import { errorMessage } from '../utils/errors';
-import { uid } from '../utils/format';
+} from '@/types';
+import { errorMessage } from '@/utils/errors';
+import { uid } from '@/utils/format';
 
 const MAX_TITLE_LENGTH = 70;
 

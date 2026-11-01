@@ -1,0 +1,58 @@
+.composer {
+  max-width: 880px;
+  margin: 0 auto;
+  position: relative;
+  border-radius: 18px;
+  padding: 1.5px;
+  background: linear-gradient(90deg, var(--border), var(--border));
+}
+
+.composer.focus,
+.composer.live {
+  background: linear-gradient(90deg, var(--cyan), var(--violet), var(--magenta), var(--cyan));
+  background-size: 300% 100%;
+  box-shadow:
+    0 0 24px rgba(168, 85, 247, 0.35),
+    0 0 48px rgba(34, 211, 238, 0.12);
+}
+
+.composer.live {
+  animation: studia-flow 2.4s linear infinite;
+}
+
+@keyframes studia-flow {
+  to {
+    background-position: 300% 0;
+  }
+}
+
+.composer-inner {
+  background: var(--surface-strong);
+  border-radius: 16.5px;
+  padding: 10px 12px 8px;
+}
+
+.composer textarea.ant-input {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  resize: none;
+  font-size: 14.5px;
+  padding: 4px 4px;
+}
+
+.composer-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.tag-button {
+  border-radius: 6px;
+}
+
+.composer .phase {
+  font-size: 12px;
+}

@@ -1,0 +1,115 @@
+.fit-note {
+  margin-top: 6px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  padding: 5px 8px;
+  border-radius: 8px;
+}
+
+.fit-note.limite {
+  color: var(--warning);
+  background: var(--warning-bg);
+}
+
+.fit-note.trop-lourd {
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.model-card .ideal-for {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.model-card .ideal-for .ant-tag {
+  margin: 0;
+}
+
+.model-card .name .ant-tag {
+  margin-inline-end: 0;
+}
+
+.model-card .capabilities {
+  margin: 6px 0;
+}
+
+.ant-tag.capability-tag {
+  margin-bottom: 4px;
+}
+
+.model-card .pros-cons {
+  margin-top: 4px;
+}
+
+.model-card .pro {
+  color: var(--cyan);
+}
+
+.model-card .con {
+  color: var(--magenta);
+}
+
+.model-actions {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.download-progress.ant-progress {
+  flex: 1;
+  margin: 0;
+  margin-inline-end: 0;
+}
+
+.model-actions .license {
+  font-size: 11px;
+}
+
+.catalog .model-card {
+  padding: 0;
+  cursor: default;
+}
+
+.catalog .model-card.blocked {
+  opacity: 1;
+  border-style: dashed;
+  cursor: default;
+}
+
+.catalog .model-card.selected {
+  background: var(--success-bg);
+  border-color: var(--success);
+  box-shadow: none;
+}
+
+.card-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 11px 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.card-detail {
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px 11px;
+}
+
+.choose-row {
+  margin-top: 8px;
+}
+
+.chosen-note {
+  color: var(--success);
+  font-weight: 600;
+  font-size: 12.5px;
+}

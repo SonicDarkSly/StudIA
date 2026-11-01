@@ -1,0 +1,100 @@
+.msg {
+  margin-bottom: 18px;
+  animation: studia-in 0.25s ease-out;
+}
+
+@keyframes studia-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.msg.user {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.msg.user .bubble {
+  background: var(--user-bubble);
+  border: 1px solid var(--border-strong);
+  border-radius: 18px 18px 4px 18px;
+  padding: 10px 14px;
+  max-width: 80%;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.msg.assistant .body {
+  position: relative;
+  padding-left: 16px;
+}
+
+.msg.assistant .body::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(var(--cyan), var(--violet), var(--magenta));
+  box-shadow: var(--glow-violet);
+}
+
+.msg .who {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.caret {
+  display: inline-block;
+  width: 8px;
+  height: 1.1em;
+  vertical-align: -0.15em;
+  margin-left: 2px;
+  background: var(--cyan);
+  box-shadow: var(--glow-cyan);
+  animation: studia-blink 1s steps(2) infinite;
+}
+
+@keyframes studia-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.thought {
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  background: rgba(34, 211, 238, 0.04);
+  white-space: pre-wrap;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.stats b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.msg .author {
+  font-weight: 700;
+}
