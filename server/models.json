@@ -1,0 +1,376 @@
+{
+  "_comment": "Catalogue des modèles proposés par StudIA (tous au format GGUF, quantification Q4_K_M). Un fichier déjà présent dans server/data/llm, dans un projet ajouté par l'utilisateur (server/data/llm, data/llm ou models) ou dans STUDIA_EXTRA_MODEL_DIRS est réutilisé sans téléchargement. Les URI hf: sont essayées dans l'ordre. sizeGb = taille du fichier, ramGb = mémoire conseillée.",
+  "models": [
+    {
+      "key": "qwen3-30b",
+      "label": "Qwen3 30B-A3B Instruct",
+      "publisher": "Alibaba",
+      "family": "Qwen3 · MoE 30 Md de paramètres, 3 Md actifs",
+      "sizeGb": 18.6,
+      "ramGb": 24,
+      "capabilities": [
+        "Généraliste",
+        "Rédaction",
+        "Code",
+        "Long contexte"
+      ],
+      "description": "Le meilleur généraliste du catalogue pour concevoir des skills, des consignes de projet et des sous-agents. Rapide pour sa taille : seuls 3 Md de paramètres travaillent à chaque token.",
+      "pros": "Qualité de rédaction, suit bien les consignes et les formats.",
+      "cons": "Environ 19 Go de mémoire ; premier chargement de 10 à 30 secondes.",
+      "license": "Apache 2.0",
+      "uris": [
+        "hf:bartowski/Qwen_Qwen3-30B-A3B-Instruct-2507-GGUF:Q4_K_M"
+      ],
+      "thinking": false,
+      "recommended": {
+        "temperature": 0.7,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "repeatPenalty": 1.05
+      }
+    },
+    {
+      "key": "qwen3-coder-30b",
+      "label": "Qwen3 Coder 30B-A3B",
+      "publisher": "Alibaba",
+      "family": "Qwen3-Coder · MoE 30 Md / 3 Md actifs, spécialisé code",
+      "sizeGb": 18.6,
+      "ramGb": 24,
+      "capabilities": [
+        "Code",
+        "TypeScript",
+        "Connecteurs MCP",
+        "Hooks"
+      ],
+      "description": "Spécialiste du code : le meilleur choix pour générer un serveur MCP, des hooks ou des scripts.",
+      "pros": "TypeScript et JSON plus fiables, bonne connaissance des SDK et des outils de développement.",
+      "cons": "Moins à l'aise pour la rédaction pure ; même encombrement que le 30B généraliste.",
+      "license": "Apache 2.0",
+      "uris": [
+        "hf:unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M",
+        "hf:bartowski/Qwen_Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M"
+      ],
+      "thinking": false,
+      "recommended": {
+        "temperature": 0.7,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "repeatPenalty": 1.05
+      }
+    },
+    {
+      "key": "gemma3-27b",
+      "label": "Gemma 3 27B",
+      "publisher": "Google",
+      "family": "Gemma 3 · 27 Md de paramètres",
+      "sizeGb": 16.5,
+      "ramGb": 24,
+      "capabilities": [
+        "Généraliste",
+        "Multilingue",
+        "Rédaction"
+      ],
+      "description": "Le plus grand modèle ouvert de Google. Très bon en français et en rédaction structurée.",
+      "pros": "Style soigné, bon suivi des consignes, 140 langues.",
+      "cons": "Plus lent qu'un MoE de taille comparable (tous les paramètres travaillent).",
+      "license": "Gemma Terms of Use",
+      "uris": [
+        "hf:bartowski/google_gemma-3-27b-it-GGUF:Q4_K_M"
+      ],
+      "thinking": false,
+      "recommended": {
+        "temperature": 0.7,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "repeatPenalty": 1.05
+      }
+    },
+    {
+      "key": "mistral-small-24b",
+      "label": "Mistral Small 3.2 24B",
+      "publisher": "Mistral AI",
+      "family": "Mistral Small 3.2 · 24 Md de paramètres",
+      "sizeGb": 14.3,
+      "ramGb": 20,
+      "capabilities": [
+        "Français",
+        "Rédaction",
+        "Code",
+        "Appels d'outils"
+      ],
+      "description": "Modèle de Mistral AI, entreprise française : excellent en français, précis sur les formats et le code.",
+      "pros": "Français naturel, réponses concises, bon compromis qualité / taille.",
+      "cons": "Environ 15 Go de mémoire, chargement plus long que les petits modèles.",
+      "license": "Apache 2.0",
+      "uris": [
+        "hf:bartowski/mistralai_Mistral-Small-3.2-24B-Instruct-2506-GGUF:Q4_K_M",
+        "hf:unsloth/Mistral-Small-3.2-24B-Instruct-2506-GGUF:Q4_K_M"
+      ],
+      "thinking": false,
+      "recommended": {
+        "temperature": 0.15,
+        "topP": 0.95,
+        "topK": 0,
+        "minP": 0,
+        "repeatPenalty": 1
+      }
+    },
+    {
+      "key": "gpt-oss-20b",
+      "label": "gpt-oss 20B",
+      "publisher": "OpenAI",
+      "family": "gpt-oss · MoE 21 Md de paramètres, 3,6 Md actifs",
+      "sizeGb": 11.6,
+      "ramGb": 16,
+      "capabilities": [
+        "Réflexion visible",
+        "Raisonnement",
+        "Code"
+      ],
+      "description": "Le modèle ouvert d'OpenAI. Il raisonne toujours avant de répondre : on voit sa réflexion, puis la réponse.",
+      "pros": "Bon raisonnement, rapide pour sa taille (MoE).",
+      "cons": "Réflexion impossible à couper ; parfois bavard dans sa réflexion.",
+      "license": "Apache 2.0",
+      "uris": [
+        "hf:unsloth/gpt-oss-20b-GGUF:Q4_K_M",
+        "hf:ggml-org/gpt-oss-20b-GGUF"
+      ],
+      "thinking": true,
+      "thinkingAlways": true,
+      "recommended": {
+        "temperature": 1,
+        "topP": 1,
+        "topK": 0,
+        "minP": 0,
+        "repeatPenalty": 1
+      }
+    },
+    {
+      "key": "deepseek-r1-14b",
+      "label": "DeepSeek-R1 Distill 14B",
+      "publisher": "DeepSeek",
+      "family": "DeepSeek-R1 distillé dans Qwen2.5 · 14 Md de paramètres",
+      "sizeGb": 9.0,
+      "ramGb": 12,
+      "capabilities": [
+        "Réflexion visible",
+        "Logique",
+        "Mathématiques"
+      ],
+      "description": "Version compacte du célèbre DeepSeek-R1 : il écrit tout son raisonnement avant de conclure. Idéal pour observer comment un modèle « réfléchit ».",
+      "pros": "Raisonnement détaillé, pédagogique.",
+      "cons": "Réflexion toujours active (plus lent) ; moins bon pour les longues rédactions.",
+      "license": "MIT",
+      "uris": [
+        "hf:bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF:Q4_K_M"
+      ],
+      "thinking": true,
+      "thinkingAlways": true,
+      "recommended": {
+        "temperature": 0.6,
+        "topP": 0.95,
+        "topK": 0,
+        "minP": 0,
+        "repeatPenalty": 1
+      }
+    },
+    {
+      "key": "gemma3-12b",
+      "label": "Gemma 3 12B",
+      "publisher": "Google",
+      "family": "Gemma 3 · 12 Md de paramètres",
+      "sizeGb": 7.3,
+      "ramGb": 12,
+      "capabilities": [
+        "Généraliste",
+        "Multilingue",
+        "Équilibré"
+      ],
+      "description": "Le bon compromis pour une machine de 16 Go : qualité proche des gros modèles sur la rédaction courante.",
+      "pros": "Bon français, rapide, peu de mémoire pour sa qualité.",
+      "cons": "Moins rigoureux que les 24-30B sur le code complexe.",
+      "license": "Gemma Terms of Use",
+      "uris": [
+        "hf:bartowski/google_gemma-3-12b-it-GGUF:Q4_K_M"
+      ],
+      "thinking": false,
+      "recommended": {
+        "temperature": 0.7,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "repeatPenalty": 1.05
+      }
+    },
+    {
+      "key": "qwen3-8b",
+      "label": "Qwen3 8B (réflexion)",
+      "publisher": "Alibaba",
+      "family": "Qwen3 · 8 Md de paramètres, réflexion activable",
+      "sizeGb": 5.0,
+      "ramGb": 8,
+      "capabilities": [
+        "Réflexion activable",
+        "Logique",
+        "Pédagogie"
+      ],
+      "description": "Modèle qui peut « réfléchir » avant de répondre, avec un interrupteur pour activer ou couper ce mode : idéal pour comparer les deux.",
+      "pros": "Réflexion activable, budget de réflexion réglable, léger.",
+      "cons": "Plus lent quand la réflexion est active.",
+      "license": "Apache 2.0",
+      "uris": [
+        "hf:bartowski/Qwen_Qwen3-8B-GGUF:Q4_K_M",
+        "hf:Qwen/Qwen3-8B-GGUF:Q4_K_M"
+      ],
+      "thinking": true,
+      "recommended": {
+        "temperature": 0.6,
+        "topP": 0.95,
+        "topK": 20,
+        "minP": 0,
+        "repeatPenalty": 1
+      }
+    },
+    {
+      "key": "llama31-8b",
+      "label": "Llama 3.1 8B Instruct",
+      "publisher": "Meta",
+      "family": "Llama 3.1 · 8 Md de paramètres",
+      "sizeGb": 4.9,
+      "ramGb": 8,
+      "capabilities": [
+        "Généraliste",
+        "Anglais",
+        "Rapide"
+      ],
+      "description": "Le modèle ouvert de référence de Meta, très répandu. Utile pour comparer les familles entre elles.",
+      "pros": "Rapide, fiable sur les tâches simples, très bien documenté.",
+      "cons": "Français moins naturel que Mistral ou Gemma.",
+      "license": "Llama 3.1 Community License",
+      "uris": [
+        "hf:bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M"
+      ],
+      "thinking": false,
+      "recommended": {
+        "temperature": 0.6,
+        "topP": 0.9,
+        "topK": 0,
+        "minP": 0,
+        "repeatPenalty": 1.05
+      }
+    },
+    {
+      "key": "qwen25-7b",
+      "label": "Qwen2.5 7B Instruct",
+      "publisher": "Alibaba",
+      "family": "Qwen2.5 · 7 Md de paramètres",
+      "sizeGb": 4.7,
+      "ramGb": 8,
+      "capabilities": [
+        "Rapide",
+        "Généraliste"
+      ],
+      "description": "Rapide et polyvalent : bon pour itérer vite sur une commande ou une description de skill.",
+      "pros": "Réponses rapides, peu de mémoire.",
+      "cons": "Moins rigoureux sur les longs documents et le code complexe.",
+      "license": "Apache 2.0",
+      "uris": [
+        "hf:bartowski/Qwen2.5-7B-Instruct-GGUF:Q4_K_M"
+      ],
+      "thinking": false,
+      "recommended": {
+        "temperature": 0.7,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "repeatPenalty": 1.05
+      }
+    },
+    {
+      "key": "phi4-mini",
+      "label": "Phi-4 mini",
+      "publisher": "Microsoft",
+      "family": "Phi-4 · 3,8 Md de paramètres",
+      "sizeGb": 2.5,
+      "ramGb": 6,
+      "capabilities": [
+        "Très léger",
+        "Raisonnement",
+        "Anglais"
+      ],
+      "description": "Petit modèle de Microsoft, étonnamment bon en raisonnement pour sa taille. Tourne sur presque toutes les machines.",
+      "pros": "Très léger, bon en logique.",
+      "cons": "Français limité, connaissances générales réduites.",
+      "license": "MIT",
+      "uris": [
+        "hf:bartowski/microsoft_Phi-4-mini-instruct-GGUF:Q4_K_M"
+      ],
+      "thinking": false,
+      "recommended": {
+        "temperature": 0.7,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "repeatPenalty": 1.05
+      }
+    },
+    {
+      "key": "llama32-3b",
+      "label": "Llama 3.2 3B Instruct",
+      "publisher": "Meta",
+      "family": "Llama 3.2 · 3 Md de paramètres",
+      "sizeGb": 2.0,
+      "ramGb": 4,
+      "capabilities": [
+        "Très léger",
+        "Tests"
+      ],
+      "description": "Le plus petit Llama : se charge en quelques secondes, parfait pour découvrir les réglages.",
+      "pros": "Très rapide, très peu de mémoire.",
+      "cons": "Se trompe souvent, suit mal les formats complexes.",
+      "license": "Llama 3.2 Community License",
+      "uris": [
+        "hf:bartowski/Llama-3.2-3B-Instruct-GGUF:Q4_K_M"
+      ],
+      "thinking": false,
+      "recommended": {
+        "temperature": 0.6,
+        "topP": 0.9,
+        "topK": 0,
+        "minP": 0,
+        "repeatPenalty": 1.05
+      }
+    },
+    {
+      "key": "qwen25-3b",
+      "label": "Qwen2.5 3B Instruct",
+      "publisher": "Alibaba",
+      "family": "Qwen2.5 · 3 Md de paramètres",
+      "sizeGb": 1.9,
+      "ramGb": 4,
+      "capabilities": [
+        "Très léger",
+        "Tests",
+        "Démonstration"
+      ],
+      "description": "Très rapide mais limité : utile pour voir l'effet des réglages et comparer avec les gros modèles.",
+      "pros": "Se charge en quelques secondes.",
+      "cons": "Se trompe plus souvent, invente davantage, suit moins bien les formats.",
+      "license": "Qwen Research License",
+      "uris": [
+        "hf:bartowski/Qwen2.5-3B-Instruct-GGUF:Q4_K_M"
+      ],
+      "thinking": false,
+      "recommended": {
+        "temperature": 0.7,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "repeatPenalty": 1.05
+      }
+    }
+  ]
+}

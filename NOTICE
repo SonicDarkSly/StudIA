@@ -1,0 +1,13 @@
+StudIA
+Copyright 2026 SonicDarkSly
+https://github.com/SonicDarkSly
+
+Ce logiciel a été conçu et développé par SonicDarkSly.
+Il est distribué sous licence Apache 2.0 (voir le fichier LICENSE).
+
+Toute copie, redistribution ou version modifiée doit conserver ce fichier NOTICE
+(ou son contenu), conformément à la section 4 (d) de la licence Apache 2.0.
+
+Les modèles de langage téléchargés depuis l'application restent soumis à leurs
+propres licences (Apache 2.0, MIT, Gemma Terms of Use, Llama Community License,
+Qwen Research License), indiquées dans server/models.json et dans l'interface.

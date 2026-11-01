@@ -1,0 +1,4 @@
+if grep -qi '^co-authored-by:' "$1"; then
+  echo "Commit refusé : pas de ligne Co-Authored-By, SonicDarkSly est le seul auteur."
+  exit 1
+fi

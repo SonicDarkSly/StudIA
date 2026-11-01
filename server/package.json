@@ -1,0 +1,30 @@
+{
+  "name": "server",
+  "private": true,
+  "version": "1.0.0",
+  "author": "SonicDarkSly (https://github.com/SonicDarkSly)",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "npm run build && concurrently -k -r \"tsc -w --preserveWatchOutput\" \"node --watch dist/main.js\"",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "^12.3.2",
+    "@nestjs/core": "^12.3.2",
+    "@nestjs/cqrs": "^12.1.2",
+    "@nestjs/platform-express": "^12.3.2",
+    "node-llama-cpp": "^3.22.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.19.2",
+    "concurrently": "^10.0.6",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
