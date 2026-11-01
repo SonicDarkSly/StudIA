@@ -3,11 +3,14 @@ import type { FileIssue, GeneratedFile, GeneratorKey, ScaffoldFile, TargetFormat
 import { errorMessage } from './errors';
 import { FIX_MESSAGES } from './consts';
 import { cleanContent, dropTrailingSeparator, frontmatter } from './frontmatter';
+import { checkCommands } from './commands';
 import { checkMcp } from './mcp';
 import { checkSkills, gnuOnlyIssue, isSkillFile } from './skills';
 
 const START = /^=== ?FICHIER ?: ?(.+?) ?===\s*$/;
 const END = /^=== ?FIN ?===\s*$/;
+const CHECKLIST = /^\s*(?:\*\*|#+\s*)?À vérifier\b[^\n]*:/;
+const README = /(^|\/)README[^/]*$/i;
 const OBJECT_URL_LIFETIME_MS = 2000;
 
 function safePath(raw: string): string | undefined {
@@ -17,14 +20,16 @@ function safePath(raw: string): string | undefined {
   return path;
 }
 
-type FileEnd = 'fin' | 'suivant' | 'coupe';
+type FileEnd = 'fin' | 'suivant' | 'coupe' | 'liste';
 
 function toFile(path: string, lines: string[], end: FileEnd): GeneratedFile {
   const cleaned = cleanContent(path, lines.join('\n'));
-  const withoutSeparator = end === 'suivant' ? dropTrailingSeparator(cleaned.content) : undefined;
+  const withoutSeparator =
+    end === 'suivant' || end === 'liste' ? dropTrailingSeparator(cleaned.content) : undefined;
   const content = withoutSeparator ?? cleaned.content;
-  const fixes =
+  const separatorFixes =
     withoutSeparator === undefined ? cleaned.fixes : [...cleaned.fixes, FIX_MESSAGES.trailingSeparator];
+  const fixes = end === 'liste' ? [...separatorFixes, FIX_MESSAGES.checklistInFile] : separatorFixes;
   return {
     path,
     content: end === 'coupe' ? content : `${content}\n`,
@@ -49,6 +54,11 @@ export function parseFiles(text: string): { files: GeneratedFile[]; partial: boo
       current = undefined;
       continue;
     }
+    if (current && !README.test(current.path) && CHECKLIST.test(line)) {
+      files.push(toFile(current.path, current.lines, 'liste'));
+      current = undefined;
+      continue;
+    }
     current?.lines.push(line);
   }
   const partial = current !== undefined;
@@ -58,21 +68,22 @@ export function parseFiles(text: string): { files: GeneratedFile[]; partial: boo
 
 export function stripFiles(text: string): { prose: string; count: number } {
   let count = 0;
-  let inside = false;
+  let inside: string | undefined;
   const out: string[] = [];
   for (const line of text.split('\n')) {
     const start = line.match(START);
     if (start) {
-      inside = true;
+      inside = safePath(start[1]) ?? 'fichier';
       count++;
-      out.push(`\n> **Fichier** \`${safePath(start[1]) ?? 'fichier'}\` : voir le panneau Fichiers\n`);
+      out.push(`\n> **Fichier** \`${inside}\` : voir le panneau Fichiers\n`);
       continue;
     }
     if (END.test(line)) {
-      inside = false;
+      inside = undefined;
       continue;
     }
-    if (!inside) out.push(line);
+    if (inside !== undefined && !README.test(inside) && CHECKLIST.test(line)) inside = undefined;
+    if (inside === undefined) out.push(line);
   }
   return { prose: out.join('\n'), count };
 }
@@ -139,6 +150,17 @@ export function validateFiles(
     }
   }
 
+  const seen = new Set<string>();
+  for (const f of files) {
+    if (seen.has(f.path))
+      issues.push({
+        level: 'warning',
+        path: f.path,
+        message: 'Fichier livré plusieurs fois : seule la dernière version est gardée dans le ZIP.',
+      });
+    seen.add(f.path);
+  }
+
   for (const f of files)
     for (const fix of f.fixes ?? [])
       issues.push({ level: 'ok', path: f.path, message: `Corrigé automatiquement : ${fix}` });
@@ -167,6 +189,8 @@ export function validateFiles(
           issues.push({ level: 'error', path: f.path, message: `Clé TOML « ${key} » manquante.` });
     }
   }
+
+  if (generatorKey === 'command') issues.push(...checkCommands(files));
 
   if (generatorKey === 'mcp') issues.push(...checkMcp(files));
 

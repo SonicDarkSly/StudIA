@@ -8,6 +8,8 @@ export const FIX_MESSAGES = {
   codeFence: 'Ligne ``` retirée autour du code : le modèle avait entouré le fichier d’un bloc Markdown.',
   trailingRule: 'Ligne --- isolée retirée en fin de fichier.',
   leadingSeparator: 'Ligne --- isolée retirée en tête du fichier : il n’a pas d’en-tête YAML.',
+  checklistInFile:
+    'La liste « À vérifier » destinée à l’utilisateur était écrite dans le fichier : elle en a été retirée.',
   trailingSeparator:
     'Ligne === FIN === manquante : le séparateur --- ajouté par le modèle en fin de fichier a été retiré.',
 };

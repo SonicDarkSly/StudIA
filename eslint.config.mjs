@@ -90,7 +90,7 @@ const layerImports = (forbidden, message) => [
 ];
 
 export default defineConfig([
-  globalIgnores(['**/dist/**', '**/node_modules/**', 'server/data/**', 'server/logs/**']),
+  globalIgnores(['**/dist/**', '**/node_modules/**', 'server/data/**', 'server/logs/**', 'docs/**']),
   js.configs.recommended,
   {
     files: ['scripts/**/*.mjs', 'eslint.config.mjs'],
