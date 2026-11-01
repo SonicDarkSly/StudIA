@@ -77,18 +77,20 @@ export function Composer(props: Props) {
             </Tag>
             <span className="sr-only">, changer de mode</span>
           </button>
-          <Tooltip title={`IA cible : ${target?.tools ?? ''}`}>
-            <button
-              type="button"
-              className="plain-button tag-button"
-              onClick={() => props.onOpenPanel('settings')}
-            >
-              <Tag variant="filled" color="geekblue">
-                pour {target?.label ?? targetKey}
-              </Tag>
-              <span className="sr-only">, changer d’IA cible</span>
-            </button>
-          </Tooltip>
+          {generator?.usesFiles !== false && (
+            <Tooltip title={`IA cible : ${target?.tools ?? ''}`}>
+              <button
+                type="button"
+                className="plain-button tag-button"
+                onClick={() => props.onOpenPanel('settings')}
+              >
+                <Tag variant="filled" color="geekblue">
+                  pour {target?.label ?? targetKey}
+                </Tag>
+                <span className="sr-only">, changer d’IA cible</span>
+              </button>
+            </Tooltip>
+          )}
           <Tooltip title="Changer de modèle">
             <button
               type="button"

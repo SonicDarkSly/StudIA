@@ -11,7 +11,7 @@ import type {
   StreamState,
   TargetKey,
 } from '../types';
-import { DEFAULT_TARGET } from '../consts';
+import { DEFAULT_TARGET, TARGET_NOT_USED } from '../consts';
 import { isBlocked } from '../utils/models';
 import { generatorIcon } from './icons';
 import { Composer } from './Composer';
@@ -38,6 +38,7 @@ export function ChatView(props: Props) {
   const [draft, setDraft] = useState('');
   const scroller = useRef<HTMLDivElement>(null);
   const generator = generators.find((g) => g.key === conversation.generatorKey);
+  const targetApplies = generator?.usesFiles !== false;
   const model = models.find((m) => m.key === conversation.modelKey);
   const empty = conversation.messages.length === 0;
   const targetKey: TargetKey = conversation.targetKey ?? DEFAULT_TARGET;
@@ -72,6 +73,8 @@ export function ChatView(props: Props) {
                 <span className="label">Pour quelle IA ?</span>
                 <Segmented<TargetKey>
                   value={targetKey}
+                  disabled={!targetApplies}
+                  aria-describedby={targetApplies ? undefined : 'ia-sans-effet'}
                   onChange={props.onPickTarget}
                   options={targets.map((t) => ({
                     value: t.key,
@@ -82,6 +85,11 @@ export function ChatView(props: Props) {
                     ),
                   }))}
                 />
+                {!targetApplies && (
+                  <p id="ia-sans-effet" className="muted target-note">
+                    {TARGET_NOT_USED}
+                  </p>
+                )}
               </div>
               <div className="mode-grid">
                 {generators.map((g) => {

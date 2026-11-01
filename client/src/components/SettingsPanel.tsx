@@ -1,18 +1,6 @@
-import { InfoCircleOutlined, UndoOutlined } from '@ant-design/icons';
-import {
-  Alert,
-  Button,
-  Collapse,
-  Input,
-  InputNumber,
-  Select,
-  Slider,
-  Space,
-  Switch,
-  Tag,
-  Tooltip,
-} from 'antd';
-import { SETTINGS_HELP } from '../consts';
+import { UndoOutlined } from '@ant-design/icons';
+import { Alert, Button, Collapse, Input, Select, Space, Switch, Tag, Tooltip } from 'antd';
+import { SETTINGS_HELP, TARGET_NOT_USED } from '../consts';
 import type {
   AiTarget,
   GenerationSettings,
@@ -20,13 +8,11 @@ import type {
   GeneratorKey,
   ModelView,
   NumericSettingKey,
-  SettingHelp,
   TargetKey,
 } from '../types';
-import { fmtNumber } from '../utils/format';
 import { generatorIcon } from './icons';
+import { SettingRow } from './SettingRow';
 
-const FRACTION_DIGITS = 2;
 const INSTRUCTIONS_ROWS = { minRows: 3, maxRows: 10 };
 
 function settingPatch<K extends NumericSettingKey>(
@@ -54,77 +40,12 @@ interface Props {
   onInstructions: (text: string) => void;
 }
 
-function SettingRow({
-  help,
-  value,
-  onChange,
-}: {
-  help: SettingHelp;
-  value: number | undefined;
-  onChange: (v: number | undefined) => void;
-}) {
-  const optional = help.key === 'seed' || help.key === 'thoughtBudget';
-  return (
-    <div className="setting">
-      <div className="head">
-        <span>
-          {help.label}{' '}
-          <Tooltip
-            trigger={['hover', 'focus']}
-            title={
-              <div className="setting-tooltip">
-                <p>{help.what}</p>
-                <p>
-                  <b>Effet :</b> {help.effect}
-                </p>
-                <p>
-                  <b>Repère :</b> {help.tip}
-                </p>
-              </div>
-            }
-          >
-            <button type="button" className="plain-button help-button" aria-label={`Aide : ${help.label}`}>
-              <InfoCircleOutlined aria-hidden />
-            </button>
-          </Tooltip>
-        </span>
-        {optional ? (
-          <InputNumber
-            aria-label={help.label}
-            size="small"
-            min={help.min}
-            max={help.max}
-            value={value}
-            placeholder={help.key === 'seed' ? 'aléatoire' : 'illimité'}
-            onChange={(v) => onChange(v === null || v === undefined ? undefined : Number(v))}
-            className="optional-number"
-          />
-        ) : (
-          <span className="val">
-            {value === undefined ? '—' : fmtNumber(value, help.step < 1 ? FRACTION_DIGITS : 0)}
-          </span>
-        )}
-      </div>
-      {!optional && (
-        <Slider
-          ariaLabelForHandle={help.label}
-          min={help.min}
-          max={help.max}
-          step={help.step}
-          value={value ?? help.min}
-          onChange={(v) => onChange(v)}
-        />
-      )}
-      <div className="help">{help.what}</div>
-    </div>
-  );
-}
-
 export function SettingsPanel(props: Props) {
   const { settings, model, generators } = props;
   const generator = generators.find((g) => g.key === props.generatorKey);
   const target = props.targets.find((t) => t.key === props.targetKey);
   const format = generator?.formats[props.targetKey];
+  const targetApplies = generator?.usesFiles !== false;
   const fullPrompt = [
     generator?.systemPrompt,
     format?.instructions
@@ -167,6 +88,8 @@ export function SettingsPanel(props: Props) {
       <Select
         aria-label="IA cible"
         className="full-width"
+        disabled={!targetApplies}
+        aria-describedby={targetApplies ? undefined : 'ia-cible-sans-effet'}
         value={props.targetKey}
         onChange={props.onTarget}
         options={props.targets.map((t) => {
@@ -191,7 +114,12 @@ export function SettingsPanel(props: Props) {
           };
         })}
       />
-      {format && (
+      {!targetApplies && (
+        <div id="ia-cible-sans-effet" className="muted runtime-details">
+          {TARGET_NOT_USED}
+        </div>
+      )}
+      {format && targetApplies && (
         <div className="muted runtime-details">
           {format.summary}
           {props.locked && ' Changer d’IA ouvre une nouvelle conversation avec les mêmes projets.'}
@@ -293,7 +221,7 @@ export function SettingsPanel(props: Props) {
             key: 'prompt',
             label: (
               <span className="muted">
-                Voir le prompt système (« {generator?.label} » pour {target?.label})
+                Voir le prompt système (« {generator?.label} »{targetApplies ? ` pour ${target?.label}` : ''})
               </span>
             ),
             children: <div className="code-view prompt-preview">{fullPrompt}</div>,

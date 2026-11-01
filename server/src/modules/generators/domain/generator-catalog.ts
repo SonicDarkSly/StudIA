@@ -25,25 +25,7 @@ Tu réponds en français, de façon claire et concrète. Tu n'inventes pas : si 
 Quand des projets sont fournis en contexte, appuie-toi sur leurs vraies conventions (stack, noms,
 commandes, style) plutôt que sur des généralités.`;
 
-const DEFINITIONS: Omit<Generator, 'formats'>[] = [
-  {
-    key: 'chat',
-    label: 'Discussion libre',
-    short: 'Poser une question, réfléchir à un projet',
-    description:
-      "Conversation sans format imposé. Utile pour explorer une idée, comprendre un réglage du modèle ou préparer la demande d'un générateur.",
-    examples: [
-      'Explique-moi la différence entre une skill, une commande et un sous-agent, avec un exemple tiré de mes projets.',
-      'Quelles tâches répétitives de mes projets mériteraient une skill ? Propose une liste classée par intérêt.',
-      'À quoi sert la température ? Montre-moi deux réponses à la même question, une froide et une chaude.',
-    ],
-    recommendedModel: 'qwen3-30b',
-    recommendedSettings: { temperature: 0.7 },
-    needsProject: false,
-    scaffold: [],
-    systemPrompt: BASE,
-    usesFiles: false,
-  },
+const MAKERS: Omit<Generator, 'formats'>[] = [
   {
     key: 'skill',
     label: 'Skill',
@@ -313,6 +295,38 @@ le fichier de configuration ne contient que la partie hooks (l'utilisateur la fu
   },
 ];
 
+const GLOSSARY = MAKERS.map((g) => `- ${g.label} : ${g.description}`).join('\n');
+
+const CHAT: Omit<Generator, 'formats'> = {
+  key: 'chat',
+  label: 'Discussion libre',
+  short: 'Poser une question, réfléchir à un projet',
+  description:
+    "Conversation sans format imposé. Utile pour explorer une idée, comprendre un réglage du modèle ou préparer la demande d'un générateur.",
+  examples: [
+    'Explique-moi la différence entre une skill, une commande et un sous-agent, avec un exemple tiré de mes projets.',
+    'Quelles tâches répétitives de mes projets mériteraient une skill ? Propose une liste classée par intérêt.',
+    'À quoi sert le réglage « température » d’un modèle de langage ? Donne un exemple de réponse à basse et à haute température.',
+  ],
+  recommendedModel: 'qwen3-30b',
+  recommendedSettings: {},
+  needsProject: false,
+  scaffold: [],
+  systemPrompt: `${BASE}
+
+TA MISSION : discuter librement. Les questions portent souvent sur l'IA : modèles de langage, tokens, réglages
+(température, top-p, contexte…), skills, connecteurs MCP, sous-agents. Interprète un terme ambigu dans ce sens,
+sauf si la question parle clairement d'autre chose.
+Si la question parle des projets de l'utilisateur et qu'aucun projet n'est fourni en contexte, dis-le et propose
+d'en cocher un dans l'onglet Projets, au lieu d'inventer un exemple.
+
+VOCABULAIRE DE RÉFÉRENCE (définitions exactes, à utiliser telles quelles) :
+${GLOSSARY}`,
+  usesFiles: false,
+};
+
+const DEFINITIONS = [CHAT, ...MAKERS];
+
 export const GENERATORS: Generator[] = DEFINITIONS.map((g) => ({ ...g, formats: TARGET_FORMATS[g.key] }));
 
 export function findGenerator(key: string | undefined): Generator {
@@ -325,10 +339,6 @@ export function composeGeneratorPrompt(generator: Generator, target: AiTarget): 
   if (format.instructions)
     parts.push(
       `FORMAT POUR L'IA CIBLE : ${target.label} (${target.vendor} · ${target.tools}). Cette section prime sur tout le reste.\n${format.instructions}`,
-    );
-  else if (!generator.usesFiles)
-    parts.push(
-      `L'utilisateur travaille surtout avec ${target.label} (${target.tools}) : quand tu cites des fichiers ou des dossiers, utilise ceux de cet outil.`,
     );
   if (generator.usesFiles) parts.push(FILE_PROTOCOL.trim());
   return parts.join('\n\n');

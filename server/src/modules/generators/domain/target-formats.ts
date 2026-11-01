@@ -576,7 +576,7 @@ ${Object.values(MCP_CONFIGS).map(describeConfig).join('\n')}`,
 
 const CHAT_FORMAT: TargetFormat = {
   status: 'natif',
-  summary: 'Conversation libre : les exemples et chemins cités tiennent compte de l’IA choisie.',
+  summary: 'Conversation libre : elle ne dépend pas de l’IA choisie.',
   paths: [],
   instructions: '',
 };
