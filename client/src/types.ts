@@ -131,12 +131,19 @@ export interface AiTarget {
 
 export type SupportLevel = 'natif' | 'adapte' | 'indisponible';
 
+export interface FrontmatterRules {
+  fields: string[];
+  toolNames?: string[];
+  configFiles?: string[];
+}
+
 export interface TargetFormat {
   status: SupportLevel;
   summary: string;
   paths: string[];
   instructions: string;
   scaffold?: ScaffoldFile[];
+  frontmatter?: FrontmatterRules;
 }
 
 export interface Generator {
@@ -210,6 +217,7 @@ export interface GeneratedFile {
   path: string;
   content: string;
   origin: 'modele' | 'gabarit';
+  fixes?: string[];
 }
 
 export interface FileIssue {

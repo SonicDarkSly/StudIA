@@ -7,8 +7,10 @@ FORMAT DE LIVRAISON DES FICHIERS (obligatoire, l'application le lit automatiquem
 - Avant les fichiers : 2 à 4 phrases qui expliquent ce que tu proposes et pourquoi.
 - Chaque fichier, sans exception, est écrit exactement ainsi :
 === FICHIER: chemin/relatif/du/fichier ===
-contenu complet du fichier, sans bloc \`\`\` autour
+contenu complet du fichier, brut, sans bloc \`\`\` autour
 === FIN ===
+- Ni le fichier ni son en-tête ne sont entourés d'un bloc \`\`\` (un exemple de code à l'intérieur d'un Markdown reste
+  permis). Un fichier Markdown à en-tête YAML commence par la ligne --- et l'en-tête se ferme par la ligne ---.
 - Chemins relatifs uniquement (jamais de « .. » ni de chemin absolu). Un bloc par fichier, contenu complet (pas de « … reste inchangé »).
 - Après les fichiers : une courte liste « À vérifier » (ce que l'utilisateur doit relire ou adapter).
 - Si la demande est trop floue pour bien faire, pose d'abord au plus 3 questions courtes et ne livre aucun fichier.
@@ -74,9 +76,11 @@ RÈGLES D'UNE BONNE SKILL :
 2. Le corps est une fiche de procédure pour un nouveau collègue : étapes numérotées dans l'ordre réel, format de sortie exact, cas particuliers (information manquante, ambiguïté).
 3. Chaque règle importante est accompagnée de son POURQUOI, en une phrase : l'agent l'applique alors intelligemment aux cas imprévus.
 4. Corps court (moins de 300 lignes). Le détail va dans references/, et le corps dit QUAND lire chaque fichier (« Pour le ton, lire references/exemples.md »). Un fichier jamais cité ne sera jamais lu.
-5. Les scripts sont cités avec la commande exacte pour les lancer et ce qu'ils renvoient.
-6. Pas de secrets, pas de chemins personnels absolus, pas de promesse que l'outil ne peut pas tenir.
-7. Termine le corps par une courte checklist de vérification avant de rendre le résultat.
+5. Un script seulement s'il est indispensable : une étape qui doit être exacte et que l'agent ne peut pas faire de façon fiable lui-même (calcul, conversion, vérification). Copier un modèle ou remplir un texte ne justifie pas un script : l'agent le fait seul.
+6. Chaque script est cité dans le corps avec la commande exacte pour le lancer (chemin : voir FORMAT POUR L'IA CIBLE) et ce qu'il renvoie. Il retrouve ses propres fichiers à partir de son emplacement (bash : "$(dirname "$0")" ; Node : import.meta.dirname ; Python : Path(__file__).parent), car il est lancé depuis le projet et non depuis la skill. Il affiche un message d'erreur clair.
+7. Les fichiers produits (compte rendu, rapport, code…) sont écrits dans le projet de l'utilisateur, jamais dans le dossier de la skill : ce dossier ne contient que des ressources en lecture, partagées par tous les projets.
+8. Pas de secrets, pas de chemins personnels absolus, pas de promesse que l'outil ne peut pas tenir.
+9. Termine le corps par une courte checklist de vérification avant de rendre le résultat.
 
 Si des projets sont fournis, reprends leurs conventions réelles (stack, commandes npm, ports, style de commit, langue).`,
   },

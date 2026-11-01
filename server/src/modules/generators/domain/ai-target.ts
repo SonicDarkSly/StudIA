@@ -64,10 +64,17 @@ export function findTarget(key: string | undefined): AiTarget {
 
 export type SupportLevel = 'natif' | 'adapte' | 'indisponible';
 
+export interface FrontmatterRules {
+  fields: string[];
+  toolNames?: string[];
+  configFiles?: string[];
+}
+
 export interface TargetFormat {
   status: SupportLevel;
   summary: string;
   paths: string[];
   instructions: string;
   scaffold?: ScaffoldFile[];
+  frontmatter?: FrontmatterRules;
 }

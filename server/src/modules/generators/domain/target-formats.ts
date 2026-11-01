@@ -3,9 +3,62 @@ import type { ScaffoldFile } from './generator.js';
 
 type Formats = Record<TargetKey, TargetFormat>;
 
-const SKILL_COMMON = `Format Agent Skills (standard ouvert) : en-tête YAML avec name (identique au nom du dossier,
-minuscules, chiffres et tirets, 64 caractères max) et description (1 024 caractères max), puis le corps en Markdown.
-Fichiers d'appui dans le même dossier : references/, assets/, scripts/.`;
+const SKILL_COMMON = `Format Agent Skills (standard ouvert). SKILL.md commence exactement ainsi, la ligne --- en
+toute première ligne, sans bloc \`\`\` autour de l'en-tête ni du corps :
+---
+name: nom-de-la-skill
+description: Ce que la skill produit et quand l'utiliser, avec les mots de l'utilisateur.
+---
+name : identique au nom du dossier, minuscules, chiffres et tirets, 64 caractères max ; description : 1 024
+caractères max. Puis le corps en Markdown. Fichiers d'appui dans le même dossier : references/, assets/, scripts/.`;
+
+const CLAUDE_TOOLS = [
+  'Agent',
+  'Artifact',
+  'AskUserQuestion',
+  'Bash',
+  'CronCreate',
+  'CronDelete',
+  'CronList',
+  'Edit',
+  'EndConversation',
+  'EnterPlanMode',
+  'EnterWorktree',
+  'ExitPlanMode',
+  'ExitWorktree',
+  'Glob',
+  'Grep',
+  'ListAgents',
+  'ListMcpResourcesTool',
+  'LSP',
+  'Monitor',
+  'NotebookEdit',
+  'PowerShell',
+  'PushNotification',
+  'Read',
+  'ReadMcpResourceTool',
+  'RemoteTrigger',
+  'ReportFindings',
+  'ScheduleWakeup',
+  'SendFeedback',
+  'SendMessage',
+  'SendUserFile',
+  'ShareOnboardingGuide',
+  'Skill',
+  'SubagentHandback',
+  'TaskCreate',
+  'TaskGet',
+  'TaskList',
+  'TaskStop',
+  'TaskUpdate',
+  'TodoWrite',
+  'ToolSearch',
+  'WaitForMcpServers',
+  'WebFetch',
+  'WebSearch',
+  'Workflow',
+  'Write',
+];
 
 const SKILL: Formats = {
   claude: {
@@ -15,8 +68,38 @@ const SKILL: Formats = {
     paths: ['.claude/skills/'],
     instructions: `${SKILL_COMMON}
 Emplacement : .claude/skills/<nom>/SKILL.md
-Champs facultatifs reconnus par Claude Code : argument-hint, disable-model-invocation (true = seulement via /nom),
-allowed-tools (outils autorisés sans confirmation).`,
+Champs facultatifs reconnus par Claude Code : argument-hint (l'argument se lit dans le corps avec $ARGUMENTS),
+disable-model-invocation (true = seulement via /nom), allowed-tools (outils autorisés sans confirmation).
+allowed-tools s'écrit sur une ligne, séparé par des espaces, avec les vrais noms d'outils de Claude Code : Read,
+Write, Edit, Glob, Grep, Bash(commande *), WebFetch. Exemple : allowed-tools: Read Write Bash(git status *)
+Un script de la skill se cite avec \${CLAUDE_SKILL_DIR} (dossier de la skill) :
+« Lancer \`bash \${CLAUDE_SKILL_DIR}/scripts/verifier.sh <fichier>\` », et s'autorise par
+allowed-tools: Bash(bash \${CLAUDE_SKILL_DIR}/scripts/verifier.sh *)`,
+    frontmatter: {
+      fields: [
+        'name',
+        'description',
+        'when_to_use',
+        'argument-hint',
+        'arguments',
+        'disable-model-invocation',
+        'user-invocable',
+        'allowed-tools',
+        'disallowed-tools',
+        'model',
+        'effort',
+        'context',
+        'agent',
+        'background',
+        'hooks',
+        'paths',
+        'shell',
+        'metadata',
+        'license',
+        'compatibility',
+      ],
+      toolNames: CLAUDE_TOOLS,
+    },
   },
   codex: {
     status: 'natif',
@@ -24,7 +107,12 @@ allowed-tools (outils autorisés sans confirmation).`,
     paths: ['.agents/skills/'],
     instructions: `${SKILL_COMMON}
 Emplacement : .agents/skills/<nom>/SKILL.md (Codex lit .agents/skills du dossier courant jusqu'à la racine du dépôt).
-N'utiliser que name et description dans l'en-tête. L'utilisateur peut l'appeler explicitement avec $nom.`,
+N'utiliser que name et description dans l'en-tête. L'utilisateur peut l'appeler explicitement avec $nom.
+Pour qu'elle ne se déclenche que sur demande ($nom), ajouter agents/openai.yaml dans le dossier de la skill :
+policy:
+  allow_implicit_invocation: false
+Un script de la skill se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/verifier.sh\` ».`,
+    frontmatter: { fields: ['name', 'description'], configFiles: ['agents/openai.yaml'] },
   },
   copilot: {
     status: 'natif',
@@ -34,7 +122,18 @@ N'utiliser que name et description dans l'en-tête. L'utilisateur peut l'appeler
     instructions: `${SKILL_COMMON}
 Emplacement : .github/skills/<nom>/SKILL.md
 Attention : un name invalide fait ignorer la skill sans message d'erreur. Champs facultatifs : argument-hint,
-user-invocable, disable-model-invocation.`,
+user-invocable, disable-model-invocation. Pas de champ allowed-tools.
+Les fichiers de la skill se citent par un chemin relatif à SKILL.md : [script de vérification](./scripts/verifier.sh).`,
+    frontmatter: {
+      fields: [
+        'name',
+        'description',
+        'argument-hint',
+        'user-invocable',
+        'disable-model-invocation',
+        'context',
+      ],
+    },
   },
   cursor: {
     status: 'natif',
@@ -42,14 +141,31 @@ user-invocable, disable-model-invocation.`,
     paths: ['.cursor/skills/'],
     instructions: `${SKILL_COMMON}
 Emplacement : .cursor/skills/<nom>/SKILL.md
-Champ facultatif paths : liste de motifs de fichiers (ex. ["src/**/*.tsx"]) pour limiter le déclenchement.`,
+Champs facultatifs : paths, liste de motifs de fichiers (ex. ["src/**/*.tsx"]) pour limiter le déclenchement ;
+disable-model-invocation (true = seulement via /nom). Pas de champ allowed-tools.
+Un script de la skill se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/verifier.sh\` ».`,
+    frontmatter: {
+      fields: [
+        'name',
+        'description',
+        'paths',
+        'globs',
+        'disable-model-invocation',
+        'icon',
+        'color',
+        'metadata',
+      ],
+    },
   },
   gemini: {
     status: 'natif',
     summary: 'Dossier .gemini/skills/<nom>/ : Gemini CLI la charge quand la demande correspond.',
     paths: ['.gemini/skills/'],
     instructions: `${SKILL_COMMON}
-Emplacement : .gemini/skills/<nom>/SKILL.md. N'utiliser que name et description dans l'en-tête.`,
+Emplacement : .gemini/skills/<nom>/SKILL.md. N'utiliser que name et description dans l'en-tête.
+Un script de la skill se cite par son chemin complet depuis le projet :
+« Lancer \`bash .gemini/skills/<nom>/scripts/verifier.sh\` ».`,
+    frontmatter: { fields: ['name', 'description'] },
   },
   portable: {
     status: 'natif',
@@ -59,7 +175,9 @@ Emplacement : .gemini/skills/<nom>/SKILL.md. N'utiliser que name et description 
     instructions: `${SKILL_COMMON}
 Emplacement : .agents/skills/<nom>/SKILL.md. N'utiliser que les champs du standard (name, description, et si utile
 license, compatibility, metadata). Aucune syntaxe propre à un outil dans le corps.
+Un script de la skill se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/verifier.sh\` ».
 Dans « À vérifier », rappeler que Claude Code ne lit que .claude/skills/ : y copier le même dossier.`,
+    frontmatter: { fields: ['name', 'description', 'license', 'compatibility', 'metadata', 'allowed-tools'] },
   },
 };
 

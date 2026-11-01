@@ -19,6 +19,7 @@ import {
   validateFiles,
   withScaffold,
 } from '../utils/files';
+import { placeSkillFiles } from '../utils/skills';
 
 interface Props {
   text?: string;
@@ -33,7 +34,10 @@ export function FilesPanel({ text, generator, targetKey, live }: Props) {
   const parsed = useMemo(() => parseFiles(text ?? ''), [text]);
   const files = useMemo(
     () => [
-      ...withScaffold(parsed.files, [...(generator?.scaffold ?? []), ...(format?.scaffold ?? [])]),
+      ...withScaffold(placeSkillFiles(parsed.files, format), [
+        ...(generator?.scaffold ?? []),
+        ...(format?.scaffold ?? []),
+      ]),
       ...extra,
     ],
     [parsed.files, generator, format, extra],

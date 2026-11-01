@@ -1,23 +1,12 @@
 import JSZip from 'jszip';
 import type { FileIssue, GeneratedFile, ScaffoldFile, TargetFormat } from '../types';
 import { errorMessage } from './errors';
-import { fmtNumber } from './format';
+import { cleanContent, frontmatter } from './frontmatter';
+import { checkSkills, isSkillFile } from './skills';
 
 const START = /^=== ?FICHIER ?: ?(.+?) ?===\s*$/;
 const END = /^=== ?FIN ?===\s*$/;
-const MIN_FENCED_LINES = 2;
-const SKILL_LIMITS = { nameMax: 64, descriptionMin: 60, descriptionMax: 1024, bodyMaxLines: 500 };
 const OBJECT_URL_LIFETIME_MS = 2000;
-
-const parentFolder = (path: string) => path.split('/').slice(0, -1).pop() ?? '';
-
-function unfence(content: string): string {
-  const lines = content.replace(/^\n+|\s+$/g, '').split('\n');
-  if (lines.length >= MIN_FENCED_LINES && /^```/.test(lines[0]) && /^```\s*$/.test(lines[lines.length - 1])) {
-    return lines.slice(1, -1).join('\n');
-  }
-  return lines.join('\n');
-}
 
 function safePath(raw: string): string | undefined {
   const path = raw.trim().replace(/^`|`$/g, '').replace(/\\/g, '/').replace(/^\.\//, '');
@@ -26,33 +15,36 @@ function safePath(raw: string): string | undefined {
   return path;
 }
 
+function toFile(path: string, lines: string[], complete: boolean): GeneratedFile {
+  const { content, fixes } = cleanContent(path, lines.join('\n'));
+  return {
+    path,
+    content: complete ? `${content}\n` : content,
+    origin: 'modele',
+    ...(fixes.length ? { fixes } : {}),
+  };
+}
+
 export function parseFiles(text: string): { files: GeneratedFile[]; partial: boolean } {
   const files: GeneratedFile[] = [];
   let current: { path: string; lines: string[] } | undefined;
   for (const line of text.split('\n')) {
     const start = line.match(START);
     if (start) {
-      if (current)
-        files.push({ path: current.path, content: unfence(current.lines.join('\n')), origin: 'modele' });
+      if (current) files.push(toFile(current.path, current.lines, false));
       const path = safePath(start[1]);
       current = path ? { path, lines: [] } : undefined;
       continue;
     }
     if (END.test(line)) {
-      if (current)
-        files.push({
-          path: current.path,
-          content: unfence(current.lines.join('\n')) + '\n',
-          origin: 'modele',
-        });
+      if (current) files.push(toFile(current.path, current.lines, true));
       current = undefined;
       continue;
     }
     current?.lines.push(line);
   }
   const partial = current !== undefined;
-  if (current)
-    files.push({ path: current.path, content: unfence(current.lines.join('\n')), origin: 'modele' });
+  if (current) files.push(toFile(current.path, current.lines, false));
   return { files, partial };
 }
 
@@ -106,25 +98,6 @@ export function withScaffold(files: GeneratedFile[], scaffold: ScaffoldFile[]): 
   return [...files, ...extra];
 }
 
-function frontmatter(content: string): Record<string, string> | undefined {
-  const m = content.match(/^---\s*\n([\s\S]*?)\n---/);
-  if (!m) return undefined;
-  const out: Record<string, string> = {};
-  let key: string | undefined;
-  for (const line of m[1].split('\n')) {
-    const kv = line.match(/^([A-Za-z_-]+):\s*(.*)$/);
-    if (kv) {
-      key = kv[1];
-      out[key] = kv[2].trim();
-    } else if (key && line.trim()) {
-      out[key] = `${out[key]} ${line.trim()}`.trim();
-    }
-  }
-  return out;
-}
-
-const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-
 export function validateFiles(
   generatorKey: string,
   files: GeneratedFile[],
@@ -155,73 +128,12 @@ export function validateFiles(
     }
   }
 
-  const hasSkill = files.some((f) => /(^|\/)SKILL\.md$/.test(f.path));
-  if (generatorKey === 'skill' || hasSkill) {
-    const skillFiles = files.filter((f) => /(^|\/)SKILL\.md$/.test(f.path));
-    if (!skillFiles.length) issues.push({ level: 'error', message: 'Aucun fichier SKILL.md.' });
-    for (const f of skillFiles) {
-      const folder = parentFolder(f.path);
-      const fm = frontmatter(f.content);
-      if (!fm) {
-        issues.push({
-          level: 'error',
-          path: f.path,
-          message: 'En-tête YAML (--- name / description ---) manquant.',
-        });
-        continue;
-      }
-      if (!fm.name) issues.push({ level: 'error', path: f.path, message: 'Champ « name » manquant.' });
-      else {
-        if (!KEBAB.test(fm.name) || fm.name.length > SKILL_LIMITS.nameMax)
-          issues.push({
-            level: 'error',
-            path: f.path,
-            message: `« name » : minuscules, chiffres et tirets, ${SKILL_LIMITS.nameMax} caractères max.`,
-          });
-        if (folder && fm.name !== folder)
-          issues.push({
-            level: 'warning',
-            path: f.path,
-            message: `« name » (${fm.name}) devrait être identique au dossier (${folder}).`,
-          });
-      }
-      if (!fm.description)
-        issues.push({ level: 'error', path: f.path, message: 'Champ « description » manquant.' });
-      else {
-        if (fm.description.length > SKILL_LIMITS.descriptionMax)
-          issues.push({
-            level: 'error',
-            path: f.path,
-            message: `« description » dépasse ${fmtNumber(SKILL_LIMITS.descriptionMax)} caractères.`,
-          });
-        if (fm.description.length < SKILL_LIMITS.descriptionMin)
-          issues.push({
-            level: 'warning',
-            path: f.path,
-            message: 'Description très courte : dire QUAND l’utiliser et ce qu’elle produit.',
-          });
-      }
-      const body = f.content.replace(/^---[\s\S]*?\n---/, '');
-      const lines = body.split('\n').length;
-      if (lines > SKILL_LIMITS.bodyMaxLines)
-        issues.push({
-          level: 'warning',
-          path: f.path,
-          message: `Corps long (${lines} lignes) : déplacer le détail dans references/.`,
-        });
-      const base = f.path.replace(/SKILL\.md$/, '');
-      for (const other of files) {
-        if (other === f || !other.path.startsWith(base)) continue;
-        const rel = other.path.slice(base.length);
-        if (!body.includes(rel) && !body.includes(rel.split('/').pop() ?? rel))
-          issues.push({
-            level: 'warning',
-            path: other.path,
-            message: 'Fichier jamais cité dans SKILL.md : il ne sera jamais lu.',
-          });
-      }
-    }
-  }
+  for (const f of files)
+    for (const fix of f.fixes ?? [])
+      issues.push({ level: 'ok', path: f.path, message: `Corrigé automatiquement : ${fix}` });
+
+  const hasSkill = files.some((f) => isSkillFile(f.path));
+  if (generatorKey === 'skill' || hasSkill) issues.push(...checkSkills(files, format));
 
   if ((generatorKey === 'agent' || generatorKey === 'command') && !hasSkill) {
     for (const f of files.filter((f) => f.path.endsWith('.md') && !f.path.startsWith('.cursor/commands/'))) {
