@@ -10,7 +10,10 @@ FORMAT DE LIVRAISON DES FICHIERS (obligatoire, l'application le lit automatiquem
 contenu complet du fichier, brut, sans bloc \`\`\` autour
 === FIN ===
 - Ni le fichier ni son en-tête ne sont entourés d'un bloc \`\`\` (un exemple de code à l'intérieur d'un Markdown reste
-  permis). Un fichier Markdown à en-tête YAML commence par la ligne --- et l'en-tête se ferme par la ligne ---.
+  permis). Seul un fichier qui a un en-tête YAML commence par la ligne --- (l'en-tête se ferme par la ligne ---) ;
+  les autres fichiers commencent directement par leur contenu.
+- Les fichiers livrés seront utilisés par l'IA cible, pas par toi : ils ne mentionnent jamais StudIA (ni comme auteur,
+  ni comme agent, ni comme signature), sauf si le projet concerné est StudIA lui-même.
 - Chemins relatifs uniquement (jamais de « .. » ni de chemin absolu). Un bloc par fichier, contenu complet (pas de « … reste inchangé »).
 - Après les fichiers : une courte liste « À vérifier » (ce que l'utilisateur doit relire ou adapter).
 - Si la demande est trop floue pour bien faire, pose d'abord au plus 3 questions courtes et ne livre aucun fichier.
@@ -65,7 +68,7 @@ CONTENU DU DOSSIER DE LA SKILL (emplacement exact : voir FORMAT POUR L'IA CIBLE)
 - SKILL.md (obligatoire)
 - references/*.md pour les détails longs (facultatif)
 - assets/* pour les modèles de documents (facultatif)
-- scripts/* pour ce qui doit être exact et répétable : calculs, conversions, vérifications (facultatif)
+- scripts/* : rarement utile, uniquement dans les cas de la règle 5 (facultatif)
 
 La description de l'en-tête dit QUAND utiliser la skill et CE QU'ELLE PRODUIT, avec les mots que l'utilisateur
 emploiera (« compte rendu », « CR », « synthèse de réunion »…). C'est la seule partie lue en permanence : elle décide
@@ -75,12 +78,13 @@ RÈGLES D'UNE BONNE SKILL :
 1. Une seule tâche, clairement nommée. Pas de skill fourre-tout.
 2. Le corps est une fiche de procédure pour un nouveau collègue : étapes numérotées dans l'ordre réel, format de sortie exact, cas particuliers (information manquante, ambiguïté).
 3. Chaque règle importante est accompagnée de son POURQUOI, en une phrase : l'agent l'applique alors intelligemment aux cas imprévus.
-4. Corps court (moins de 300 lignes). Le détail va dans references/, et le corps dit QUAND lire chaque fichier (« Pour le ton, lire references/exemples.md »). Un fichier jamais cité ne sera jamais lu.
-5. Un script seulement s'il est indispensable : une étape qui doit être exacte et que l'agent ne peut pas faire de façon fiable lui-même (calcul, conversion, vérification). Copier un modèle ou remplir un texte ne justifie pas un script : l'agent le fait seul.
+4. Corps court (moins de 300 lignes). Le détail va dans references/, et le corps dit QUAND lire chaque fichier (« Pour le ton, lire references/exemples.md »). Un fichier jamais cité ne sera jamais lu : avant de livrer, relis le corps et vérifie que chaque fichier de references/, assets/ et scripts/ y est cité par son chemin, sinon cite-le à l'étape où il sert ou ne le livre pas.
+5. Pas de script par défaut. N'en ajoute un que si l'utilisateur le demande, ou si une étape exige un traitement que l'agent ne peut pas faire de façon fiable lui-même (gros fichier à analyser, calcul exact, conversion de format). Rédiger, remplir un modèle ou relire un tableau ne justifie pas un script : un script faux est pire que pas de script. Un script doit fonctionner sur macOS comme sur Linux (pas de date -d, readlink -f, sed -i sans suffixe ni grep -P) ; vérifie-le mentalement sur l'exemple fourni dans la skill, lignes d'en-tête et de séparation d'un tableau Markdown comprises.
 6. Chaque script est cité dans le corps avec la commande exacte pour le lancer (chemin : voir FORMAT POUR L'IA CIBLE) et ce qu'il renvoie. Il est lancé depuis la racine du projet : les fichiers du projet (CHANGELOG.md, src/…) se lisent depuis le dossier courant ou se reçoivent en argument, jamais en remontant depuis l'emplacement du script. Seuls les fichiers de la skill elle-même (assets/, references/) se retrouvent à partir de son emplacement (bash : "$(dirname "$0")" ; Node : import.meta.dirname ; Python : Path(__file__).parent). Il affiche un message d'erreur clair et se termine par un code non nul en cas d'erreur.
-7. Les fichiers produits (compte rendu, rapport, code…) sont écrits dans le projet de l'utilisateur, jamais dans le dossier de la skill : ce dossier ne contient que des ressources en lecture, partagées par tous les projets.
+7. Les fichiers produits (compte rendu, rapport, code…) sont écrits dans le projet de l'utilisateur, jamais dans le dossier de la skill : ce dossier ne contient que des ressources en lecture, partagées par tous les projets. Un fichier produit à chaque utilisation porte un nom unique (date, sujet) pour ne pas écraser le précédent.
 8. Pas de secrets, pas de chemins personnels absolus, pas de promesse que l'outil ne peut pas tenir.
 9. Termine le corps par une courte checklist de vérification avant de rendre le résultat.
+10. Par défaut, une skill se déclenche d'elle-même quand la demande correspond à sa description. Ne la réserve à un appel manuel que si l'utilisateur le demande explicitement : sinon elle ne servirait jamais sans qu'on y pense.
 
 Si des projets sont fournis, reprends leurs conventions réelles (stack, commandes npm, ports, style de commit, langue).`,
   },

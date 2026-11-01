@@ -10,7 +10,8 @@ name: nom-de-la-skill
 description: Ce que la skill produit et quand l'utiliser, avec les mots de l'utilisateur.
 ---
 name : identique au nom du dossier, minuscules, chiffres et tirets, 64 caractères max ; description : 1 024
-caractères max. Puis le corps en Markdown. Fichiers d'appui dans le même dossier : references/, assets/, scripts/.`;
+caractères max. Tous les champs de l'en-tête sont entre ces deux lignes ---, aucun après le corps. Puis le corps en
+Markdown. Fichiers d'appui dans le même dossier : references/, assets/, et scripts/ seulement si indispensable.`;
 
 const CLAUDE_TOOLS = [
   'Agent',
@@ -69,12 +70,13 @@ const SKILL: Formats = {
     instructions: `${SKILL_COMMON}
 Emplacement : .claude/skills/<nom>/SKILL.md
 Champs facultatifs reconnus par Claude Code : argument-hint (l'argument se lit dans le corps avec $ARGUMENTS),
-disable-model-invocation (true = seulement via /nom), allowed-tools (outils autorisés sans confirmation).
+disable-model-invocation (true = seulement via /nom, uniquement si l'utilisateur le demande), allowed-tools (outils
+autorisés sans confirmation).
 allowed-tools s'écrit sur une ligne, séparé par des espaces, avec les vrais noms d'outils de Claude Code : Read,
 Write, Edit, Glob, Grep, Bash(commande *), WebFetch. Exemple : allowed-tools: Read Write Bash(git status *)
-Un script de la skill se cite avec \${CLAUDE_SKILL_DIR} (dossier de la skill) :
-« Lancer \`bash \${CLAUDE_SKILL_DIR}/scripts/verifier.sh <fichier>\` », et s'autorise par
-allowed-tools: Bash(bash \${CLAUDE_SKILL_DIR}/scripts/verifier.sh *)`,
+Si la skill a un script (rare), il se cite avec \${CLAUDE_SKILL_DIR} (dossier de la skill) :
+« Lancer \`bash \${CLAUDE_SKILL_DIR}/scripts/<script>.sh <fichier>\` », et s'autorise par
+allowed-tools: Bash(bash \${CLAUDE_SKILL_DIR}/scripts/<script>.sh *)`,
     skill: {
       scriptPrefix: '${CLAUDE_SKILL_DIR}/',
       fields: [
@@ -109,10 +111,11 @@ allowed-tools: Bash(bash \${CLAUDE_SKILL_DIR}/scripts/verifier.sh *)`,
     instructions: `${SKILL_COMMON}
 Emplacement : .agents/skills/<nom>/SKILL.md (Codex lit .agents/skills du dossier courant jusqu'à la racine du dépôt).
 N'utiliser que name et description dans l'en-tête. L'utilisateur peut l'appeler explicitement avec $nom.
-Pour qu'elle ne se déclenche que sur demande ($nom), ajouter agents/openai.yaml dans le dossier de la skill :
+Seulement si l'utilisateur demande qu'elle ne se déclenche que sur appel ($nom), ajouter agents/openai.yaml dans le
+dossier de la skill :
 policy:
   allow_implicit_invocation: false
-Un script de la skill se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/verifier.sh\` ».`,
+Si la skill a un script (rare), il se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/<script>.sh\` ».`,
     skill: { fields: ['name', 'description'], configFiles: ['agents/openai.yaml'] },
   },
   copilot: {
@@ -123,8 +126,9 @@ Un script de la skill se cite par son chemin depuis la racine de la skill : « L
     instructions: `${SKILL_COMMON}
 Emplacement : .github/skills/<nom>/SKILL.md
 Attention : un name invalide fait ignorer la skill sans message d'erreur. Champs facultatifs : argument-hint,
-user-invocable, disable-model-invocation. Pas de champ allowed-tools.
-Les fichiers de la skill se citent par un chemin relatif à SKILL.md : [script de vérification](./scripts/verifier.sh).`,
+user-invocable, disable-model-invocation (uniquement si l'utilisateur veut un appel manuel). Pas de champ
+allowed-tools.
+Les fichiers de la skill (références, script éventuel) se citent par un chemin relatif à SKILL.md : [nom du script](./scripts/<script>.sh).`,
     skill: {
       fields: [
         'name',
@@ -143,8 +147,9 @@ Les fichiers de la skill se citent par un chemin relatif à SKILL.md : [script d
     instructions: `${SKILL_COMMON}
 Emplacement : .cursor/skills/<nom>/SKILL.md
 Champs facultatifs : paths, liste de motifs de fichiers (ex. ["src/**/*.tsx"]) pour limiter le déclenchement ;
-disable-model-invocation (true = seulement via /nom). Pas de champ allowed-tools.
-Un script de la skill se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/verifier.sh\` ».`,
+disable-model-invocation (true = seulement via /nom, uniquement si l'utilisateur le demande). Pas de champ
+allowed-tools.
+Si la skill a un script (rare), il se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/<script>.sh\` ».`,
     skill: {
       fields: [
         'name',
@@ -164,8 +169,8 @@ Un script de la skill se cite par son chemin depuis la racine de la skill : « L
     paths: ['.gemini/skills/'],
     instructions: `${SKILL_COMMON}
 Emplacement : .gemini/skills/<nom>/SKILL.md. N'utiliser que name et description dans l'en-tête.
-Un script de la skill se cite par son chemin complet depuis le projet :
-« Lancer \`bash .gemini/skills/<nom>/scripts/verifier.sh\` ».`,
+Si la skill a un script (rare), il se cite par son chemin complet depuis le projet :
+« Lancer \`bash .gemini/skills/<nom>/scripts/<script>.sh\` ».`,
     skill: { fields: ['name', 'description'], scriptPrefix: '{{dossier}}' },
   },
   portable: {
@@ -176,7 +181,7 @@ Un script de la skill se cite par son chemin complet depuis le projet :
     instructions: `${SKILL_COMMON}
 Emplacement : .agents/skills/<nom>/SKILL.md. N'utiliser que les champs du standard (name, description, et si utile
 license, compatibility, metadata). Aucune syntaxe propre à un outil dans le corps.
-Un script de la skill se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/verifier.sh\` ».
+Si la skill a un script (rare), il se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/<script>.sh\` ».
 Dans « À vérifier », rappeler que Claude Code ne lit que .claude/skills/ : y copier le même dossier.`,
     skill: { fields: ['name', 'description', 'license', 'compatibility', 'metadata', 'allowed-tools'] },
   },

@@ -1,8 +1,8 @@
 import JSZip from 'jszip';
 import type { FileIssue, GeneratedFile, ScaffoldFile, TargetFormat } from '../types';
 import { errorMessage } from './errors';
-import { cleanContent, frontmatter } from './frontmatter';
-import { checkSkills, isSkillFile } from './skills';
+import { cleanContent, dropTrailingSeparator, FIX_MESSAGES, frontmatter } from './frontmatter';
+import { checkSkills, gnuOnlyIssue, isSkillFile } from './skills';
 
 const START = /^=== ?FICHIER ?: ?(.+?) ?===\s*$/;
 const END = /^=== ?FIN ?===\s*$/;
@@ -15,11 +15,17 @@ function safePath(raw: string): string | undefined {
   return path;
 }
 
-function toFile(path: string, lines: string[], complete: boolean): GeneratedFile {
-  const { content, fixes } = cleanContent(path, lines.join('\n'));
+type FileEnd = 'fin' | 'suivant' | 'coupe';
+
+function toFile(path: string, lines: string[], end: FileEnd): GeneratedFile {
+  const cleaned = cleanContent(path, lines.join('\n'));
+  const withoutSeparator = end === 'suivant' ? dropTrailingSeparator(cleaned.content) : undefined;
+  const content = withoutSeparator ?? cleaned.content;
+  const fixes =
+    withoutSeparator === undefined ? cleaned.fixes : [...cleaned.fixes, FIX_MESSAGES.trailingSeparator];
   return {
     path,
-    content: complete ? `${content}\n` : content,
+    content: end === 'coupe' ? content : `${content}\n`,
     origin: 'modele',
     ...(fixes.length ? { fixes } : {}),
   };
@@ -31,20 +37,20 @@ export function parseFiles(text: string): { files: GeneratedFile[]; partial: boo
   for (const line of text.split('\n')) {
     const start = line.match(START);
     if (start) {
-      if (current) files.push(toFile(current.path, current.lines, false));
+      if (current) files.push(toFile(current.path, current.lines, 'suivant'));
       const path = safePath(start[1]);
       current = path ? { path, lines: [] } : undefined;
       continue;
     }
     if (END.test(line)) {
-      if (current) files.push(toFile(current.path, current.lines, true));
+      if (current) files.push(toFile(current.path, current.lines, 'fin'));
       current = undefined;
       continue;
     }
     current?.lines.push(line);
   }
   const partial = current !== undefined;
-  if (current) files.push(toFile(current.path, current.lines, false));
+  if (current) files.push(toFile(current.path, current.lines, 'coupe'));
   return { files, partial };
 }
 
@@ -191,6 +197,8 @@ export function validateFiles(
     for (const f of files.filter((f) => f.path.endsWith('.sh'))) {
       if (!f.content.startsWith('#!'))
         issues.push({ level: 'warning', path: f.path, message: 'Ligne #! manquante en tête du script.' });
+      const gnuOnly = gnuOnlyIssue(f);
+      if (gnuOnly) issues.push(gnuOnly);
     }
   }
 

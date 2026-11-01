@@ -16,10 +16,29 @@ const PROJECT_FROM_SCRIPT =
   /^\s*(?:export\s+|const\s+|let\s+)?\w*(PROJECT|ROOT|REPO)\w*\s*=.*(dirname|SCRIPT_DIR|SKILL_DIR|__dirname|__file__|\.\.\/)/im;
 const SUPPORT_FOLDER = /(^|\/)((?:scripts|references|assets|agents)\/.+)$/;
 const SKILL_DIR_TOKEN = '{{dossier}}';
+const TRUE_VALUE = /^(true|yes|on|1)$/i;
+const IMPLICIT_INVOCATION_OFF = /^\s*allow_implicit_invocation:\s*false\s*$/m;
+const MANUAL_ONLY_FIELD = 'disable-model-invocation';
+const GNU_ONLY_COMMANDS = [
+  { pattern: /\bdate\s+(-d|--date)\b/, command: 'date -d' },
+  { pattern: /\breadlink\s+-f\b/, command: 'readlink -f' },
+  { pattern: /\bsed\s+-i\s+(?!''|"")/, command: 'sed -i sans suffixe' },
+  { pattern: /\bgrep\s+-\w*P/, command: 'grep -P' },
+];
 const MCP_TOOL_PREFIX = 'mcp__';
 const ALLOWED_TOOLS = 'allowed-tools';
 
 export const isSkillFile = (path: string) => SKILL_PATH.test(path);
+
+export function gnuOnlyIssue(file: GeneratedFile): FileIssue | undefined {
+  const found = GNU_ONLY_COMMANDS.filter(({ pattern }) => pattern.test(file.content)).map((c) => c.command);
+  if (!found.length) return undefined;
+  return {
+    level: 'warning',
+    path: file.path,
+    message: `Commande(s) propre(s) à Linux, absente(s) de macOS : ${found.join(', ')}. Le script échouera sur un Mac.`,
+  };
+}
 
 const skillBase = (path: string) => path.slice(0, -SKILL_FILE.length);
 const parentFolder = (path: string) => path.split('/').slice(0, -1).pop() ?? '';
@@ -132,6 +151,8 @@ function checkResources(skill: GeneratedFile, files: GeneratedFile[], format?: T
     if (!rel.startsWith(SCRIPTS_DIR)) continue;
     if (other.path.endsWith('.sh') && !other.content.startsWith('#!'))
       issues.push({ level: 'warning', path: other.path, message: 'Ligne #! manquante en tête du script.' });
+    const gnuOnly = gnuOnlyIssue(other);
+    if (gnuOnly) issues.push(gnuOnly);
     if (PROJECT_FROM_SCRIPT.test(other.content))
       issues.push({
         level: 'warning',
@@ -154,6 +175,16 @@ function checkResources(skill: GeneratedFile, files: GeneratedFile[], format?: T
           'Chemins relatifs au dossier courant : lancé depuis le projet, le script ne trouvera pas ses fichiers. Partir de son emplacement : "$(dirname "$0")" en bash, import.meta.dirname en Node, Path(__file__).parent en Python.',
       });
   }
+  const manualOnly =
+    TRUE_VALUE.test(frontmatter(skill.content)?.[MANUAL_ONLY_FIELD] ?? '') ||
+    files.some((f) => f.path.startsWith(base) && IMPLICIT_INVOCATION_OFF.test(f.content));
+  if (manualOnly)
+    issues.push({
+      level: 'warning',
+      path: skill.path,
+      message:
+        'La skill ne se déclenchera jamais d’elle-même, seulement par un appel manuel : à garder uniquement si c’est voulu.',
+    });
   if (WRITE_INTO_SKILL.test(body))
     issues.push({
       level: 'warning',

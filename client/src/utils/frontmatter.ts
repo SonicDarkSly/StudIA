@@ -6,12 +6,19 @@ const HEADER_LINE = /^([A-Za-z_-]+):\s*(.*)$/;
 const HEADER_START = /^(name|description):/;
 const DASHES = /^---\s*$/;
 const MARKDOWN_FILE = /\.(md|mdc)$/;
+const SEPARATOR = /^(-{3,}|\*{3,}|_{3,})\s*$/;
+const HEADER_DELIMITERS = 2;
 
 export const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 export const FIX_MESSAGES = {
   fencedHeader: 'En-tête YAML remis entre deux lignes --- : le modèle l’avait placé dans un bloc ```.',
   bareHeader: 'En-tête YAML entouré des lignes --- qui manquaient.',
+  trailingHeader: 'Champ(s) d’en-tête écrit(s) après le corps, replacé(s) dans l’en-tête.',
+  trailingRule: 'Ligne --- isolée retirée en fin de fichier.',
+  leadingSeparator: 'Ligne --- isolée retirée en tête du fichier : il n’a pas d’en-tête YAML.',
+  trailingSeparator:
+    'Ligne === FIN === manquante : le séparateur --- ajouté par le modèle en fin de fichier a été retiré.',
 };
 
 function trimBlankEdges(content: string): string {
@@ -61,7 +68,36 @@ function repairBareHeader(content: string): string | undefined {
   return buildMarkdown(lines.slice(0, close), body.join('\n'));
 }
 
+function lastDashesIndex(lines: string[]): number {
+  for (let index = lines.length - 1; index >= 0; index--) if (DASHES.test(lines[index])) return index;
+  return -1;
+}
+
+function moveTrailingHeader(content: string): string | undefined {
+  const lines = content.split('\n');
+  if (!DASHES.test(lines[0] ?? '')) return undefined;
+  const close = lines.findIndex((line, index) => index > 0 && DASHES.test(line));
+  const last = lastDashesIndex(lines);
+  if (close < 0 || last <= close) return undefined;
+  const trailing = lines.slice(last + 1).filter((line) => line.trim());
+  if (!trailing.length || !trailing.every((line) => HEADER_LINE.test(line))) return undefined;
+  const header = [...lines.slice(1, close), ...trailing];
+  return buildMarkdown(header, lines.slice(close + 1, last).join('\n'));
+}
+
 export function cleanContent(path: string, raw: string): { content: string; fixes: string[] } {
+  const cleaned = cleanMarkdown(path, raw);
+  if (!MARKDOWN_FILE.test(path)) return cleaned;
+  const fixes = [...cleaned.fixes];
+  const moved = moveTrailingHeader(cleaned.content);
+  if (moved !== undefined) fixes.push(FIX_MESSAGES.trailingHeader);
+  const content = moved ?? cleaned.content;
+  const dropped = dropTrailingSeparator(content);
+  if (dropped !== undefined) fixes.push(FIX_MESSAGES.trailingRule);
+  return { content: dropped ?? content, fixes };
+}
+
+function cleanMarkdown(path: string, raw: string): { content: string; fixes: string[] } {
   const trimmed = trimBlankEdges(raw);
   if (!MARKDOWN_FILE.test(path)) return { content: unfence(trimmed), fixes: [] };
   for (const candidate of [trimmed, unfence(trimmed)]) {
@@ -71,7 +107,19 @@ export function cleanContent(path: string, raw: string): { content: string; fixe
   const content = unfence(trimmed);
   const bare = repairBareHeader(content);
   if (bare !== undefined) return { content: bare, fixes: [FIX_MESSAGES.bareHeader] };
+  const lines = content.split('\n');
+  if (DASHES.test(lines[0] ?? '') && !HEADER_LINE.test(lines[1] ?? ''))
+    return { content: trimBlankEdges(lines.slice(1).join('\n')), fixes: [FIX_MESSAGES.leadingSeparator] };
   return { content, fixes: [] };
+}
+
+export function dropTrailingSeparator(content: string): string | undefined {
+  const lines = content.split('\n');
+  if (!SEPARATOR.test(lines[lines.length - 1] ?? '')) return undefined;
+  const closesHeader =
+    DASHES.test(lines[0] ?? '') && lines.filter((line) => DASHES.test(line)).length === HEADER_DELIMITERS;
+  if (closesHeader) return undefined;
+  return trimBlankEdges(lines.slice(0, -1).join('\n'));
 }
 
 export function frontmatter(content: string): Record<string, string> | undefined {
