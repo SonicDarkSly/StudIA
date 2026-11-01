@@ -157,7 +157,14 @@ TA MISSION : écrire un serveur MCP (Model Context Protocol) en TypeScript avec 
 L'APPLICATION AJOUTE ELLE-MÊME package.json, tsconfig.json, .gitignore et la configuration du client (dossier config/).
 TU LIVRES UNIQUEMENT :
 - <nom-du-connecteur>/src/index.ts
-- <nom-du-connecteur>/README.md (en français : à quoi il sert, chaque outil, installation : npm install puis npm run build, test avec npm run inspect, puis où coller la configuration)
+- <nom-du-connecteur>/README.md en français : à quoi il sert, chaque outil, puis cette section, dans cet ordre :
+  ## Installation
+  1. npm install
+  2. npm run build (crée dist/index.js, le fichier lancé par l'IA)
+  3. npm run inspect (tester les outils dans l'inspecteur MCP)
+  4. Configuration : où fusionner le fichier du dossier config/ (voir FORMAT POUR L'IA CIBLE).
+  5. Une phrase qui dit de remplacer /CHEMIN/ABSOLU/VERS par le chemin réel du dossier du connecteur.
+Le README renvoie à ce fichier de configuration fourni par l'application : n'invente ni ne recopie aucun autre format.
 
 MODÈLE DE CODE À SUIVRE (SDK @modelcontextprotocol/sdk 1.x, modules ES, zod 3) :
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -187,8 +194,18 @@ RÈGLES :
 3. Valider les entrées (zod), renvoyer des erreurs lisibles avec isError: true plutôt que de planter.
 4. Pas de console.log (stdout sert au protocole) : console.error pour les journaux.
 5. Pas de secret en dur : variables d'environnement documentées dans le README.
-6. Chemins de fichiers : refuser ce qui sort du dossier autorisé (path.resolve + vérification du préfixe).
-7. Code complet et compilable, imports avec l'extension .js pour les fichiers locaux.`,
+6. Chemins de fichiers : refuser ce qui sort du dossier autorisé avec cette fonction, telle quelle (jamais startsWith sur le chemin : « ~/projets-secret » commence aussi par « ~/projets ») :
+   function cheminAutorise(...parties: string[]): string | undefined {
+     const chemin = path.resolve(DOSSIER_AUTORISE, ...parties);
+     const relatif = path.relative(DOSSIER_AUTORISE, chemin);
+     return relatif.startsWith("..") || path.isAbsolute(relatif) ? undefined : chemin;
+   }
+   Node ne comprend pas « ~ » : le dossier personnel s'obtient avec os.homedir() (import os from "node:os"), par exemple
+   const DOSSIER_AUTORISE = path.join(os.homedir(), "projets").
+   Passer toutes les parties du chemin réellement lu, nom de fichier compris : lire ~/projets/<projet>/CLAUDE.md
+   s'écrit cheminAutorise(projet, "CLAUDE.md") ; undefined → réponse isError: true. Le dossier autorisé lui-même est accepté.
+7. Code complet et compilable, imports avec l'extension .js pour les fichiers locaux. Le fichier commence directement par le code (aucune ligne \`\`\`typescript).
+8. Avant de livrer, déroule mentalement un appel de chaque outil avec un exemple réaliste (ex. lire_fichier("mon-projet")) : chemin réellement lu ou écrit, résultat renvoyé, cas d'erreur. Corrige ce qui ne donnerait pas le bon résultat.`,
   },
   {
     key: 'command',

@@ -3,6 +3,7 @@ import type { FileIssue, GeneratedFile, GeneratorKey, ScaffoldFile, TargetFormat
 import { errorMessage } from './errors';
 import { FIX_MESSAGES } from './consts';
 import { cleanContent, dropTrailingSeparator, frontmatter } from './frontmatter';
+import { checkMcp } from './mcp';
 import { checkSkills, gnuOnlyIssue, isSkillFile } from './skills';
 
 const START = /^=== ?FICHIER ?: ?(.+?) ?===\s*$/;
@@ -93,15 +94,19 @@ export function archiveName(files: GeneratedFile[]): string {
 export function withScaffold(files: GeneratedFile[], scaffold: ScaffoldFile[]): GeneratedFile[] {
   if (!scaffold.length || !files.length) return files;
   const name = files[0].path.split('/')[0] || 'mon-connecteur';
+  const provided = new Map<string, GeneratedFile>(
+    scaffold.map((s) => {
+      const path = s.path.split('{{name}}').join(name);
+      return [path, { path, content: s.content.split('{{name}}').join(name), origin: 'gabarit' }];
+    }),
+  );
+  const kept = files.map((f) => {
+    const own = provided.get(f.path);
+    if (!own) return f;
+    return own.content.trim() === f.content.trim() ? own : { ...own, fixes: [FIX_MESSAGES.scaffoldWins] };
+  });
   const existing = new Set(files.map((f) => f.path));
-  const extra = scaffold
-    .map((s) => ({
-      path: s.path.split('{{name}}').join(name),
-      content: s.content.split('{{name}}').join(name),
-    }))
-    .filter((s) => !existing.has(s.path))
-    .map((s) => ({ ...s, origin: 'gabarit' as const }));
-  return [...files, ...extra];
+  return [...kept, ...[...provided.values()].filter((s) => !existing.has(s.path))];
 }
 
 export function validateFiles(
@@ -163,26 +168,7 @@ export function validateFiles(
     }
   }
 
-  if (generatorKey === 'mcp') {
-    const index = files.find((f) => f.path.endsWith('src/index.ts'));
-    if (!index) issues.push({ level: 'error', message: 'src/index.ts manquant.' });
-    else {
-      if (!/registerTool\(|\.tool\(/.test(index.content))
-        issues.push({ level: 'warning', path: index.path, message: 'Aucun outil déclaré (registerTool).' });
-      if (!/StdioServerTransport|StreamableHTTPServerTransport/.test(index.content))
-        issues.push({
-          level: 'error',
-          path: index.path,
-          message: 'Aucun transport : le serveur ne pourra pas communiquer.',
-        });
-      if (/console\.log\(/.test(index.content))
-        issues.push({
-          level: 'error',
-          path: index.path,
-          message: 'console.log écrit sur stdout et casse le protocole : utiliser console.error.',
-        });
-    }
-  }
+  if (generatorKey === 'mcp') issues.push(...checkMcp(files));
 
   if (generatorKey === 'hooks') {
     for (const config of files.filter((f) => f.path.endsWith('.json'))) {

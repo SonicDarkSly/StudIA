@@ -1,6 +1,7 @@
 import { FIX_MESSAGES } from './consts';
 
 const MIN_FENCED_LINES = 2;
+const FENCES_PER_BLOCK = 2;
 const OPENING_FENCE = /^```/;
 const CLOSING_FENCE = /^```\s*$/;
 const YAML_FENCE = /^```\s*(ya?ml)?\s*$/i;
@@ -15,6 +16,14 @@ function trimBlankEdges(content: string): string {
   return content.replace(/^\n+|\s+$/g, '');
 }
 
+function dropUnbalancedClosingFence(lines: string[]): string[] {
+  const fences = lines.filter((line) => OPENING_FENCE.test(line)).length;
+  const last = lines[lines.length - 1] ?? '';
+  return fences % FENCES_PER_BLOCK === 1 && CLOSING_FENCE.test(last)
+    ? trimBlankEdges(lines.slice(0, -1).join('\n')).split('\n')
+    : lines;
+}
+
 export function unfence(content: string): string {
   const lines = trimBlankEdges(content).split('\n');
   if (
@@ -22,9 +31,18 @@ export function unfence(content: string): string {
     OPENING_FENCE.test(lines[0]) &&
     CLOSING_FENCE.test(lines[lines.length - 1])
   ) {
-    return lines.slice(1, -1).join('\n');
+    return dropUnbalancedClosingFence(trimBlankEdges(lines.slice(1, -1).join('\n')).split('\n')).join('\n');
   }
   return lines.join('\n');
+}
+
+function stripCodeFence(content: string): string | undefined {
+  const lines = content.split('\n');
+  const start = OPENING_FENCE.test(lines[0] ?? '') ? 1 : 0;
+  const end =
+    lines.length > start && CLOSING_FENCE.test(lines[lines.length - 1]) ? lines.length - 1 : lines.length;
+  if (start === 0 && end === lines.length) return undefined;
+  return trimBlankEdges(lines.slice(start, end).join('\n'));
 }
 
 function withoutDashes(header: string[]): string[] {
@@ -89,7 +107,12 @@ export function cleanContent(path: string, raw: string): { content: string; fixe
 
 function cleanMarkdown(path: string, raw: string): { content: string; fixes: string[] } {
   const trimmed = trimBlankEdges(raw);
-  if (!MARKDOWN_FILE.test(path)) return { content: unfence(trimmed), fixes: [] };
+  if (!MARKDOWN_FILE.test(path)) {
+    const stripped = stripCodeFence(trimmed);
+    return stripped === undefined
+      ? { content: trimmed, fixes: [] }
+      : { content: stripped, fixes: [FIX_MESSAGES.codeFence] };
+  }
   for (const candidate of [trimmed, unfence(trimmed)]) {
     const fenced = repairFencedHeader(candidate);
     if (fenced !== undefined) return { content: fenced, fixes: [FIX_MESSAGES.fencedHeader] };

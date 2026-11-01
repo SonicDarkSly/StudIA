@@ -541,12 +541,16 @@ const MCP_WHERE: Record<Exclude<TargetKey, 'portable'>, string> = {
   gemini:
     'config/gemini-settings.json : à fusionner dans .gemini/settings.json du projet ou ~/.gemini/settings.json.',
 };
+const describeConfig = (config: ScaffoldFile): string =>
+  `Pour information, contenu de ${config.path.replace('{{name}}/', '')}, fourni par l'application (ne pas le livrer ; <nom> = nom du connecteur) :\n${config.content.split('{{name}}').join('<nom>')}`;
+
 const mcpFormat = (key: Exclude<TargetKey, 'portable'>): TargetFormat => ({
   status: 'natif',
   summary: `Serveur MCP universel ; configuration prête pour ${key === 'copilot' ? 'VS Code' : key === 'claude' ? 'Claude Code et Claude Desktop' : key === 'codex' ? 'Codex' : key === 'cursor' ? 'Cursor' : 'Gemini CLI'}.`,
   paths: [],
   instructions: `Le code du serveur est le même pour tous les outils. L'application ajoute le fichier de configuration du client.
-Dans le README, section « Installation », expliquer : ${MCP_WHERE[key]}`,
+Dans le README, section « Installation », expliquer : ${MCP_WHERE[key]}
+${describeConfig(MCP_CONFIGS[key])}`,
   scaffold: [MCP_CONFIGS[key]],
 });
 
@@ -564,7 +568,8 @@ const MCP: Formats = {
 dans config/. Dans le README, section « Installation », un paragraphe par outil :
 ${Object.values(MCP_WHERE)
   .map((w) => `- ${w}`)
-  .join('\n')}`,
+  .join('\n')}
+${Object.values(MCP_CONFIGS).map(describeConfig).join('\n')}`,
     scaffold: Object.values(MCP_CONFIGS),
   },
 };
