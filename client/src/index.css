@@ -20,6 +20,8 @@
   --danger-bg: rgba(255, 77, 109, 0.08);
   --warning: #fbbf24;
   --warning-bg: rgba(251, 191, 36, 0.08);
+  --success: #4ade80;
+  --success-bg: rgba(34, 197, 94, 0.14);
   color-scheme: dark;
 }
 
@@ -44,6 +46,8 @@
   --danger-bg: rgba(190, 18, 60, 0.08);
   --warning: #92400e;
   --warning-bg: rgba(146, 64, 14, 0.08);
+  --success: #15803d;
+  --success-bg: rgba(22, 163, 74, 0.1);
   color-scheme: light;
 }
 
@@ -996,19 +1000,6 @@ body {
   z-index: 1;
 }
 
-.card-select {
-  display: block;
-  cursor: pointer;
-}
-
-.card-select > span {
-  display: block;
-}
-
-.model-card.blocked .card-select {
-  cursor: not-allowed;
-}
-
 .stretched::after {
   content: '';
   position: absolute;
@@ -1183,8 +1174,13 @@ body {
 .machine-card .usable {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
   font-size: 12px;
   margin-top: 8px;
+}
+
+.machine-card .usable > span:last-child {
+  white-space: nowrap;
 }
 
 .machine-card .note {
@@ -1554,4 +1550,65 @@ body {
   margin: 0;
   font-size: 12px;
   text-align: center;
+}
+
+.catalog {
+  list-style: none;
+  padding: 0;
+}
+
+.catalog .model-card {
+  padding: 0;
+  cursor: default;
+}
+
+.catalog .model-card.blocked {
+  opacity: 1;
+  border-style: dashed;
+  cursor: default;
+}
+
+.catalog .model-card.selected {
+  background: var(--success-bg);
+  border-color: var(--success);
+  box-shadow: none;
+}
+
+.card-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 11px 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.card-detail {
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px 11px;
+}
+
+.choose-row {
+  margin-top: 8px;
+}
+
+.chosen-note {
+  color: var(--success);
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.machine-card .usable.over {
+  color: var(--danger);
+}
+
+.gauge.remaining > span {
+  background: var(--success);
+  box-shadow: none;
+}
+
+.gauge.remaining.over > span {
+  background: var(--danger);
 }

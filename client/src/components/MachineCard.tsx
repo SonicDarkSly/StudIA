@@ -1,5 +1,5 @@
 import { DesktopOutlined } from '@ant-design/icons';
-import type { MachineProfile } from '../types';
+import type { MachineProfile, ModelView } from '../types';
 import { fmtNumber, percentOf } from '../utils/format';
 
 const GPU_LABEL: Record<string, string> = {
@@ -8,7 +8,31 @@ const GPU_LABEL: Record<string, string> = {
   vulkan: 'Vulkan',
 };
 
-export function MachineCard({ machine }: { machine: MachineProfile }) {
+const FULL_GAUGE_PERCENT = 100;
+
+function RemainingMemory({ machine, model }: { machine: MachineProfile; model: ModelView }) {
+  const remaining = machine.usableGb - model.fit.needGb;
+  const over = remaining < 0;
+  return (
+    <>
+      <div className={`muted usable${over ? ' over' : ''}`}>
+        <span>Reste après chargement de {model.label}</span>
+        <span>{over ? `manque ≈ ${fmtNumber(-remaining, 1)} Go` : `≈ ${fmtNumber(remaining, 1)} Go`}</span>
+      </div>
+      <div className={`gauge remaining${over ? ' over' : ''}`} aria-hidden>
+        <span style={{ width: `${over ? FULL_GAUGE_PERCENT : percentOf(remaining, machine.totalRamGb)}%` }} />
+      </div>
+    </>
+  );
+}
+
+export function MachineCard({
+  machine,
+  selectedModel,
+}: {
+  machine: MachineProfile;
+  selectedModel?: ModelView;
+}) {
   return (
     <div className="glass panel-box machine-card">
       <div className="section-label">
@@ -33,9 +57,10 @@ export function MachineCard({ machine }: { machine: MachineProfile }) {
         <span>Mémoire laissée aux modèles</span>
         <span>≈ {fmtNumber(machine.usableGb, 1)} Go</span>
       </div>
-      <div className="gauge">
+      <div className="gauge" aria-hidden>
         <span style={{ width: `${percentOf(machine.usableGb, machine.totalRamGb)}%` }} />
       </div>
+      {selectedModel && <RemainingMemory machine={machine} model={selectedModel} />}
       <div className="muted note">
         Le reste est gardé pour le système et les autres applications. Un modèle « trop lourd » ne peut être
         ni choisi ni téléchargé.
