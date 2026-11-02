@@ -4,13 +4,13 @@ import { SETTINGS_HELP, TARGET_NOT_USED } from '@/consts';
 import type {
   AiTarget,
   GenerationSettings,
-  Generator,
-  GeneratorKey,
+  Mode,
+  ModeKey,
   ModelView,
   NumericSettingKey,
   TargetKey,
 } from '@/types';
-import { generatorIcon } from '@/components/icons';
+import { modeIcon } from '@/components/icons';
 import { SettingRow } from './SettingRow';
 import { CodeView } from '@/components/CodeView';
 import './SettingsPanel.css';
@@ -27,35 +27,33 @@ function settingPatch<K extends NumericSettingKey>(
 }
 
 interface Props {
-  generators: Generator[];
+  modes: Mode[];
   targets: AiTarget[];
-  generatorKey: GeneratorKey;
+  modeKey: ModeKey;
   targetKey: TargetKey;
   onTarget: (key: TargetKey) => void;
   model: ModelView | undefined;
   settings: GenerationSettings;
   extraInstructions: string;
   locked: boolean;
-  onGenerator: (key: GeneratorKey) => void;
+  onMode: (key: ModeKey) => void;
   onChange: (patch: Partial<GenerationSettings>) => void;
   onReset: () => void;
   onInstructions: (text: string) => void;
 }
 
 export function SettingsPanel(props: Props) {
-  const { settings, model, generators } = props;
-  const generator = generators.find((g) => g.key === props.generatorKey);
+  const { settings, model, modes } = props;
+  const mode = modes.find((g) => g.key === props.modeKey);
   const target = props.targets.find((t) => t.key === props.targetKey);
-  const format = generator?.formats[props.targetKey];
-  const targetApplies = generator?.usesFiles !== false;
+  const format = mode?.formats[props.targetKey];
+  const targetApplies = mode?.usesFiles !== false;
   const fullPrompt = [
-    generator?.systemPrompt,
+    mode?.systemPrompt,
     format?.instructions
       ? `FORMAT POUR L'IA CIBLE : ${target?.label} (${target?.vendor} · ${target?.tools}). Cette section prime sur tout le reste.\n${format.instructions}`
       : '',
-    generator?.usesFiles
-      ? '[+ protocole de livraison des fichiers : === FICHIER: chemin === … === FIN ===]'
-      : '',
+    mode?.usesFiles ? '[+ protocole de livraison des fichiers : === FICHIER: chemin === … === FIN ===]' : '',
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -65,17 +63,17 @@ export function SettingsPanel(props: Props) {
   return (
     <div>
       <div className="section-label">Mode</div>
-      <Select<GeneratorKey>
+      <Select<ModeKey>
         aria-label="Mode"
         className="full-width"
-        value={props.generatorKey}
+        value={props.modeKey}
         disabled={props.locked}
-        onChange={props.onGenerator}
-        options={generators.map((g) => ({
+        onChange={props.onMode}
+        options={modes.map((g) => ({
           value: g.key,
           label: (
             <span>
-              {generatorIcon(g.key)} {g.label}
+              {modeIcon(g.key)} {g.label}
             </span>
           ),
         }))}
@@ -95,7 +93,7 @@ export function SettingsPanel(props: Props) {
         value={props.targetKey}
         onChange={props.onTarget}
         options={props.targets.map((t) => {
-          const status = generator?.formats[t.key]?.status;
+          const status = mode?.formats[t.key]?.status;
           return {
             value: t.key,
             label: (
@@ -223,7 +221,7 @@ export function SettingsPanel(props: Props) {
             key: 'prompt',
             label: (
               <span className="muted">
-                Voir le prompt système (« {generator?.label} »{targetApplies ? ` pour ${target?.label}` : ''})
+                Voir le prompt système (« {mode?.label} »{targetApplies ? ` pour ${target?.label}` : ''})
               </span>
             ),
             children: (

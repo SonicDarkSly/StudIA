@@ -81,11 +81,25 @@ const NODE_LLAMA_CPP = {
     'Charger node-llama-cpp par llamaCpp() (shared/config/esm.ts) ; seuls les imports de types sont permis.',
 };
 
-const layerImports = (forbidden, message) => [
+const MODE_REGISTRY_ONLY = {
+  regex: '/catalog/(?!index\\.js$)',
+  message: 'Un mode ne se charge que par son registre (modes/catalog/index.js).',
+};
+
+const NESTJS_IN_DOMAIN = [
+  { name: '@nestjs/common', message: 'Le domaine ne dépend pas de NestJS (hors AggregateRoot).' },
+  { name: '@nestjs/core', message: 'Le domaine ne dépend pas de NestJS (hors AggregateRoot).' },
+];
+
+const layerImports = (forbidden, message, extraPatterns = []) => [
   'error',
   {
     paths: [NODE_LLAMA_CPP, ...forbidden.paths],
-    patterns: forbidden.layers ? [{ regex: `/(${forbidden.layers.join('|')})/`, message }] : [],
+    patterns: [
+      MODE_REGISTRY_ONLY,
+      ...(forbidden.layers ? [{ regex: `/(${forbidden.layers.join('|')})/`, message }] : []),
+      ...extraPatterns,
+    ],
   },
 ];
 
@@ -152,15 +166,41 @@ export default defineConfig([
     files: ['server/src/modules/*/domain/**/*.ts'],
     rules: {
       '@typescript-eslint/no-restricted-imports': layerImports(
-        {
-          paths: [
-            { name: '@nestjs/common', message: 'Le domaine ne dépend pas de NestJS (hors AggregateRoot).' },
-            { name: '@nestjs/core', message: 'Le domaine ne dépend pas de NestJS (hors AggregateRoot).' },
-          ],
-          layers: ['application', 'infrastructure', 'api'],
-        },
+        { paths: NESTJS_IN_DOMAIN, layers: ['application', 'infrastructure', 'api'] },
         'Le domaine ne dépend que du domaine.',
       ),
+    },
+  },
+  {
+    files: ['server/src/modules/modes/domain/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': layerImports(
+        { paths: NESTJS_IN_DOMAIN, layers: ['application', 'infrastructure', 'api', 'catalog', 'utils'] },
+        'Le contrat commun des modes ne connaît ni les modes ni leurs utilitaires.',
+      ),
+    },
+  },
+  {
+    files: ['server/src/modules/modes/catalog/*/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': layerImports({ paths: [] }, '', [
+        {
+          regex: '^\\.\\./(?!\\.\\./(domain|utils)/)',
+          message:
+            "Un mode est indépendant : il n'importe que ses propres fichiers, modes/domain et modes/utils (jamais un autre mode ni le registre).",
+        },
+      ]),
+    },
+  },
+  {
+    files: ['server/src/modules/modes/utils/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': layerImports({ paths: [] }, '', [
+        {
+          regex: '^\\.\\./(?!domain/)',
+          message: 'Les utilitaires partagés entre modes ne dépendent que de modes/domain.',
+        },
+      ]),
     },
   },
   {
@@ -201,6 +241,34 @@ export default defineConfig([
       'jsx-a11y-x/no-noninteractive-tabindex': [
         'error',
         { tags: [], roles: ['tabpanel', 'region'], allowExpressionValues: true },
+      ],
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^@/modes/',
+              message: 'Les règles des modes ne se chargent que par leur registre (@/modes).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['client/src/modes/*/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^(@/modes(/(?!utils/)|$)|\\.\\./)',
+              message:
+                "Un mode est indépendant : il n'importe que ses propres fichiers, @/modes/utils et les utilitaires généraux (jamais un autre mode ni le registre).",
+            },
+          ],
+        },
       ],
     },
   },

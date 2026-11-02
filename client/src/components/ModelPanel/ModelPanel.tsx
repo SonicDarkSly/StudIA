@@ -1,7 +1,7 @@
 import { PoweroffOutlined } from '@ant-design/icons';
 import { Alert, Button, Switch, Tooltip } from 'antd';
 import { useState } from 'react';
-import type { FitLevel, Generator, MachineProfile, ModelView, RuntimeStatus } from '@/types';
+import type { FitLevel, Mode, MachineProfile, ModelView, RuntimeStatus } from '@/types';
 import { fmtNumber } from '@/utils/format';
 import { isBlocked } from '@/utils/models';
 import { MachineCard } from './MachineCard';
@@ -12,7 +12,7 @@ const FIT_RANK: Record<FitLevel, number> = { ok: 0, limite: 1, 'trop-lourd': 2 }
 
 interface Props {
   models: ModelView[];
-  generators: Generator[];
+  modes: Mode[];
   runtime?: RuntimeStatus;
   machine?: MachineProfile;
   selected: string;
@@ -26,7 +26,7 @@ interface Props {
 
 export function ModelPanel({
   models,
-  generators,
+  modes,
   runtime,
   machine,
   selected,
@@ -115,7 +115,7 @@ export function ModelPanel({
           <ModelCard
             key={m.key}
             model={m}
-            generators={generators}
+            modes={modes}
             selected={m.key === selected}
             expanded={expanded.has(m.key)}
             blocked={isBlocked(m, machine)}

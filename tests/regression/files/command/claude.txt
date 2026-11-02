@@ -1,0 +1,25 @@
+réponse coupée : non
+
+[ok] - : Aucun problème détecté par les contrôles automatiques.
+
+=== .claude/commands/verifier.md (modele)
+---
+description: Lance le typecheck et résume les erreurs par fichier
+argument-hint: [mot-clé pour filtrer]
+allowed-tools: Read, Bash(npm run typecheck *)
+---
+1. Lance npm run typecheck (des erreurs sont possibles : va jusqu'au bout).
+2. Regroupe les erreurs par fichier.
+3. Réponds par un tableau : fichier | nombre d'erreurs | première erreur.
+4. Si $ARGUMENTS est donné, ne garde que les lignes qui le contiennent.
+
+
+=== texte affiché
+Une commande qui lance la vérification de types et résume les erreurs.
+
+
+> **Fichier** `.claude/commands/verifier.md` : voir le panneau Fichiers
+
+
+À vérifier :
+- Le script typecheck existe dans package.json.

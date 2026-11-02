@@ -1,16 +1,17 @@
 import { AggregateRoot } from '@nestjs/cqrs';
-import type { GenerationSettings } from '../../models/domain/generation-settings.js';
-import { isTargetKey, type TargetKey } from '../../generators/domain/ai-target.js';
-import { DEFAULT_GENERATOR, DEFAULT_TARGET } from '../../generators/domain/consts.js';
-import { isGeneratorKey, type GeneratorKey } from '../../generators/domain/generator.js';
-import type { ChatMessage } from './chat-message.js';
+import { z } from 'zod';
+import { partialSettingsSchema, type GenerationSettings } from '../../models/domain/generation-settings.js';
+import { isTargetKey, type TargetKey } from '../../modes/domain/ai-target.js';
+import { DEFAULT_MODE, DEFAULT_TARGET } from '../../modes/domain/consts.js';
+import { toModeKey, type ModeKey } from '../../modes/domain/mode.js';
+import { chatMessageSchema, type ChatMessage } from './chat-message.js';
 
 export interface ConversationSnapshot {
   id: string;
   title: string;
   createdAt: string;
   updatedAt: string;
-  generatorKey: GeneratorKey;
+  modeKey: ModeKey;
   targetKey: TargetKey;
   modelKey: string;
   projectNames: string[];
@@ -23,11 +24,28 @@ export interface ConversationSummary {
   id: string;
   title: string;
   updatedAt: string;
-  generatorKey: GeneratorKey;
+  modeKey: ModeKey;
   targetKey: TargetKey;
   modelKey: string;
   messageCount: number;
 }
+
+export const conversationInputSchema = z.object({
+  id: z.string(),
+  title: z.string().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  modeKey: z.string().optional(),
+  generatorKey: z.string().optional(),
+  targetKey: z.string().optional(),
+  modelKey: z.string().optional(),
+  projectNames: z.array(z.string()).optional(),
+  settings: partialSettingsSchema.optional().catch({}),
+  systemPrompt: z.string().optional(),
+  messages: z.array(z.unknown()),
+});
+
+export type ConversationInput = z.infer<typeof conversationInputSchema>;
 
 export class InvalidConversationError extends Error {}
 
@@ -42,28 +60,26 @@ export class Conversation extends AggregateRoot {
     super();
   }
 
-  static restore(raw: ConversationSnapshot): Conversation {
-    if (!raw || typeof raw !== 'object') throw new InvalidConversationError('Conversation invalide');
-    if (!ID.test(String(raw.id))) throw new InvalidConversationError('Identifiant de conversation invalide');
-    if (!Array.isArray(raw.messages)) throw new InvalidConversationError('Messages manquants');
+  static restore(raw: ConversationInput): Conversation {
+    if (!ID.test(raw.id)) throw new InvalidConversationError('Identifiant de conversation invalide');
     const messages = raw.messages
-      .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+      .flatMap((m) => {
+        const parsed = chatMessageSchema.safeParse(m);
+        return parsed.success ? [parsed.data] : [];
+      })
       .slice(-MAX_MESSAGES);
     const now = new Date().toISOString();
     return new Conversation({
       id: raw.id,
-      title: String(raw.title || 'Sans titre').slice(0, MAX_TITLE_LENGTH),
+      title: (raw.title || 'Sans titre').slice(0, MAX_TITLE_LENGTH),
       createdAt: raw.createdAt || now,
       updatedAt: raw.updatedAt || now,
-      generatorKey: isGeneratorKey(raw.generatorKey) ? raw.generatorKey : DEFAULT_GENERATOR,
+      modeKey: toModeKey(raw.modeKey ?? raw.generatorKey) ?? DEFAULT_MODE,
       targetKey: isTargetKey(raw.targetKey) ? raw.targetKey : DEFAULT_TARGET,
-      modelKey: String(raw.modelKey || ''),
-      projectNames: Array.isArray(raw.projectNames)
-        ? raw.projectNames.map(String).slice(0, MAX_PROJECTS)
-        : [],
-      settings: raw.settings && typeof raw.settings === 'object' ? raw.settings : {},
-      systemPrompt:
-        typeof raw.systemPrompt === 'string' ? raw.systemPrompt.slice(0, MAX_INSTRUCTIONS_LENGTH) : '',
+      modelKey: raw.modelKey ?? '',
+      projectNames: (raw.projectNames ?? []).slice(0, MAX_PROJECTS),
+      settings: raw.settings ?? {},
+      systemPrompt: raw.systemPrompt?.slice(0, MAX_INSTRUCTIONS_LENGTH) ?? '',
       messages,
     });
   }
@@ -86,7 +102,7 @@ export class Conversation extends AggregateRoot {
       id: s.id,
       title: s.title,
       updatedAt: s.updatedAt,
-      generatorKey: s.generatorKey,
+      modeKey: s.modeKey,
       targetKey: s.targetKey,
       modelKey: s.modelKey,
       messageCount: s.messages.length,

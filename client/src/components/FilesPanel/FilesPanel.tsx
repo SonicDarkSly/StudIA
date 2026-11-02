@@ -9,8 +9,8 @@ import {
 } from '@ant-design/icons';
 import { Alert, Button, Empty, Space, Tag, Tooltip, message as toast } from 'antd';
 import { type ReactNode, useMemo, useState } from 'react';
-import { DEFAULT_GENERATOR } from '@/consts';
-import type { FileIssue, GeneratedFile, Generator, TargetKey } from '@/types';
+import { DEFAULT_MODE } from '@/consts';
+import type { FileIssue, GeneratedFile, Mode, TargetKey } from '@/types';
 import {
   archiveName,
   downloadFile,
@@ -19,8 +19,7 @@ import {
   validateFiles,
   withScaffold,
 } from '@/utils/files';
-import { placePluginManifest } from '@/utils/plugins';
-import { placeSkillFiles } from '@/utils/skills';
+import { modeCompanion, placeFiles } from '@/modes';
 import { CodeView } from '@/components/CodeView';
 import './FilesPanel.css';
 
@@ -32,28 +31,28 @@ const ISSUE_LEVELS: Record<FileIssue['level'], { label: string; icon: ReactNode 
 
 interface Props {
   text?: string;
-  generator: Generator | undefined;
+  mode: Mode | undefined;
   targetKey: TargetKey;
   live: boolean;
 }
 
-export function FilesPanel({ text, generator, targetKey, live }: Props) {
-  const format = generator?.formats[targetKey];
+export function FilesPanel({ text, mode, targetKey, live }: Props) {
+  const format = mode?.formats[targetKey];
   const [extra, setExtra] = useState<GeneratedFile[]>([]);
   const parsed = useMemo(() => parseFiles(text ?? ''), [text]);
   const files = useMemo(
     () => [
-      ...withScaffold(placePluginManifest(placeSkillFiles(parsed.files, format), format), [
-        ...(generator?.scaffold ?? []),
+      ...withScaffold(placeFiles(mode?.key ?? DEFAULT_MODE, parsed.files, format), [
+        ...(mode?.scaffold ?? []),
         ...(format?.scaffold ?? []),
       ]),
       ...extra,
     ],
-    [parsed.files, generator, format, extra],
+    [parsed.files, mode, format, extra],
   );
   const issues = useMemo(
-    () => (live ? [] : validateFiles(generator?.key ?? DEFAULT_GENERATOR, files, format)),
-    [files, generator, format, live],
+    () => (live ? [] : validateFiles(mode?.key ?? DEFAULT_MODE, files, format)),
+    [files, mode, format, live],
   );
   const [selected, setSelected] = useState<string>();
 
@@ -71,8 +70,7 @@ export function FilesPanel({ text, generator, targetKey, live }: Props) {
 
   const current = files.find((f) => f.path === selected) ?? files[0];
   const zipName = archiveName(files);
-  const claudeMd = files.find((f) => f.path === 'CLAUDE.md');
-  const hasAgentsMd = files.some((f) => f.path === 'AGENTS.md');
+  const companion = modeCompanion(mode?.key ?? DEFAULT_MODE, files);
 
   const copy = async () => {
     try {
@@ -105,13 +103,9 @@ export function FilesPanel({ text, generator, targetKey, live }: Props) {
         >
           Tout télécharger (.zip)
         </Button>
-        {generator?.key === 'claudemd' && claudeMd && !hasAgentsMd && (
-          <Tooltip title="AGENTS.md est lu par Codex, Cursor, Copilot… : même contenu, autre nom.">
-            <Button
-              onClick={() => setExtra([{ path: 'AGENTS.md', content: claudeMd.content, origin: 'gabarit' }])}
-            >
-              + copie AGENTS.md
-            </Button>
+        {companion && (
+          <Tooltip title={companion.hint}>
+            <Button onClick={() => setExtra([companion.file])}>{companion.label}</Button>
           </Tooltip>
         )}
       </Space>

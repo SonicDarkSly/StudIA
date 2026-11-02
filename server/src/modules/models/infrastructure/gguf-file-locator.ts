@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { PROJECT_REPOSITORY, type ProjectRepository } from '../../projects/domain/project.repository.js';
+import { env } from '../../../shared/config/env.js';
 import { LLM_DIR } from '../../../shared/config/paths.js';
 import { expectedFileName, filePrefix, type CatalogModel } from '../domain/catalog-model.js';
 import type { LocatedModel, ModelFileLocator } from '../domain/model-file-locator.js';
@@ -30,9 +31,7 @@ export class GgufFileLocator implements ModelFileLocator {
         if (existsSync(dir)) dirs.push({ dir, owner: name });
       }
     }
-    for (const extra of (process.env.STUDIA_EXTRA_MODEL_DIRS ?? '').split(/[;,]/).filter(Boolean)) {
-      dirs.push({ dir: extra.trim(), owner: extra.trim() });
-    }
+    for (const extra of env().STUDIA_EXTRA_MODEL_DIRS) dirs.push({ dir: extra, owner: extra });
     return dirs;
   }
 

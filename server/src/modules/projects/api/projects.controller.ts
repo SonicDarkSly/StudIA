@@ -25,6 +25,9 @@ import {
   type ProjectContext,
   type ProjectSummary,
 } from '../domain/project.js';
+import { ZodValidationPipe } from '../../../shared/validation/zod-validation.pipe.js';
+import { projectNameSchema } from './project-name.schema.js';
+import { folderPathSchema, projectPathSchema, type ProjectPathInput } from './project-path.schema.js';
 
 const translate = (err: unknown): never => {
   if (err instanceof ProjectNotFoundError) throw new NotFoundException(err.message);
@@ -45,28 +48,30 @@ export class ProjectsController {
   }
 
   @Post('projects')
-  add(@Body() body: { path?: string }): Promise<ProjectSummary> {
+  add(@Body(new ZodValidationPipe(projectPathSchema)) body: ProjectPathInput): Promise<ProjectSummary> {
     return this.commands.execute(new AddProjectCommand(body?.path ?? '')).catch(translate);
   }
 
   @Post('projects/import')
-  addAll(@Body() body: { path?: string }): Promise<ProjectSummary[]> {
+  addAll(@Body(new ZodValidationPipe(projectPathSchema)) body: ProjectPathInput): Promise<ProjectSummary[]> {
     return this.commands.execute(new AddProjectsInFolderCommand(body?.path ?? '')).catch(translate);
   }
 
   @Delete('projects/:name')
-  async remove(@Param('name') name: string): Promise<{ removed: boolean }> {
+  async remove(
+    @Param('name', new ZodValidationPipe(projectNameSchema)) name: string,
+  ): Promise<{ removed: boolean }> {
     await this.commands.execute(new RemoveProjectCommand(name)).catch(translate);
     return { removed: true };
   }
 
   @Get('projects/:name/context')
-  context(@Param('name') name: string): Promise<ProjectContext> {
+  context(@Param('name', new ZodValidationPipe(projectNameSchema)) name: string): Promise<ProjectContext> {
     return this.queries.execute(new GetProjectContextQuery(name)).catch(translate);
   }
 
   @Get('folders')
-  browse(@Query('path') path?: string): Promise<FolderListing> {
+  browse(@Query('path', new ZodValidationPipe(folderPathSchema)) path?: string): Promise<FolderListing> {
     return this.queries.execute(new BrowseFoldersQuery(path)).catch(translate);
   }
 }

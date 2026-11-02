@@ -1,0 +1,140 @@
+réponse coupée : non
+
+[ok] - : Aucun problème détecté par les contrôles automatiques.
+
+=== .agents/skills/compte-rendu-reunion/SKILL.md (modele)
+---
+name: compte-rendu-reunion
+description: Génère un compte rendu de réunion structuré avec décisions, actions (qui, quoi, quand), et points ouverts. Utilisez cette skill quand vous demandez « compte rendu », « CR », « synthèse de réunion » ou équivalent.
+---
+### Objectif
+Rédiger un compte rendu professionnel de réunion à partir d’un résumé ou d’un enregistrement, en suivant une structure standardisée pour faciliter la traçabilité des décisions et actions.
+
+### Étapes
+
+1. **Analyser le contexte**  
+   Vérifiez que l’entrée fournie est bien un résumé de réunion (texte ou transcription). Si ce n’est pas le cas, demandez une clarification.  
+   *Pourquoi* : Une skill ne doit pas traiter des données non pertinentes.
+
+2. **Extraire les décisions prises**  
+   Identifiez chaque décision clairement formulée (ex : « On adopte la solution X »).  
+   - Format : `✅ Décision : [texte de la décision]`  
+   - Si plusieurs décisions, une par ligne.  
+   *Pourquoi* : Les décisions doivent être visibles et non ambiguës.
+
+3. **Extraire les actions assignées**  
+   Cherchez des phrases avec un responsable, une tâche et une date (ou délai).  
+   - Format : `[Nom] → [Tâche] (échéance)`  
+   - Si l’échéance est manquante, écrivez « (à définir) ».  
+   - Si le responsable est inconnu, utilisez « [À attribuer] ».  
+   *Pourquoi* : L’attribution claire évite les malentendus sur les responsabilités.
+
+4. **Identifier les points ouverts**  
+   Repérez les sujets non tranchés, en attente d’information ou de décision future.  
+   - Format : `❓ Point ouvert : [description du point]`  
+   - Si plusieurs, une par ligne.  
+   *Pourquoi* : Les points ouverts doivent être suivis pour éviter qu’ils soient oubliés.
+
+5. **Structurer le document final**  
+   Organisez le compte rendu dans l’ordre suivant :
+   ```
+   # Compte Rendu de Réunion
+   ## Date : [date]
+   ## Participants : [liste des personnes présentes]
+
+   ### Décisions
+   ✅ Décision : ...
+
+   ### Actions
+   [Nom] → [Tâche] (échéance)
+
+   ### Points Ouverts
+   ❓ Point ouvert : ...
+   ```
+
+6. **Générer un nom de fichier unique**  
+   Créez un fichier avec le format : `CR-<date>-<sujet>.md`  
+   Exemple : `CR-2025-04-05-projet-x.md`  
+   - Utilisez la date du jour si non précisée.  
+   - Le sujet est tiré du premier point ou de l’objectif principal (ex : « projet-x », « budget-2025 »).  
+   *Pourquoi* : Évite les conflits de fichiers et permet une recherche facile.
+
+7. **Écrire le fichier dans le projet**  
+   Sauvegardez le compte rendu dans le dossier racine du projet utilisateur (pas dans `.agents/skills/`).  
+   *Pourquoi* : Le résultat doit être accessible dans le contexte du projet, pas dans la skill.
+
+### Fichiers d’appui
+- Pour les exemples de style, lire `references/exemples.md`
+- Pour les règles de formatage des dates et noms, lire `references/standard.md`
+
+### À vérifier
+- Le fichier produit est bien nommé avec une date et un sujet.
+- Toutes les actions ont un responsable ou `[À attribuer]`.
+- Aucun point ouvert n’est omis.
+- Le fichier est placé dans le projet utilisateur, pas dans la skill.
+- Le contenu respecte le format Markdown standardisé.
+
+
+=== .agents/skills/compte-rendu-reunion/references/exemples.md (modele)
+# Exemple de compte rendu de réunion
+
+## Date : 2025-04-05
+## Participants : Alice, Bruno, Camille
+
+### Décisions
+✅ Décision : Le budget pour le projet X est approuvé à hauteur de 15 000 €.
+✅ Décision : La livraison du prototype est reportée au 15 mai.
+
+### Actions
+Alice → Réviser le cahier des charges (10 avril)
+Bruno → Envoyer les devis fournisseurs (12 avril)
+Camille → Préparer la présentation client (14 avril)
+
+### Points Ouverts
+❓ Point ouvert : Validation du design UI par le comité produit.
+❓ Point ouvert : Choix de l’outil de suivi des tâches (Trello vs Asana).
+
+
+=== .agents/skills/compte-rendu-reunion/references/standard.md (modele)
+## Format des dates
+- Utilisez le format ISO : `YYYY-MM-DD`
+- Si la date n’est pas précisée dans l’entrée, utilisez la date du jour.
+
+## Noms de personnes
+- Évitez les surnoms ou abréviations non standard.
+- Si le nom est ambigu, demandez une clarification.
+
+## Format des actions
+- Structure : `[Nom] → [Tâche] (échéance)`
+- L’échéance peut être :
+  - Une date précise (`10 avril`)
+  - Un délai relatif (`dans 3 jours`)
+  - `à définir` si inconnu
+
+## Points ouverts
+- Toujours commencer par `❓ Point ouvert :`
+- Le texte doit être clair et concis.
+
+
+=== texte affiché
+Cette skill permet de générer un compte rendu structuré à partir d’un enregistrement ou d’un résumé de réunion, en identifiant clairement les décisions prises, les actions assignées (avec responsable, tâche et échéance), et les points restants à traiter. Elle s’active automatiquement quand l’utilisateur demande un « compte rendu », « CR », « synthèse de réunion » ou équivalent.
+
+Elle produit un fichier Markdown bien formaté, prêt à être partagé, avec une structure claire et des champs standardisés pour faciliter la traçabilité. Elle s’appuie sur les conventions courantes en entreprise (ex : notation « [Nom] → [Tâche] (échéance) ») et inclut des exemples concrets dans ses références.
+
+
+> **Fichier** `.agents/skills/compte-rendu-reunion/SKILL.md` : voir le panneau Fichiers
+
+
+
+> **Fichier** `.agents/skills/compte-rendu-reunion/references/exemples.md` : voir le panneau Fichiers
+
+
+
+> **Fichier** `.agents/skills/compte-rendu-reunion/references/standard.md` : voir le panneau Fichiers
+
+
+À vérifier
+- Les fichiers `references/exemples.md` et `references/standard.md` sont bien cités dans le corps.
+- Le format du fichier produit respecte `CR-YYYY-MM-DD-sujet.md`.
+- Aucun script n’a été ajouté, car l’analyse peut être faite directement par l’agent.
+- La skill est prête à s’activer automatiquement sur les requêtes comme « compte rendu » ou « CR ».

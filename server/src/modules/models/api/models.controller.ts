@@ -24,6 +24,8 @@ import {
   UnknownModelError,
 } from '../domain/catalog-model.js';
 import { ModelTooLargeError } from '../domain/machine.js';
+import { ZodValidationPipe } from '../../../shared/validation/zod-validation.pipe.js';
+import { modelKeySchema } from './model-key.schema.js';
 
 @Controller('api/models')
 export class ModelsController {
@@ -39,7 +41,9 @@ export class ModelsController {
 
   @Post(':key/download')
   @HttpCode(HttpStatus.ACCEPTED)
-  async download(@Param('key') key: string): Promise<{ started: boolean }> {
+  async download(
+    @Param('key', new ZodValidationPipe(modelKeySchema)) key: string,
+  ): Promise<{ started: boolean }> {
     try {
       return await this.commands.execute(new DownloadModelCommand(key));
     } catch (err) {
@@ -50,13 +54,17 @@ export class ModelsController {
   }
 
   @Delete(':key/download')
-  async cancel(@Param('key') key: string): Promise<{ cancelled: boolean }> {
+  async cancel(
+    @Param('key', new ZodValidationPipe(modelKeySchema)) key: string,
+  ): Promise<{ cancelled: boolean }> {
     await this.commands.execute(new CancelDownloadCommand(key));
     return { cancelled: true };
   }
 
   @Delete(':key')
-  async uninstall(@Param('key') key: string): Promise<{ deleted: boolean }> {
+  async uninstall(
+    @Param('key', new ZodValidationPipe(modelKeySchema)) key: string,
+  ): Promise<{ deleted: boolean }> {
     try {
       await this.commands.execute(new DeleteModelCommand(key));
       return { deleted: true };

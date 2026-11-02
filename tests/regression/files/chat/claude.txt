@@ -1,0 +1,6 @@
+réponse coupée : non
+
+
+
+=== texte affiché
+Crée un fichier nommé `CONVENTIONS.md` dans le dossier racine de ton projet (le même endroit que `package.json`, `README.md`, etc.).

@@ -1,0 +1,34 @@
+Ce hook empêche l'exécution de commandes dangereuses comme `rm -rf` ou `git push --force`, qui peuvent causer des pertes de données irréversibles. Il vérifie la commande entrante via stdin, et refuse l’exécution si elle correspond à ces motifs. Le script est rapide, sécurisé et ne modifie pas d'état.
+
+=== FICHIER: .github/hooks/block-dangerous-commands.json ===
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "./.github/hooks/block-dangerous-commands.sh",
+        "timeoutSec": 30
+      }
+    ]
+  }
+}
+=== FIN ===
+
+=== FICHIER: .github/hooks/block-dangerous-commands.sh ===
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Lecture de la commande depuis stdin via jq
+command=$(jq -r '(.toolArgs | if type == "string" then fromjson else . end).command // empty')
+
+# Vérification des commandes dangereuses
+if [[ "$command" =~ rm\ -rf ]] || [[ "$command" =~ git\ push\ --force ]]; then
+  echo "{\"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"La commande contient une action dangereuse : '$command'.\"}" >&2
+  exit 2
+fi
+=== FIN ===
+
+À vérifier :
+- Assurez-vous que le script a les droits d'exécution : `chmod +x .github/hooks/block-dangerous-commands.sh`
+- Fusionnez le contenu de `block-dangerous-commands.json` avec votre fichier de configuration existant.

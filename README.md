@@ -88,8 +88,11 @@ Variables d'environnement, ou fichier `server/.env` :
 
 ## Architecture
 
-- `server/` : NestJS 12 en DDD + CQRS (`@nestjs/cqrs`), contextes `models`, `projects`, `generators`,
-  `conversations`.
+- `server/` : NestJS 12 en DDD + CQRS (`@nestjs/cqrs`), contextes `models`, `projects`, `modes`,
+  `conversations`. Chaque mode est un dossier indépendant (`modules/modes/catalog/<mode>/`) : ajouter ou modifier
+  un mode ne touche pas les autres (isolement contrôlé par ESLint).
+- Données validées par zod : entrées de l'API, fichiers lus, variables d'environnement, réponses reçues par le
+  client et fichiers JSON produits par le modèle.
 - `client/` : React 19 + TypeScript + Vite + Ant Design, thème néon sombre (clair disponible).
 
 ## Auteur et licence

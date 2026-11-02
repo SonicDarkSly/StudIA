@@ -19,7 +19,7 @@
         "skill",
         "command",
         "agent",
-        "claudemd",
+        "instructions",
         "plugin"
       ],
       "description": "Le meilleur généraliste du catalogue pour concevoir des skills, des consignes de projet et des sous-agents. Rapide pour sa taille : seuls 3 Md de paramètres travaillent à chaque token.",
@@ -87,7 +87,7 @@
       "idealFor": [
         "chat",
         "skill",
-        "claudemd"
+        "instructions"
       ],
       "description": "Le plus grand modèle ouvert de Google. Très bon en français et en rédaction structurée.",
       "pros": "Style soigné, bon suivi des consignes, 140 langues.",
@@ -123,7 +123,7 @@
         "skill",
         "command",
         "agent",
-        "claudemd",
+        "instructions",
         "plugin"
       ],
       "description": "Modèle de Mistral AI, entreprise française : excellent en français, précis sur les formats et le code.",

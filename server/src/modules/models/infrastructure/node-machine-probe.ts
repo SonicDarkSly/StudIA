@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { cpus, freemem, totalmem } from 'node:os';
+import { env } from '../../../shared/config/env.js';
 import { llamaInstance } from '../../../shared/config/esm.js';
 import {
   osReserveGb,
@@ -17,9 +18,9 @@ export class NodeMachineProbe implements MachineProbe {
   private gpu: Promise<{ gpu?: GpuBackend; names: string[]; vramGb?: number }> | undefined;
 
   async profile(): Promise<MachineProfile> {
-    const override = Number(process.env.STUDIA_MEMORY_GB);
-    const memoryOverridden = Number.isFinite(override) && override > 0;
-    const totalRamGb = roundToTenth(memoryOverridden ? override : totalmem() / BYTES_PER_GB);
+    const { STUDIA_MEMORY_GB: override, STUDIA_IGNORE_LIMITS: limitsIgnored } = env();
+    const memoryOverridden = override !== undefined;
+    const totalRamGb = roundToTenth(override ?? totalmem() / BYTES_PER_GB);
     const unifiedMemory = process.platform === 'darwin' && process.arch === 'arm64';
     const { gpu, names, vramGb } = await this.detectGpu();
     const scaledVram =
@@ -39,7 +40,7 @@ export class NodeMachineProbe implements MachineProbe {
       unifiedMemory,
       usableGb: roundToTenth(totalRamGb - osReserveGb(totalRamGb)),
       memoryOverridden,
-      limitsIgnored: process.env.STUDIA_IGNORE_LIMITS === '1',
+      limitsIgnored,
     };
   }
 

@@ -1,0 +1,50 @@
+Ce plugin permet à l'utilisateur de vérifier les modifications en cours dans son dépôt Git avant de les valider avec un commit. Il inclut une skill qui analyse les fichiers modifiés, résume leurs changements et propose une revue critique pour s'assurer qu’aucune erreur ou omission n’est passée inaperçue. Ce plugin est conçu pour fonctionner avec l’IA Copilot dans VS Code, en s’appuyant sur les outils natifs de Git.
+
+=== FICHIER: revue-code/plugin.json ===
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "revue-code",
+  "version": "1.0.0",
+  "description": "Analyse les modifications en cours dans Git et propose une revue critique avant le commit."
+}
+=== FIN ===
+
+=== FICHIER: revue-code/README.md ===
+# Plugin « revue-code »
+
+Ce plugin ajoute une skill à GitHub Copilot pour relire les modifications en cours avant un commit. Il analyse les fichiers modifiés, résume les changements et suggère une vérification des points critiques (ex : suppression de code important, ajout non documenté).
+
+## Fonctionnalités
+- `revue-code` : relit les modifications actuelles dans le dépôt Git.
+
+## Installation
+1. Placez ce dossier dans votre projet ou dans un emplacement accessible.
+2. Dans le terminal, exécutez :
+   ```bash
+   copilot plugin install ./revue-code
+   ```
+3. Dans VS Code, activez `chat.plugins.enabled` si ce n’est pas déjà fait.
+4. Utilisez « Install a plugin from source » dans l’interface Copilot pour charger le plugin.
+
+## Test
+1. Modifiez un fichier dans votre dépôt Git.
+2. Lancez la commande Copilot : `revue-code`.
+3. L’IA vous retourne un résumé des changements et une revue critique.
+
+## À vérifier
+- Le plugin utilise `git diff --cached` pour les modifications en attente de commit. Assurez-vous que l’environnement dispose d’un accès à Git.
+- Le nom du plugin est `revue-code`, compatible avec la syntaxe Copilot.
+=== FIN ===
+
+=== FICHIER: revue-code/skills/revue-code/SKILL.md ===
+---
+name: revue-code
+description: Relit les modifications en cours dans le dépôt Git avant un commit. À utiliser quand vous voulez vérifier que vos changements sont complets, cohérents et sans erreur avant de valider.
+---
+1. Exécutez `git diff --cached` pour obtenir la liste des fichiers modifiés en attente de commit.
+2. Analysez chaque fichier modifié : identifiez les ajouts, suppressions et modifications majeures.
+3. Vérifiez si les changements sont cohérents avec le message de commit attendu (si fourni).
+4. Identifiez les risques potentiels : suppression de code critique, ajout non documenté, erreurs syntaxiques visibles.
+5. Rédigez un résumé clair des modifications, en mettant en évidence les points à vérifier manuellement.
+6. Proposez une recommandation finale : « Commit autorisé », « Revoir les modifications » ou « Annuler le commit ».
+=== FIN ===

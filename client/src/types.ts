@@ -120,9 +120,30 @@ export interface ScaffoldFile {
   content: string;
 }
 
-export type TargetKey = 'claude' | 'codex' | 'copilot' | 'cursor' | 'gemini' | 'antigravity' | 'portable';
+export const TARGET_KEYS = [
+  'claude',
+  'codex',
+  'copilot',
+  'cursor',
+  'gemini',
+  'antigravity',
+  'portable',
+] as const;
 
-export type GeneratorKey = 'chat' | 'skill' | 'mcp' | 'command' | 'agent' | 'claudemd' | 'hooks' | 'plugin';
+export type TargetKey = (typeof TARGET_KEYS)[number];
+
+export const MODE_KEYS = [
+  'chat',
+  'skill',
+  'mcp',
+  'command',
+  'agent',
+  'instructions',
+  'hooks',
+  'plugin',
+] as const;
+
+export type ModeKey = (typeof MODE_KEYS)[number];
 
 export interface AiTarget {
   key: TargetKey;
@@ -139,6 +160,19 @@ export interface SkillRules {
   toolNames?: string[];
   configFiles?: string[];
   scriptPrefix?: string;
+}
+
+export interface ModeCompanion {
+  label: string;
+  hint: string;
+  file: GeneratedFile;
+}
+
+export interface ModeRules {
+  requiresSkill?: boolean;
+  place?: (files: GeneratedFile[], format?: TargetFormat) => GeneratedFile[];
+  check: (files: GeneratedFile[], format?: TargetFormat) => FileIssue[];
+  companion?: (files: GeneratedFile[]) => ModeCompanion | undefined;
 }
 
 export interface PluginRules {
@@ -158,8 +192,8 @@ export interface TargetFormat {
   plugin?: PluginRules;
 }
 
-export interface Generator {
-  key: GeneratorKey;
+export interface Mode {
+  key: ModeKey;
   label: string;
   short: string;
   description: string;
@@ -199,7 +233,7 @@ export interface Conversation {
   title: string;
   createdAt: string;
   updatedAt: string;
-  generatorKey: GeneratorKey;
+  modeKey: ModeKey;
   targetKey: TargetKey;
   modelKey: string;
   projectNames: string[];
@@ -212,7 +246,7 @@ export interface ConversationSummary {
   id: string;
   title: string;
   updatedAt: string;
-  generatorKey: GeneratorKey;
+  modeKey: ModeKey;
   targetKey?: TargetKey;
   modelKey: string;
   messageCount: number;

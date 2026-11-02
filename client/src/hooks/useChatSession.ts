@@ -6,7 +6,7 @@ import type {
   ChatMessage,
   Conversation,
   GenerationSettings,
-  GeneratorKey,
+  ModeKey,
   StreamState,
   TargetKey,
 } from '@/types';
@@ -16,7 +16,7 @@ import { uid } from '@/utils/format';
 const MAX_TITLE_LENGTH = 70;
 
 export function newConversation(
-  generatorKey: GeneratorKey,
+  modeKey: ModeKey,
   targetKey: TargetKey,
   modelKey: string,
   settings: Partial<GenerationSettings>,
@@ -28,7 +28,7 @@ export function newConversation(
     title: 'Nouvelle conversation',
     createdAt: now,
     updatedAt: now,
-    generatorKey,
+    modeKey,
     targetKey,
     modelKey,
     projectNames,
@@ -108,7 +108,7 @@ export function useChatSession(onSaved: (c: Conversation) => Promise<void>) {
         await streamChat(
           {
             modelKey: working.modelKey,
-            generatorKey: working.generatorKey,
+            modeKey: working.modeKey,
             targetKey: working.targetKey ?? DEFAULT_TARGET,
             projectNames: working.projectNames,
             settings: { ...DEFAULT_SETTINGS, ...working.settings },

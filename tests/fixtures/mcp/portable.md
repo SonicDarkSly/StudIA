@@ -1,0 +1,159 @@
+Ce connecteur MCP « projets-locaux » permet d'interagir avec les projets stockés dans le dossier ~/projets. Il propose deux outils en lecture seule :
+1. `lister_projets` : liste tous les dossiers présents dans ~/projets.
+2. `lire_claude_md` : lit le contenu du fichier CLAUDE.md d'un projet donné.
+
+Les chemins sont validés pour éviter tout accès en dehors de ~/projets. Les outils renvoient toujours une réponse structurée avec `content` ou `isError: true`.
+
+=== FICHIER: projets-locaux/src/index.ts ===
+```typescript
+import { McpServer } from "@modelcontextprotocol/server";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
+import * as z from "zod/v4";
+import path from "node:path";
+import os from "node:os";
+import { readdir, readFile } from "node:fs/promises";
+
+const DOSSIER_AUTORISE = path.join(os.homedir(), "projets");
+
+function cheminAutorise(...parties: string[]): string | undefined {
+  const chemin = path.resolve(DOSSIER_AUTORISE, ...parties);
+  const relatif = path.relative(DOSSIER_AUTORISE, chemin);
+  return relatif.startsWith("..") || path.isAbsolute(relatif) ? undefined : chemin;
+}
+
+function createServer(): McpServer {
+  const server = new McpServer({ name: "projets-locaux", version: "1.0.0" });
+
+  server.registerTool(
+    "lister_projets",
+    {
+      title: "Lister les projets locaux",
+      description: "Liste tous les dossiers présents dans le dossier ~/projets. Utile pour connaître les projets disponibles.",
+      inputSchema: z.object({}),
+    },
+    async () => {
+      try {
+        const entrees = await readdir(DOSSIER_AUTORISE, { withFileTypes: true });
+        const dossiers = entrees
+          .filter((e) => e.isDirectory())
+          .map((e) => e.name);
+        return {
+          content: [
+            {
+              type: "text",
+              text: dossiers.length > 0
+                ? `Projets disponibles : ${dossiers.join(", ")}`
+                : "Aucun projet trouvé dans ~/projets.",
+            },
+          ],
+        };
+      } catch (erreur) {
+        console.error("Erreur lors de la lecture du dossier ~/projets :", erreur);
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: "Impossible de lire le dossier ~/projets.",
+            },
+          ],
+        };
+      }
+    },
+  );
+
+  server.registerTool(
+    "lire_claude_md",
+    {
+      title: "Lire le CLAUDE.md d'un projet",
+      description: "Lit le contenu du fichier CLAUDE.md d'un projet donné. Utile pour obtenir les instructions spécifiques à un projet.",
+      inputSchema: z.object({
+        nom_projet: z.string().describe("Nom du dossier du projet (ex: 'mon-projet')"),
+      }),
+    },
+    async ({ nom_projet }) => {
+      const cheminFichier = cheminAutorise(nom_projet, "CLAUDE.md");
+      if (!cheminFichier) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Accès refusé : le projet '${nom_projet}' n'est pas dans ~/projets ou le fichier CLAUDE.md est introuvable.`,
+            },
+          ],
+        };
+      }
+
+      try {
+        const contenu = await readFile(cheminFichier, "utf-8");
+        return {
+          content: [
+            {
+              type: "text",
+              text: contenu,
+            },
+          ],
+        };
+      } catch (erreur) {
+        console.error(`Erreur lors de la lecture de ${cheminFichier} :`, erreur);
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Impossible de lire le fichier CLAUDE.md du projet '${nom_projet}'.`,
+            },
+          ],
+        };
+      }
+    },
+  );
+
+  return server;
+}
+
+void serveStdio(createServer);
+=== FIN ===
+
+=== FICHIER: projets-locaux/README.md ===
+# Connecteur MCP « projets-locaux »
+
+Ce connecteur permet d'interagir avec les projets stockés dans le dossier `~/projets`.
+
+## Outils
+
+### `lister_projets`
+Liste tous les dossiers présents dans le dossier `~/projets`. Utile pour connaître les projets disponibles.
+
+### `lire_claude_md`
+Lit le contenu du fichier `CLAUDE.md` d'un projet donné. Utile pour obtenir les instructions spécifiques à un projet.
+
+## Installation
+
+1. npm install
+2. npm run build (crée dist/index.js, le fichier lancé par l'IA)
+3. npm run inspect (tester les outils dans l'inspecteur MCP)
+4. Configuration : où fusionner le fichier du dossier config/ (voir FORMAT POUR L'IA CIBLE).
+5. Une phrase qui dit de remplacer /CHEMIN/ABSOLU/VERS par le chemin réel du dossier du connecteur.
+
+### Configuration pour Claude Code
+Fusionner le contenu de `config/claude-mcp.json` dans `.mcp.json` à la racine du projet (Claude Code) ou dans `claude_desktop_config.json` (Claude Desktop, redémarrage complet nécessaire).
+
+### Configuration pour Codex
+Ajouter le contenu de `config/codex-config.toml` dans `~/.codex/config.toml` (ou `.codex/config.toml` d’un projet approuvé).
+
+### Configuration pour VS Code
+Fusionner le contenu de `config/vscode-mcp.json` dans `.vscode/mcp.json`, clé `"servers"`.
+
+### Configuration pour Cursor
+Fusionner le contenu de `config/cursor-mcp.json` dans `.cursor/mcp.json` du projet ou `~/.cursor/mcp.json`.
+
+### Configuration pour Gemini
+Fusionner le contenu de `config/gemini-settings.json` dans `.gemini/settings.json` du projet ou `~/.gemini/settings.json`.
+
+### Configuration pour Antigravity
+Fusionner le contenu de `config/antigravity-mcp.json` dans `.agents/mcp_config.json` du projet ou `~/.gemini/config/mcp_config.json`.
+
+Remplacer `/CHEMIN/ABSOLU/VERS/projets-locaux` par le chemin réel du dossier du connecteur.
+=== FIN ===

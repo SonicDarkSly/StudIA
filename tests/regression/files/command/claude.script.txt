@@ -1,0 +1,31 @@
+réponse coupée : non
+
+[ok] .claude/commands/verifier.md : Corrigé automatiquement : La liste « À vérifier » destinée à l’utilisateur était écrite dans le fichier : elle en a été retirée.
+[warning] .claude/commands/verifier.md : Le corps ressemble à un script shell : une commande est une consigne adressée à l’agent, qui lance lui-même les commandes.
+[error] .claude/commands/verifier.md : Ligne « ! commande » sans accents graves : Claude Code ne l’exécutera pas. Écrire !`commande`, ou demander à l’agent de la lancer.
+[warning] .claude/commands/verifier.md : !`npm run typecheck` peut échouer (erreurs trouvées) et annulerait alors toute la commande : demander plutôt à l’agent de la lancer.
+[warning] .claude/commands/verifier.md : Commande(s) !`…` non permise(s) par allowed-tools : npm run typecheck. Ajouter par ex. Bash(npm *).
+
+=== .claude/commands/verifier.md (modele)
+# réparé : La liste « À vérifier » destinée à l’utilisateur était écrite dans le fichier : elle en a été retirée.
+---
+description: Lance le typecheck
+allowed-tools: Bash(tsc)
+---
+! tsc --noEmit
+Contexte : !`npm run typecheck`
+
+echo "=== Résumé ==="
+if [ -n "$ARGUMENTS" ]; then
+  echo "filtre"
+fi
+
+
+=== texte affiché
+Une commande de vérification.
+
+
+> **Fichier** `.claude/commands/verifier.md` : voir le panneau Fichiers
+
+À vérifier :
+- tsconfig.json existe.

@@ -1,0 +1,49 @@
+Ce plugin « revue-code » ajoute une skill qui permet à l'IA de relire les modifications en cours dans le staging area avant un commit. Il s'inscrit dans la pratique du développement responsable, en incitant à vérifier les changements avant de les valider. La skill utilise `git diff --staged` pour afficher les différences, puis propose une synthèse claire et une question finale pour confirmer l’action. Ce plugin est conçu pour fonctionner nativement dans Cursor (Anysphere), avec un manifeste standard et une installation simple.
+
+=== FICHIER: revue-code/plugin.json ===
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "revue-code",
+  "version": "1.0.0",
+  "description": "Permet de relire les modifications en cours avant un commit, en affichant les différences avec git diff --staged."
+}
+=== FIN ===
+
+=== FICHIER: revue-code/skills/relire-modifications/SKILL.md ===
+---
+name: relire-modifications
+description: "Utilisez cette skill pour examiner les modifications préparées dans le staging area avant de faire un commit. Elle affiche les différences avec git diff --staged et propose une synthèse pour vérifier que tout est conforme."
+---
+
+1. Exécutez `git diff --staged` pour afficher les modifications qui seront incluses dans le prochain commit.
+2. Analysez les changements : vérifiez qu’aucune modification inattendue n’est incluse, et que les corrections sont correctement appliquées.
+3. Résumez brièvement les modifications en une phrase ou deux (par exemple : « Correction d’un bug de validation dans le formulaire d’inscription »).
+4. Posez la question suivante à l’utilisateur : « Êtes-vous sûr de vouloir valider ces modifications avec un commit ? Répondez par oui ou non. »
+5. Attendez une réponse claire (oui/non) pour décider si le commit peut continuer.
+=== FIN ===
+
+=== FICHIER: revue-code/README.md ===
+# Plugin « revue-code »
+
+Ce plugin ajoute une skill qui permet de relire les modifications en cours dans le staging area avant un commit. Il s’inscrit dans les bonnes pratiques de développement, en encourageant à vérifier les changements avant validation.
+
+## Contenu
+- `plugin.json` : manifeste du plugin.
+- `skills/relire-modifications/SKILL.md` : skill qui affiche les différences avec `git diff --staged`, résume les modifications et demande confirmation.
+
+## Installation
+1. Copiez le dossier `revue-code` dans le répertoire local des plugins de Cursor :
+   ```
+   ~/.cursor/plugins/local/revue-code/
+   ```
+2. Dans Cursor, ouvrez la palette de commandes (`Cmd+Shift+P` ou `Ctrl+Shift+P`) et exécutez **Developer: Reload Window**.
+
+## Utilisation
+- Lancez la skill via l’interface de l’agent : « relire-modifications ».
+- Suivez les étapes proposées pour examiner les changements et confirmer le commit.
+
+## À vérifier
+- Aucun serveur MCP n’est requis.
+- Assurez-vous que `git` est installé et accessible dans le terminal utilisé par Cursor.
+- Le plugin ne modifie pas le workflow Git ; il se contente d’afficher les différences et de demander une confirmation.
+=== FIN ===

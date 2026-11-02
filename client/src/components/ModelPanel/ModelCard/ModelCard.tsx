@@ -6,9 +6,9 @@ import {
   StopOutlined,
 } from '@ant-design/icons';
 import { Alert, Button, Popconfirm, Progress, Space, Tag, Tooltip } from 'antd';
-import type { FitLevel, Generator, ModelView } from '@/types';
+import type { FitLevel, Mode, ModelView } from '@/types';
 import { fmtNumber, percentOf } from '@/utils/format';
-import { generatorIcon } from '@/components/icons';
+import { modeIcon } from '@/components/icons';
 import { UninstallModelButton } from './UninstallModelButton';
 import './ModelCard.css';
 
@@ -20,7 +20,7 @@ const FIT_TAG: Record<FitLevel, { color: string; label: string }> = {
 
 interface Props {
   model: ModelView;
-  generators: Generator[];
+  modes: Mode[];
   selected: boolean;
   expanded: boolean;
   blocked: boolean;
@@ -86,7 +86,7 @@ function ModelActions({ model: m, blocked, busy, onDownload, onCancel, onUninsta
 }
 
 export function ModelCard(props: Props) {
-  const { model: m, generators, selected, expanded, blocked, onToggle, onSelect } = props;
+  const { model: m, modes, selected, expanded, blocked, onToggle, onSelect } = props;
   const fit = FIT_TAG[m.fit.level];
   const installed = m.status === 'present';
   const detailId = `modele-${m.key}-detail`;
@@ -146,10 +146,10 @@ export function ModelCard(props: Props) {
           {m.idealFor.length > 0 && (
             <span className="ideal-for">
               <span className="muted">Idéal pour :</span>
-              {generators
+              {modes
                 .filter((g) => m.idealFor.includes(g.key))
                 .map((g) => (
-                  <Tag key={g.key} icon={generatorIcon(g.key)} color="cyan" variant="filled">
+                  <Tag key={g.key} icon={modeIcon(g.key)} color="cyan" variant="filled">
                     {g.label}
                   </Tag>
                 ))}

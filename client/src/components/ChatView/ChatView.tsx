@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import type {
   AiTarget,
   Conversation,
-  Generator,
-  GeneratorKey,
+  Mode,
+  ModeKey,
   MachineProfile,
   ModelView,
   PanelTab,
@@ -13,7 +13,7 @@ import type {
 } from '@/types';
 import { DEFAULT_TARGET, TARGET_NOT_USED } from '@/consts';
 import { isBlocked } from '@/utils/models';
-import { generatorIcon } from '@/components/icons';
+import { modeIcon } from '@/components/icons';
 import { Composer } from './Composer';
 import { Message } from './Message';
 import './ChatView.css';
@@ -23,13 +23,13 @@ const SCROLL_UP_KEYS = ['ArrowUp', 'PageUp', 'Home'];
 
 interface Props {
   conversation: Conversation;
-  generators: Generator[];
+  modes: Mode[];
   targets: AiTarget[];
   models: ModelView[];
   machine?: MachineProfile;
   stream: StreamState;
   onPickTarget: (key: TargetKey) => void;
-  onPickGenerator: (key: GeneratorKey) => void;
+  onPickMode: (key: ModeKey) => void;
   onSend: (text: string) => void;
   onStop: () => void;
   onRegenerate: () => void;
@@ -38,20 +38,20 @@ interface Props {
 }
 
 export function ChatView(props: Props) {
-  const { conversation, generators, targets, models, stream } = props;
+  const { conversation, modes, targets, models, stream } = props;
   const [draft, setDraft] = useState('');
   const scroller = useRef<HTMLDivElement>(null);
-  const generator = generators.find((g) => g.key === conversation.generatorKey);
-  const targetApplies = generator?.usesFiles !== false;
+  const mode = modes.find((g) => g.key === conversation.modeKey);
+  const targetApplies = mode?.usesFiles !== false;
   const model = models.find((m) => m.key === conversation.modelKey);
   const empty = conversation.messages.length === 0;
   const targetKey: TargetKey = conversation.targetKey ?? DEFAULT_TARGET;
   const target = targets.find((t) => t.key === targetKey);
-  const format = generator?.formats[targetKey];
+  const format = mode?.formats[targetKey];
   const unavailable = format?.status === 'indisponible';
   const tooHeavy = isBlocked(model, props.machine);
   const modelMissing = model && model.status !== 'present';
-  const needsProject = generator?.needsProject && conversation.projectNames.length === 0;
+  const needsProject = mode?.needsProject && conversation.projectNames.length === 0;
   const cannotSend = !!modelMissing || tooHeavy || unavailable;
 
   const stickToBottom = useRef(true);
@@ -137,19 +137,19 @@ export function ChatView(props: Props) {
                 )}
               </div>
               <div className="mode-grid">
-                {generators.map((g) => {
+                {modes.map((g) => {
                   const f = g.formats[targetKey];
                   const off = f?.status === 'indisponible';
                   return (
                     <Tooltip key={g.key} title={f?.summary}>
                       <button
                         type="button"
-                        className={`plain-button mode-card${g.key === conversation.generatorKey ? ' active' : ''}${off ? ' unavailable' : ''}`}
-                        aria-pressed={g.key === conversation.generatorKey}
+                        className={`plain-button mode-card${g.key === conversation.modeKey ? ' active' : ''}${off ? ' unavailable' : ''}`}
+                        aria-pressed={g.key === conversation.modeKey}
                         disabled={off}
-                        onClick={() => props.onPickGenerator(g.key)}
+                        onClick={() => props.onPickMode(g.key)}
                       >
-                        <span className="icon">{generatorIcon(g.key)}</span>
+                        <span className="icon">{modeIcon(g.key)}</span>
                         <span className="name">{g.label}</span>
                         <span className="short">{g.short}</span>
                         {f && f.status !== 'natif' && (
@@ -164,19 +164,19 @@ export function ChatView(props: Props) {
                   );
                 })}
               </div>
-              {generator && (
+              {mode && (
                 <div className="glass mode-details">
                   <div className="mode-title">
-                    <span className="accent">{generatorIcon(generator.key)}</span> {generator.label}
+                    <span className="accent">{modeIcon(mode.key)}</span> {mode.label}
                   </div>
-                  <div className="muted mode-description">{generator.description}</div>
-                  {format && generator.usesFiles && (
+                  <div className="muted mode-description">{mode.description}</div>
+                  {format && mode.usesFiles && (
                     <div className="mode-target">
                       <b className="accent">Pour {target?.label} :</b> {format.summary}
                     </div>
                   )}
                   <div className="section-label examples-label">Exemples à essayer</div>
-                  {generator.examples.map((ex) => (
+                  {mode.examples.map((ex) => (
                     <button type="button" key={ex} className="example" onClick={() => setDraft(ex)}>
                       {ex}
                     </button>
@@ -206,7 +206,7 @@ export function ChatView(props: Props) {
             <Alert
               type="error"
               showIcon
-              title={`${generator?.label} : indisponible pour ${target?.label}`}
+              title={`${mode?.label} : indisponible pour ${target?.label}`}
               description={format?.summary}
             />
           )}
@@ -250,7 +250,7 @@ export function ChatView(props: Props) {
         </div>
         <Composer
           conversation={conversation}
-          generator={generator}
+          mode={mode}
           target={target}
           targetKey={targetKey}
           model={model}

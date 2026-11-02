@@ -1,0 +1,83 @@
+réponse coupée : non
+
+[ok] - : Aucun problème détecté par les contrôles automatiques.
+
+=== revue-code/.claude-plugin/plugin.json (modele)
+{
+  "name": "revue-code",
+  "version": "1.0.0",
+  "description": "Analyse les modifications en cours dans Git avant un commit, pour éviter les erreurs de validation.",
+  "author": {
+    "name": "Utilisateur"
+  }
+}
+
+
+=== revue-code/skills/revue-modifications/SKILL.md (modele)
+---
+name: revue-modifications
+description: Analyse les modifications en cours dans le dépôt Git et les résume pour vérification avant un commit. À utiliser quand l'utilisateur veut s'assurer que ce qu'il va commiter est correct, complet et conforme aux attentes.
+---
+1. Exécuter la commande `git diff --cached` pour obtenir les fichiers déjà ajoutés au commit (staged).
+2. Exécuter la commande `git diff` pour obtenir les modifications non ajoutées (unstaged).
+3. Combiner les deux résultats et formater une vue d'ensemble claire :
+   - Liste des fichiers ajoutés ou modifiés.
+   - Indiquer pour chaque fichier si c'est un ajout, une modification ou une suppression.
+   - Mettre en évidence les grandes modifications (plus de 5 lignes ajoutées/supprimées).
+4. Résumer le contenu global : nombre total de fichiers modifiés, nombre de lignes ajoutées et supprimées.
+5. Proposer un message de commit suggéré basé sur les changements détectés (ex: "Corrige bug dans authentification").
+6. Afficher le résumé final avec une recommandation : « Vérifiez que ces modifications sont bien celles que vous souhaitez commiter. »
+
+
+=== revue-code/README.md (modele)
+# Plugin `revue-code`
+
+Ce plugin permet de vérifier les modifications en cours dans un dépôt Git avant d'effectuer un commit. Il analyse les fichiers ajoutés (`git diff --cached`) et non ajoutés (`git diff`), puis fournit un résumé clair des changements, avec détection des grandes modifications.
+
+## Fonctionnalités
+- Analyse des différences entre le working directory et l'index (staged).
+- Résumé structuré : fichiers modifiés, type de modification, nombre de lignes.
+- Suggestion de message de commit basée sur les changements.
+- Recommandation finale pour vérification.
+
+## Installation
+1. Placez le dossier `revue-code` dans un répertoire accessible (ex: `~/plugins/revue-code`).
+2. Lancez Claude avec le plugin activé :
+   ```bash
+   claude --plugin-dir ./revue-code
+   ```
+3. Validez l'installation :
+   ```bash
+   claude plugin validate ./revue-code
+   ```
+
+## Utilisation
+Dans Claude Desktop, utilisez la commande suivante pour déclencher la revue :
+```
+/revue-code:revue-modifications
+```
+
+Le plugin affichera un résumé des modifications et suggérera un message de commit.
+
+## À vérifier
+- Le dépôt Git doit être initialisé (`git init`) et avoir des fichiers modifiés.
+- L'utilisateur doit avoir `git` installé et accessible dans le PATH.
+- La commande `git diff` doit fonctionner correctement dans le contexte d'exécution.
+- Si l'utilisateur utilise un environnement non standard (ex: WSL, Docker), vérifiez que les chemins Git sont accessibles.
+
+
+=== texte affiché
+Ce plugin permet à l'utilisateur de vérifier les modifications en cours dans son dépôt Git avant de les valider avec un commit. Il utilise une skill qui analyse les différences actuelles (diff) et les résume de manière claire, en mettant en évidence les ajouts, suppressions et modifications significatives. Cette fonctionnalité est utile pour éviter les erreurs de commit, comme l'envoi accidentel de fichiers temporaires ou de code non finalisé.
+
+Le plugin suit les conventions de Claude Desktop : manifeste JSON, skills au format Markdown, installation via `claude --plugin-dir`, et validation avec `claude plugin validate`.
+
+
+> **Fichier** `revue-code/.claude-plugin/plugin.json` : voir le panneau Fichiers
+
+
+
+> **Fichier** `revue-code/skills/revue-modifications/SKILL.md` : voir le panneau Fichiers
+
+
+
+> **Fichier** `revue-code/README.md` : voir le panneau Fichiers

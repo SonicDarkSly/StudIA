@@ -1,0 +1,25 @@
+réponse coupée : non
+
+[warning] CLAUDE.md : 1 point(s) « À compléter » à renseigner.
+
+=== CLAUDE.md (modele)
+# Exemple : consignes pour les agents
+
+Application de démonstration.
+
+## Commandes
+- npm install, puis npm run dev
+
+## Pièges
+À compléter : ports utilisés.
+
+
+=== texte affiché
+Les consignes du projet.
+
+
+> **Fichier** `CLAUDE.md` : voir le panneau Fichiers
+
+
+À vérifier :
+- Les commandes sont exactes.

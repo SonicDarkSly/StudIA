@@ -1,0 +1,214 @@
+réponse coupée : non
+
+[ok] projets-locaux/src/index.ts : Corrigé automatiquement : Ligne ``` retirée autour du code : le modèle avait entouré le fichier d’un bloc Markdown.
+[ok] - : Aucun problème détecté par les contrôles automatiques.
+
+=== projets-locaux/src/index.ts (modele)
+# réparé : Ligne ``` retirée autour du code : le modèle avait entouré le fichier d’un bloc Markdown.
+import { McpServer } from "@modelcontextprotocol/server";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
+import * as z from "zod/v4";
+import path from "node:path";
+import os from "node:os";
+import { readdir, readFile } from "node:fs/promises";
+
+const DOSSIER_AUTORISE = path.join(os.homedir(), "projets");
+
+function cheminAutorise(...parties: string[]): string | undefined {
+  const chemin = path.resolve(DOSSIER_AUTORISE, ...parties);
+  const relatif = path.relative(DOSSIER_AUTORISE, chemin);
+  return relatif.startsWith("..") || path.isAbsolute(relatif) ? undefined : chemin;
+}
+
+function createServer(): McpServer {
+  const server = new McpServer({ name: "projets-locaux", version: "1.0.0" });
+
+  server.registerTool(
+    "lister_projets",
+    {
+      title: "Lister les projets",
+      description: "Liste tous les dossiers dans le répertoire ~/projets.",
+      inputSchema: z.object({}),
+    },
+    async () => {
+      try {
+        const entrees = await readdir(DOSSIER_AUTORISE, { withFileTypes: true });
+        const dossiers = entrees
+          .filter((e) => e.isDirectory())
+          .map((e) => e.name);
+        return {
+          content: [
+            {
+              type: "text",
+              text: dossiers.length > 0 ? dossiers.join("\n") : "Aucun projet trouvé.",
+            },
+          ],
+        };
+      } catch (error) {
+        console.error("Erreur lors de la lecture du dossier ~/projets :", error);
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: "Impossible de lire le dossier des projets.",
+            },
+          ],
+        };
+      }
+    },
+  );
+
+  server.registerTool(
+    "lire_claude_md",
+    {
+      title: "Lire le CLAUDE.md d’un projet",
+      description: "Lit le contenu du fichier CLAUDE.md dans un projet spécifique de ~/projets.",
+      inputSchema: z.object({
+        nom_projet: z.string().describe("Nom du dossier du projet à lire."),
+      }),
+    },
+    async ({ nom_projet }) => {
+      const cheminFichier = cheminAutorise(nom_projet, "CLAUDE.md");
+      if (!cheminFichier) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Accès refusé : le projet "${nom_projet}" n’est pas dans ~/projets ou le fichier CLAUDE.md est introuvable.`,
+            },
+          ],
+        };
+      }
+
+      try {
+        const contenu = await readFile(cheminFichier, "utf-8");
+        return {
+          content: [
+            {
+              type: "text",
+              text: contenu,
+            },
+          ],
+        };
+      } catch (error) {
+        console.error(`Erreur lors de la lecture de ${cheminFichier} :`, error);
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Impossible de lire le fichier CLAUDE.md pour le projet "${nom_projet}".`,
+            },
+          ],
+        };
+      }
+    },
+  );
+
+  return server;
+}
+
+void serveStdio(createServer);
+
+
+=== projets-locaux/README.md (modele)
+# Connecteur MCP « projets-locaux »
+
+Ce connecteur permet de lister les projets dans le dossier `~/projets` et de lire le fichier `CLAUDE.md` d’un projet spécifique.
+
+## Outils
+
+### lister_projets
+Liste tous les dossiers dans le répertoire `~/projets`.
+
+### lire_claude_md
+Lit le contenu du fichier `CLAUDE.md` dans un projet spécifique de `~/projets`.
+
+## Installation
+
+1. npm install
+2. npm run build (crée dist/index.js, le fichier lancé par l'IA)
+3. npm run inspect (tester les outils dans l'inspecteur MCP)
+4. Configuration : fusionner le fichier du dossier config/ dans le fichier de configuration de Codex :
+   - Pour un projet : `~/.codex/config.toml`
+   - Pour tous les projets : `~/.codex/config.toml` (ou `.codex/config.toml` d’un projet approuvé)
+5. Remplacer `/CHEMIN/ABSOLU/VERS` par le chemin réel du dossier du connecteur.
+
+Exemple de configuration dans `~/.codex/config.toml` :
+```toml
+[mcp_servers.projets-locaux]
+command = "node"
+args = ["/CHEMIN/ABSOLU/VERS/projets-locaux/dist/index.js"]
+```
+
+
+=== projets-locaux/package.json (gabarit)
+{
+  "name": "projets-locaux",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": { "projets-locaux": "dist/index.js" },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "inspect": "npx @modelcontextprotocol/inspector node dist/index.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}
+
+
+=== projets-locaux/tsconfig.json (gabarit)
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}
+
+
+=== projets-locaux/.gitignore (gabarit)
+node_modules/
+dist/
+
+
+=== projets-locaux/config/codex-config.toml (gabarit)
+[mcp_servers.projets-locaux]
+command = "node"
+args = ["/CHEMIN/ABSOLU/VERS/projets-locaux/dist/index.js"]
+
+
+=== texte affiché
+Ce connecteur MCP « projets-locaux » permet de lister les projets dans le dossier ~/projets et de lire le fichier CLAUDE.md d’un projet spécifique. Il respecte les règles de sécurité en limitant l’accès aux sous-dossiers du dossier autorisé, et utilise Zod pour valider les entrées. Les outils sont nommés en snake_case avec des descriptions précises.
+
+
+> **Fichier** `projets-locaux/src/index.ts` : voir le panneau Fichiers
+
+
+
+> **Fichier** `projets-locaux/README.md` : voir le panneau Fichiers
+
+
+À vérifier :
+
+- Le dossier `~/projets` existe bien.
+- Les projets sont des dossiers dans `~/projets`.
+- Le fichier `CLAUDE.md` est présent dans chaque projet.
+- Le chemin absolu fourni lors de la configuration est correct.

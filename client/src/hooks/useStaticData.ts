@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/api';
-import type { AiTarget, Generator, ProjectSummary } from '@/types';
+import type { AiTarget, Mode, ProjectSummary } from '@/types';
 
-export function useGenerators() {
-  const [data, setData] = useState<{ generators: Generator[]; targets: AiTarget[] }>({
-    generators: [],
+export function useModes() {
+  const [data, setData] = useState<{ modes: Mode[]; targets: AiTarget[] }>({
+    modes: [],
     targets: [],
   });
   useEffect(() => {
     api
-      .generators()
+      .modes()
       .then(setData)
-      .catch(() => setData({ generators: [], targets: [] }));
+      .catch(() => setData({ modes: [], targets: [] }));
   }, []);
   return data;
 }

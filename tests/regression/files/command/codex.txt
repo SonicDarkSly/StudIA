@@ -1,0 +1,28 @@
+réponse coupée : non
+
+[warning] .agents/skills/verifier/README.md : Fichier jamais cité dans SKILL.md : il ne sera jamais lu ni lancé.
+[warning] - : 2 fichiers livrés : une commande tient en un seul fichier, les autres sont inutiles.
+
+=== .agents/skills/verifier/SKILL.md (modele)
+---
+name: verifier
+description: Lance le typecheck du projet et résume les erreurs par fichier, quand l'utilisateur demande de vérifier les types
+---
+1. Lance npm run typecheck.
+2. Réponds par un tableau : fichier | nombre d'erreurs | première erreur.
+
+
+=== .agents/skills/verifier/README.md (modele)
+# verifier
+
+
+=== texte affiché
+Une skill appelée avec $verifier.
+
+
+> **Fichier** `.agents/skills/verifier/SKILL.md` : voir le panneau Fichiers
+
+
+
+> **Fichier** `.agents/skills/verifier/README.md` : voir le panneau Fichiers
+

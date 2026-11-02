@@ -1,13 +1,17 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import { Conversation, type ConversationSnapshot } from '../../domain/conversation.js';
+import {
+  Conversation,
+  type ConversationInput,
+  type ConversationSnapshot,
+} from '../../domain/conversation.js';
 import {
   CONVERSATION_REPOSITORY,
   type ConversationRepository,
 } from '../../domain/conversation.repository.js';
 
 export class SaveConversationCommand {
-  constructor(readonly snapshot: ConversationSnapshot) {}
+  constructor(readonly snapshot: ConversationInput) {}
 }
 
 @CommandHandler(SaveConversationCommand)

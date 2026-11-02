@@ -1,6 +1,6 @@
-import type { GenerationSettings, GeneratorKey, SettingHelp, TargetKey } from './types';
+import type { GenerationSettings, ModeKey, SettingHelp, TargetKey } from './types';
 
-export const DEFAULT_GENERATOR: GeneratorKey = 'chat';
+export const DEFAULT_MODE: ModeKey = 'chat';
 export const DEFAULT_TARGET: TargetKey = 'claude';
 export const TARGET_NOT_USED =
   'La discussion libre ne dépend pas de l’IA : choisis-la pour créer des fichiers.';

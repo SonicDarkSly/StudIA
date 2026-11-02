@@ -10,6 +10,8 @@ import {
   type ReplyOutcome,
   type ReplyRequest,
 } from '../application/commands/generate-reply.command.js';
+import { ZodValidationPipe } from '../../../shared/validation/zod-validation.pipe.js';
+import { chatRequestSchema } from './chat-request.schema.js';
 
 const EXPECTED = [
   InvalidChatRequestError,
@@ -26,7 +28,10 @@ export class ChatController {
   constructor(private readonly commands: CommandBus) {}
 
   @Post()
-  async stream(@Body() body: ReplyRequest, @Res() res: Response): Promise<void> {
+  async stream(
+    @Body(new ZodValidationPipe(chatRequestSchema)) body: ReplyRequest,
+    @Res() res: Response,
+  ): Promise<void> {
     res.status(HttpStatus.OK);
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');

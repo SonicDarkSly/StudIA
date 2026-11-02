@@ -1,7 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, EventBus, type ICommandHandler } from '@nestjs/cqrs';
-import { findTarget } from '../../../generators/domain/ai-target.js';
-import { composeGeneratorPrompt, findGenerator } from '../../../generators/domain/generator-catalog.js';
+import { findTarget } from '../../../modes/domain/ai-target.js';
+import { findMode } from '../../../modes/catalog/index.js';
+import { composeModePrompt } from '../../../modes/domain/compose-prompt.js';
 import { ModelNotDownloadedError } from '../../../models/domain/catalog-model.js';
 import { sanitizeSettings, type GenerationSettings } from '../../../models/domain/generation-settings.js';
 import {
@@ -26,7 +27,7 @@ const MAX_PROJECTS_PER_REPLY = 6;
 
 export interface ReplyRequest {
   modelKey: string;
-  generatorKey?: string;
+  modeKey?: string;
   targetKey?: string;
   projectNames?: string[];
   settings?: Partial<GenerationSettings>;
@@ -75,12 +76,12 @@ export class GenerateReplyHandler implements ICommandHandler<GenerateReplyComman
     const fit = assessFit(model, machine);
     if (fit.level === 'trop-lourd' && !machine.limitsIgnored) throw new ModelTooLargeError(model.label, fit);
 
-    const generator = findGenerator(request.generatorKey);
+    const mode = findMode(request.modeKey);
     const target = findTarget(request.targetKey);
-    const format = generator.formats[target.key];
+    const format = mode.formats[target.key];
     if (format.status === 'indisponible')
-      throw new InvalidChatRequestError(`${generator.label} pour ${target.label} : ${format.summary}`);
-    const generatorPrompt = composeGeneratorPrompt(generator, target);
+      throw new InvalidChatRequestError(`${mode.label} pour ${target.label} : ${format.summary}`);
+    const modePrompt = composeModePrompt(mode, target);
     const settings = sanitizeSettings({ ...model.recommended, ...(request.settings ?? {}) });
     const projectNames = (request.projectNames ?? []).slice(0, MAX_PROJECTS_PER_REPLY);
     const extracts = projectNames.map((name) => {
@@ -94,7 +95,7 @@ export class GenerateReplyHandler implements ICommandHandler<GenerateReplyComman
         path: located.path,
         settings,
         system: (contextSize) =>
-          buildSystemPrompt(generatorPrompt, request.extraInstructions, extracts, contextSize),
+          buildSystemPrompt(modePrompt, request.extraInstructions, extracts, contextSize),
         history: messages.slice(0, -1).map(({ role, content }) => ({ role, content })),
         prompt: last.content,
       },
@@ -113,7 +114,7 @@ export class GenerateReplyHandler implements ICommandHandler<GenerateReplyComman
       tokensPerSecond: result.tokensPerSecond,
       stopReason: result.stopReason,
     };
-    this.events.publish(new ReplyGeneratedEvent(generator.key, target.key, projectNames, stats));
+    this.events.publish(new ReplyGeneratedEvent(mode.key, target.key, projectNames, stats));
     return { stats, systemTokens: result.systemTokens };
   }
 }

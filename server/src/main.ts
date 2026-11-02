@@ -6,16 +6,14 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'express';
 import { AppModule } from './app.module.js';
-import { loadEnv } from './shared/config/env.js';
+import { env, loadEnv } from './shared/config/env.js';
 import { SERVER_ROOT } from './shared/config/paths.js';
 import { FileTeeLogger } from './shared/logging/file-tee.logger.js';
 
-const DEFAULT_PORT = 3003;
-
 async function bootstrap(): Promise<void> {
   loadEnv(join(SERVER_ROOT, '.env'));
-  const port = Number(process.env.PORT ?? DEFAULT_PORT);
-  const host = process.env.STUDIA_LAN === '1' ? '0.0.0.0' : '127.0.0.1';
+  const { PORT: port, STUDIA_LAN: lan } = env();
+  const host = lan ? '0.0.0.0' : '127.0.0.1';
 
   const logDir = join(SERVER_ROOT, 'logs');
   mkdirSync(logDir, { recursive: true });

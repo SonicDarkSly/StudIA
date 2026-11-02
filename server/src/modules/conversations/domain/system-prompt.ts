@@ -8,12 +8,12 @@ export interface ProjectExtract {
 const PROJECTS_SHARE = 0.55;
 
 export function buildSystemPrompt(
-  generatorPrompt: string,
+  modePrompt: string,
   extraInstructions: string | undefined,
   projects: ProjectExtract[],
   contextSize: number,
 ): string {
-  const parts = [generatorPrompt];
+  const parts = [modePrompt];
   if (extraInstructions?.trim())
     parts.push(`CONSIGNES PERSONNELLES DE L'UTILISATEUR :\n${extraInstructions.trim()}`);
   if (projects.length) {

@@ -1,0 +1,19 @@
+réponse coupée : non
+
+[warning] .cursor/rules/projet.mdc : En-tête « alwaysApply: true » absent : la règle ne sera pas appliquée partout.
+
+=== .cursor/rules/projet.mdc (modele)
+---
+description: Consignes générales du projet
+---
+# Exemple
+
+- npm run dev
+
+
+=== texte affiché
+La règle Cursor.
+
+
+> **Fichier** `.cursor/rules/projet.mdc` : voir le panneau Fichiers
+

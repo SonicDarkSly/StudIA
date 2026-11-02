@@ -1,0 +1,132 @@
+Cette skill permet de générer un compte rendu structuré à partir d’un enregistrement ou d’un résumé de réunion, en utilisant des termes précis comme « compte rendu », « CR », « synthèse de réunion ». Elle s’active quand l’utilisateur demande explicitement un tel document. Le résultat est un fichier `compte-rendu.md` bien formaté, conforme aux bonnes pratiques de documentation d’équipe.
+
+La skill se base sur des conventions claires : chaque décision, action et point ouvert est extrait avec les champs obligatoires (qui, quoi, quand), et le ton est neutre, factuel. Les fichiers d’accompagnement (`references/`) fournissent des exemples concrets pour guider la rédaction.
+
+=== FICHIER: .agents/skills/compte-rendu-reunion/SKILL.md ===
+---
+name: compte-rendu-reunion
+description: Utilise cette skill quand tu veux générer un compte rendu de réunion structuré avec décisions prises, actions assignées (qui, quoi, quand), et points ouverts. Produit un fichier `compte-rendu.md` dans le dossier courant.
+---
+### 1. Préparation
+- Vérifie que tu as reçu un résumé de réunion (texte ou transcription) contenant au moins :
+  - Les décisions prises
+  - Les actions à mener
+  - Les points non résolus
+- Si le résumé manque des éléments clés, demande une clarification avant de continuer. *(Pourquoi : éviter les lacunes dans le compte rendu)*
+
+### 2. Extraction des décisions
+- Identifie chaque décision comme une phrase ou un point clair indiquant une conclusion ou un choix arrêté.
+- Pour chaque décision :
+  - Formule-la en style neutre et actif (ex : « Le projet sera lancé le 15 juin »).
+  - Ajoute la date de décision si elle est mentionnée.
+- Place toutes les décisions dans la section **Décisions prises**.
+
+### 3. Extraction des actions
+- Pour chaque action :
+  - Identifie l’assigné (nom ou rôle, ex : « @Marie », « Chef de projet »).
+  - Formule le « quoi » clairement (ex : « Rédiger le cahier des charges »).
+  - Identifie la date limite si mentionnée (ex : « avant le 10 mai »).
+- Structure chaque action ainsi :
+  ```
+  - [ ] [Assigné] : [Action] (échéance : [date])
+  ```
+- Place toutes les actions dans la section **Actions à suivre**.
+
+### 4. Gestion des points ouverts
+- Identifie les sujets non résolus, incertains ou nécessitant un prochain rendez-vous.
+- Pour chaque point ouvert :
+  - Formule-le clairement (ex : « Définir le budget global »).
+  - Précise s’il est lié à une décision future ou à un prochain meeting.
+- Place les points ouverts dans la section **Points ouverts**.
+
+### 5. Rédaction finale
+- Génère un fichier `compte-rendu.md` dans le dossier courant avec ce format :
+```markdown
+# Compte rendu de réunion
+
+## Date
+[Date de la réunion, format : DD/MM/YYYY]
+
+## Participants
+[Liste des participants, séparés par une virgule]
+
+## Décisions prises
+- [Décision 1]
+- [Décision 2]
+
+## Actions à suivre
+- [ ] [Assigné] : [Action] (échéance : [date])
+- [ ] [Assigné] : [Action] (échéance : [date])
+
+## Points ouverts
+- [Point ouvert 1]
+- [Point ouvert 2]
+```
+
+> **Pour le ton et les exemples de rédaction, lire `references/exemples.md`**  
+> **Pour la structure exacte du fichier, lire `assets/modele.md`**
+
+### 6. Vérification finale
+- Vérifie que :
+  - Toutes les décisions sont présentes
+  - Toutes les actions ont un assigné et une échéance (ou « à définir » si inconnue)
+  - Aucun point ouvert n’est omis
+  - Le fichier est bien nommé `compte-rendu.md` dans le dossier courant
+
+### 7. Livraison
+- Sauvegarde le fichier `compte-rendu.md` dans le dossier courant.
+- Affiche : `✅ Compte rendu généré : compte-rendu.md`
+
+---
+
+=== FICHIER: .agents/skills/compte-rendu-reunion/references/exemples.md ===
+# Exemples de rédaction pour le compte rendu
+
+## Décisions prises
+- Le projet sera lancé le 15 juin.
+- L’équipe utilisera Notion comme outil central de suivi.
+
+## Actions à suivre
+- [ ] @Marie : Rédiger le cahier des charges (échéance : 10/05)
+- [ ] @Thomas : Préparer la présentation client (échéance : 12/05)
+- [ ] @Léa : Vérifier les coûts avec le service financier (échéance : à définir)
+
+## Points ouverts
+- Définir le budget global du projet.
+- Planifier le prochain sprint de développement.
+
+---
+
+=== FICHIER: .agents/skills/compte-rendu-reunion/assets/modele.md ===
+# Compte rendu de réunion
+
+## Date
+[Date de la réunion, format : DD/MM/YYYY]
+
+## Participants
+[Liste des participants, séparés par une virgule]
+
+## Décisions prises
+- [Décision 1]
+- [Décision 2]
+
+## Actions à suivre
+- [ ] [Assigné] : [Action] (échéance : [date])
+- [ ] [Assigné] : [Action] (échéance : [date])
+
+## Points ouverts
+- [Point ouvert 1]
+- [Point ouvert 2]
+
+---
+
+=== FICHIER: .agents/skills/compte-rendu-reunion/agents/openai.yaml ===
+policy:
+  allow_implicit_invocation: false
+
+=== FIN ===
+
+À vérifier :
+- Le résumé de réunion fourni contient bien les éléments clés (décisions, actions, points ouverts).
+- Les noms d’assignés sont corrects et cohérents avec l’équipe.
+- Les dates d’échéance sont clairement indiquées ou marquées comme « à définir ».

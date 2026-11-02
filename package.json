@@ -12,12 +12,13 @@
   "scripts": {
     "dev": "concurrently -n server,client -c blue,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
     "build": "npm run build -w server && npm run build -w client",
-    "format": "prettier --write \"server/src/**/*.ts\" \"client/src/**/*.{ts,tsx,css}\" scripts eslint.config.mjs",
-    "typecheck": "tsc -p server/tsconfig.json --noEmit && tsc -p client/tsconfig.json --noEmit",
+    "format": "prettier --write \"server/src/**/*.ts\" \"client/src/**/*.{ts,tsx,css}\" scripts \"tests/**/*.ts\" eslint.config.mjs vitest.config.mts",
+    "typecheck": "tsc -p server/tsconfig.json --noEmit && tsc -p client/tsconfig.json --noEmit && tsc -p tests/tsconfig.json",
     "lint": "eslint .",
     "a11y": "node scripts/audit-a11y.mjs",
-    "format:check": "prettier --check \"server/src/**/*.ts\" \"client/src/**/*.{ts,tsx,css}\" scripts eslint.config.mjs",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run build",
+    "test": "vitest run",
+    "format:check": "prettier --check \"server/src/**/*.ts\" \"client/src/**/*.{ts,tsx,css}\" scripts \"tests/**/*.ts\" eslint.config.mjs vitest.config.mts",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -34,7 +35,8 @@
     "lint-staged": "^17.6.0",
     "prettier": "^3.3.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.1"
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.1.0"
   },
   "engines": {
     "node": ">=24"

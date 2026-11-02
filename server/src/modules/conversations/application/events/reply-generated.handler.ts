@@ -7,10 +7,10 @@ import { ReplyGeneratedEvent } from '../../domain/events/reply-generated.event.j
 export class ReplyGeneratedHandler implements IEventHandler<ReplyGeneratedEvent> {
   private readonly logger = new Logger('Réponse');
 
-  handle({ generatorKey, targetKey, projectNames, stats: s }: ReplyGeneratedEvent): void {
+  handle({ modeKey, targetKey, projectNames, stats: s }: ReplyGeneratedEvent): void {
     const projects = projectNames.length ? ` · projets : ${projectNames.join(', ')}` : '';
     this.logger.log(
-      `${generatorKey} pour ${targetKey} · ${s.modelKey} · ${s.promptTokens} tokens lus, ${s.outputTokens} écrits en ` +
+      `${modeKey} pour ${targetKey} · ${s.modelKey} · ${s.promptTokens} tokens lus, ${s.outputTokens} écrits en ` +
         `${s.seconds.toFixed(1)} s (${s.tokensPerSecond.toFixed(1)} tok/s, ${STOP_REASONS[s.stopReason] ?? s.stopReason})${projects}`,
     );
   }

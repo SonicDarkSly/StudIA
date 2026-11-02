@@ -1,0 +1,71 @@
+réponse coupée : non
+
+[ok] revue-code/skills/revue-modifications/SKILL.md : Corrigé automatiquement : En-tête YAML entouré des lignes --- qui manquaient.
+[error] revue-code/skills/revue-modifications/SKILL.md : Corps vide : la skill n’a qu’un en-tête, elle ne contient aucune instruction.
+
+=== revue-code/gemini-extension.json (modele)
+{
+  "name": "revue-code",
+  "version": "1.0.0",
+  "description": "Permet de relire les modifications en cours avant un commit, en affichant les fichiers ajoutés à l'index.",
+  "contextFileName": "GEMINI.md"
+}
+
+
+=== revue-code/GEMINI.md (modele)
+Ce plugin ajoute une skill pour vérifier les modifications préparées dans l'index Git avant de faire un commit. Il est utile pour éviter les oublis ou erreurs de sélection lors de la phase de staging.
+
+
+=== revue-code/skills/revue-modifications/SKILL.md (modele)
+# réparé : En-tête YAML entouré des lignes --- qui manquaient.
+---
+name: revue-modifications
+description: Affiche les modifications en cours dans l'index Git (prêtes pour le commit) afin de vérifier leur contenu avant validation. Utilisez cette skill si vous souhaitez relire ce qui sera inclus dans le prochain commit.
+---
+
+
+=== revue-code/README.md (modele)
+# Plugin « revue-code »
+
+Ce plugin ajoute une skill permettant de relire les modifications en cours dans l'index Git avant un commit. Il est particulièrement utile pour vérifier que seuls les fichiers attendus sont préparés, et qu’aucune modification inattendue n’a été ajoutée.
+
+## Fonctionnalités
+
+- `revue-code:revue-modifications` : affiche les différences entre l'index et le dernier commit (comme `git diff --cached`), pour une vérification rapide.
+
+## Installation
+
+1. Placez ce dossier dans votre répertoire d’extensions Gemini :
+   ```bash
+   gemini extensions link ./revue-code
+   ```
+
+2. Pour l’utiliser, exécutez la commande suivante dans un projet Git :
+   ```bash
+   gemini run revue-code:revue-modifications
+   ```
+
+## À vérifier
+
+- Assurez-vous que `git` est installé et que vous êtes dans un dépôt Git.
+- Si le plugin ne fonctionne pas, vérifiez que la commande `git diff --cached` est disponible (c’est le cas sur tous les systèmes standard).
+- Le nom de la skill est `revue-modifications`, mais vous pouvez l’appeler via `revue-code:revue-modifications`.
+
+
+=== texte affiché
+Ce plugin « revue-code » ajoute une skill qui permet à l'utilisateur de relire les modifications en cours dans son index Git avant de valider un commit. Il s'inscrit dans une pratique de qualité du code en encourageant la vérification manuelle des changements, surtout utile lorsqu'on travaille rapidement ou avec des fichiers modifiés en grande quantité. La skill utilise `git diff --cached` pour afficher les modifications préparées, et propose un retour clair sur ce qui sera inclus dans le prochain commit.
+
+
+> **Fichier** `revue-code/gemini-extension.json` : voir le panneau Fichiers
+
+
+
+> **Fichier** `revue-code/GEMINI.md` : voir le panneau Fichiers
+
+
+
+> **Fichier** `revue-code/skills/revue-modifications/SKILL.md` : voir le panneau Fichiers
+
+
+
+> **Fichier** `revue-code/README.md` : voir le panneau Fichiers

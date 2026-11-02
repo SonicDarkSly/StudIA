@@ -1,6 +1,6 @@
 import { Modal, Tag } from 'antd';
 import { AUTHOR } from '@/consts';
-import type { AiTarget, Generator, SupportLevel } from '@/types';
+import type { AiTarget, Mode, SupportLevel } from '@/types';
 import './HelpModal.css';
 
 const HELP_MODAL_WIDTH = 780;
@@ -14,12 +14,12 @@ const CELL: Record<SupportLevel, { color: string; label: string }> = {
 interface Props {
   open: boolean;
   onClose: () => void;
-  generators: Generator[];
+  modes: Mode[];
   targets: AiTarget[];
 }
 
-export function HelpModal({ open, onClose, generators, targets }: Props) {
-  const makers = generators.filter((g) => g.usesFiles);
+export function HelpModal({ open, onClose, modes, targets }: Props) {
+  const makers = modes.filter((g) => g.usesFiles);
   return (
     <Modal
       open={open}

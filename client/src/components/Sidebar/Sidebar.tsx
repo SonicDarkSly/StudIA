@@ -1,9 +1,9 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Empty, Popconfirm } from 'antd';
 import { AUTHOR } from '@/consts';
-import type { ConversationSummary, Generator, GeneratorKey } from '@/types';
+import type { ConversationSummary, Mode, ModeKey } from '@/types';
 import { fmtDate } from '@/utils/format';
-import { generatorIcon } from '@/components/icons';
+import { modeIcon } from '@/components/icons';
 import './Sidebar.css';
 
 const MESSAGES_PER_EXCHANGE = 2;
@@ -16,14 +16,14 @@ const exchangeLabel = (messageCount: number) => {
 interface Props {
   conversations: ConversationSummary[];
   activeId?: string;
-  generators: Generator[];
+  modes: Mode[];
   onNew: () => void;
   onOpen: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-export function Sidebar({ conversations, activeId, generators, onNew, onOpen, onDelete }: Props) {
-  const label = (key: GeneratorKey) => generators.find((g) => g.key === key)?.label ?? key;
+export function Sidebar({ conversations, activeId, modes, onNew, onOpen, onDelete }: Props) {
+  const label = (key: ModeKey) => modes.find((g) => g.key === key)?.label ?? key;
   return (
     <aside className="studia-left glass" aria-label="Conversations">
       <Button
@@ -49,13 +49,13 @@ export function Sidebar({ conversations, activeId, generators, onNew, onOpen, on
               aria-current={c.id === activeId ? 'true' : undefined}
               onClick={() => onOpen(c.id)}
             >
-              <span className="conv-icon" title={label(c.generatorKey)}>
-                {generatorIcon(c.generatorKey)}
+              <span className="conv-icon" title={label(c.modeKey)}>
+                {modeIcon(c.modeKey)}
               </span>
               <span className="conv-text">
                 <span className="title">{c.title}</span>
                 <span className="meta">
-                  <span className="sr-only">{label(c.generatorKey)}, </span>
+                  <span className="sr-only">{label(c.modeKey)}, </span>
                   {fmtDate(c.updatedAt)} · {exchangeLabel(c.messageCount)}
                 </span>
               </span>

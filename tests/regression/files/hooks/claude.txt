@@ -1,0 +1,57 @@
+réponse coupée : non
+
+[ok] - : Aucun problème détecté par les contrôles automatiques.
+
+=== .claude/hooks/safe_bash.sh (modele)
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Lecture de l'entrée standard (JSON)
+input=$(cat)
+
+# Extraction de la commande Bash
+command=$(echo "$input" | jq -r '.tool_input.command // empty')
+
+# Vérification si la commande contient des motifs dangereux
+if [[ "$command" == *"rm -rf"* ]] || [[ "$command" == *"git push --force"* ]]; then
+  echo "⚠️  Exécution bloquée : cette commande est potentiellement destructive." >&2
+  exit 2
+fi
+
+# Si aucune condition n'est remplie, on laisse la commande s'exécuter
+exit 0
+
+
+=== .claude/settings.json (modele)
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/safe_bash.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+
+=== texte affiché
+Ce hook bloque les commandes potentiellement dangereuses dans un environnement de développement, notamment `rm -rf` et `git push --force`, qui peuvent entraîner une perte de données irréversible. Il vérifie l'entrée standard pour détecter ces motifs et empêche leur exécution en retournant un code d'erreur 2 avec un message d'avertissement.
+
+
+> **Fichier** `.claude/hooks/safe_bash.sh` : voir le panneau Fichiers
+
+
+
+> **Fichier** `.claude/settings.json` : voir le panneau Fichiers
+
+
+À vérifier :
+- Assure-toi que le fichier `.claude/hooks/safe_bash.sh` est exécutable : `chmod +x .claude/hooks/safe_bash.sh`
+- Fusionne le contenu de `.claude/settings.json` avec ton fichier de configuration existant.
+- Teste l'activation du hook en exécutant une commande bloquée comme `rm -rf /` ou `git push --force`.

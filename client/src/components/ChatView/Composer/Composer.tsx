@@ -1,16 +1,16 @@
 import { ArrowUpOutlined, FolderOutlined, LoadingOutlined, StopOutlined } from '@ant-design/icons';
 import { Button, Input, Space, Tag, Tooltip } from 'antd';
 import { useState } from 'react';
-import { DEFAULT_GENERATOR, PHASES } from '@/consts';
-import type { AiTarget, Conversation, Generator, ModelView, PanelTab, StreamState, TargetKey } from '@/types';
-import { generatorIcon } from '@/components/icons';
+import { DEFAULT_MODE, PHASES } from '@/consts';
+import type { AiTarget, Conversation, Mode, ModelView, PanelTab, StreamState, TargetKey } from '@/types';
+import { modeIcon } from '@/components/icons';
 import './Composer.css';
 
 const COMPOSER_ROWS = { minRows: 2, maxRows: 10 };
 
 interface Props {
   conversation: Conversation;
-  generator?: Generator;
+  mode?: Mode;
   target?: AiTarget;
   targetKey: TargetKey;
   model?: ModelView;
@@ -24,7 +24,7 @@ interface Props {
 }
 
 export function Composer(props: Props) {
-  const { conversation, generator, target, targetKey, model, stream, cannotSend, draft } = props;
+  const { conversation, mode, target, targetKey, model, stream, cannotSend, draft } = props;
   const [focus, setFocus] = useState(false);
 
   const submit = () => {
@@ -45,9 +45,9 @@ export function Composer(props: Props) {
           onBlur={() => setFocus(false)}
           autoSize={COMPOSER_ROWS}
           placeholder={
-            generator?.key === DEFAULT_GENERATOR
+            mode?.key === DEFAULT_MODE
               ? 'Écris comme à un collègue : contexte, objectif, format attendu…'
-              : `Décris ${generator?.label.toLowerCase() ?? 'ce que tu veux'} : à quoi ça sert, quand l’utiliser, ce que ça doit produire…`
+              : `Décris ${mode?.label.toLowerCase() ?? 'ce que tu veux'} : à quoi ça sert, quand l’utiliser, ce que ça doit produire…`
           }
           onPressEnter={(e) => {
             if (!e.shiftKey) {
@@ -65,12 +65,12 @@ export function Composer(props: Props) {
             className="plain-button tag-button"
             onClick={() => props.onOpenPanel('settings')}
           >
-            <Tag variant="filled" color="purple" icon={generatorIcon(conversation.generatorKey)}>
-              {generator?.label ?? 'Discussion'}
+            <Tag variant="filled" color="purple" icon={modeIcon(conversation.modeKey)}>
+              {mode?.label ?? 'Discussion'}
             </Tag>
             <span className="sr-only">, changer de mode</span>
           </button>
-          {generator?.usesFiles !== false && (
+          {mode?.usesFiles !== false && (
             <Tooltip title={`IA cible : ${target?.tools ?? ''}`}>
               <button
                 type="button"

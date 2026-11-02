@@ -10,6 +10,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { basename, dirname, isAbsolute, join, parse, relative } from 'node:path';
+import { z } from 'zod';
 import { PROJECTS_FILE, REPO_ROOT } from '../../../shared/config/paths.js';
 import { toPrettyJson } from '../../../shared/json.js';
 import { approxTokens } from '../../models/domain/tokens.js';
@@ -20,6 +21,7 @@ import {
   type ClaudeItem,
   type ProjectContext,
   type ProjectSummary,
+  registeredProjectSchema,
   type RegisteredProject,
 } from '../domain/project.js';
 import type { ProjectRepository } from '../domain/project.repository.js';
@@ -61,27 +63,31 @@ const readText = (path: string, max: number): string | undefined => {
   }
 };
 
-interface PackageJson {
-  name?: string;
-  description?: string;
-  scripts?: Record<string, string>;
-  workspaces?: string[] | { packages?: string[] };
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
-}
+const packageJsonSchema = z.object({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  scripts: z.record(z.string(), z.string()).optional(),
+  workspaces: z
+    .union([z.array(z.string()), z.object({ packages: z.array(z.string()).optional() })])
+    .optional(),
+  dependencies: z.record(z.string(), z.string()).optional(),
+  devDependencies: z.record(z.string(), z.string()).optional(),
+});
 
-interface ClaudeSettings {
-  hooks?: unknown;
-}
+type PackageJson = z.infer<typeof packageJsonSchema>;
 
-const readJson = <T>(path: string): T | undefined => {
+const claudeSettingsSchema = z.object({ hooks: z.unknown().optional() });
+
+const registrySchema = z.object({ projects: z.array(registeredProjectSchema).catch([]) });
+
+function readJson<T>(path: string, schema: z.ZodType<T>): T | undefined {
   try {
-    const value: T = JSON.parse(readFileSync(path, 'utf8'));
-    return value;
+    const parsed = schema.safeParse(JSON.parse(readFileSync(path, 'utf8')));
+    return parsed.success ? parsed.data : undefined;
   } catch {
     return undefined;
   }
-};
+}
 
 function frontmatter(path: string): Record<string, string> {
   const text = readText(path, MAX_CHARS.frontmatter) ?? '';
@@ -109,12 +115,7 @@ const isInside = (child: string, parent: string): boolean => {
 @Injectable()
 export class FileSystemProjectRepository implements ProjectRepository {
   private registry(): RegisteredProject[] {
-    try {
-      const raw: { projects?: RegisteredProject[] } = JSON.parse(readFileSync(PROJECTS_FILE, 'utf8'));
-      return Array.isArray(raw.projects) ? raw.projects : [];
-    } catch {
-      return [];
-    }
+    return readJson(PROJECTS_FILE, registrySchema)?.projects ?? [];
   }
 
   private save(projects: RegisteredProject[]): void {
@@ -190,14 +191,14 @@ export class FileSystemProjectRepository implements ProjectRepository {
 
   private packageJsons(dir: string): { path: string; json: PackageJson }[] {
     const out: { path: string; json: PackageJson }[] = [];
-    const root = readJson<PackageJson>(join(dir, 'package.json'));
+    const root = readJson(join(dir, 'package.json'), packageJsonSchema);
     if (root) out.push({ path: 'package.json', json: root });
     const workspaces: string[] = Array.isArray(root?.workspaces)
       ? root.workspaces
       : (root?.workspaces?.packages ?? []);
     for (const ws of workspaces) {
       if (ws.includes('*')) continue;
-      const json = readJson<PackageJson>(join(dir, ws, 'package.json'));
+      const json = readJson(join(dir, ws, 'package.json'), packageJsonSchema);
       if (json) out.push({ path: `${ws}/package.json`, json });
     }
     return out;
@@ -227,13 +228,13 @@ export class FileSystemProjectRepository implements ProjectRepository {
   }
 
   private summary(name: string, dir: string): ProjectSummary {
-    const pkg = readJson<PackageJson>(join(dir, 'package.json'));
+    const pkg = readJson(join(dir, 'package.json'), packageJsonSchema);
     const readme = readText(join(dir, 'README.md'), MAX_CHARS.readmeSummary);
     const firstLine = readme
       ?.split('\n')
       .map((l) => l.trim())
       .find((l) => l && !l.startsWith('#') && !l.startsWith('!['));
-    const settings = readJson<ClaudeSettings>(join(dir, '.claude', 'settings.json'));
+    const settings = readJson(join(dir, '.claude', 'settings.json'), claudeSettingsSchema);
     return {
       name,
       path: dir,

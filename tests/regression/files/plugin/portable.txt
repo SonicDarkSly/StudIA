@@ -1,0 +1,85 @@
+réponse coupée : non
+
+[error] revue-code/skills/relire-modifications/SKILL.md : En-tête YAML (--- name / description ---) manquant : l’IA ne reconnaîtra pas la skill.
+
+=== revue-code/plugin.json (modele)
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "revue-code",
+  "version": "1.0.0",
+  "description": "Permet de relire les modifications en cours avant un commit, en analysant les fichiers ajoutés via git diff --cached."
+}
+
+
+=== revue-code/skills/relire-modifications/SKILL.md (modele)
+---
+name: relire-modifications
+description: |
+  Cette skill analyse les modifications actuellement ajoutées à l'index Git (via `git add`) et propose une synthèse des changements avant le commit. Elle est utile pour vérifier que les modifications sont correctes, complètes et conformes aux conventions du projet.
+  Utilisez-la juste avant de faire un commit pour éviter les erreurs ou oublis.
+steps:
+  - Exécutez `git diff --cached` pour obtenir la liste des fichiers modifiés ajoutés à l'index.
+  - Analysez chaque fichier modifié : identifiez les lignes ajoutées, supprimées et modifiées.
+  - Résumez les changements par fichier, en mettant en évidence les modifications majeures (ex: ajout de fonctionnalités, suppression de code critique).
+  - Présentez un résumé global des modifications, avec le nombre total de fichiers et une estimation du volume de changement.
+  - Demandez à l'utilisateur s’il souhaite valider le commit ou corriger certains fichiers avant.
+  - Si l'utilisateur demande des corrections, indiquez les fichiers concernés et proposez des suggestions d’amélioration.
+  - Si l'utilisateur confirme, retournez un message de validation : « Commit approuvé. »
+  - Sinon, retournez : « Modifications non validées. Veuillez ajuster avant de continuer. »
+
+
+=== revue-code/README.md (modele)
+# Plugin `revue-code`
+
+Ce plugin ajoute une skill pour relire les modifications en cours dans un dépôt Git avant d’effectuer un commit.
+
+## Fonctionnalités
+- Analyse les fichiers ajoutés via `git add` (via `git diff --cached`)
+- Résume les changements par fichier
+- Propose une synthèse globale
+- Demande confirmation avant le commit
+- Suggère des corrections si nécessaire
+
+## Installation
+### Pour Copilot CLI :
+```bash
+copilot plugin install ./revue-code
+```
+
+### Pour Cursor :
+Copiez le dossier `revue-code` dans :
+```
+~/.cursor/plugins/local/revue-code/
+```
+
+### Pour Codex / Gemini CLI / Antigravity :
+Ce plugin est compatible avec les formats standards. Installez-le via le marketplace ou en copiant manuellement dans le répertoire des plugins du client.
+
+## Utilisation
+1. Après avoir exécuté `git add`, lancez la skill `relire-modifications`.
+2. L’IA vous affiche un résumé des changements.
+3. Confirmez ou demandez des corrections.
+4. Validez le commit si tout est correct.
+
+## À vérifier
+- Le plugin ne nécessite aucun serveur MCP : il utilise uniquement `git` disponible localement.
+- Assurez-vous que `git` est installé et que vous êtes dans un dépôt Git valide.
+- Si l’outil cible ne supporte pas les skills directement, vérifiez la documentation du plugin pour l’intégration.
+- Le nom `revue-code` respecte les règles de nommage (minuscules, tirets).
+
+
+=== texte affiché
+Ce plugin « revue-code » ajoute une skill qui permet de relire les modifications en cours dans un dépôt Git avant de les valider avec un commit. Il s’inscrit dans le standard Agent Skills, et est conçu pour être utilisé dans des environnements multi-outils comme Cursor, Copilot ou Codex. La skill analyse les fichiers modifiés via `git diff --cached`, propose une synthèse des changements, et demande à l’utilisateur de valider ou corriger avant le commit.
+
+Le plugin est léger, ne dépend d’aucun serveur externe, et s’installe simplement en copiant le dossier dans le répertoire local des plugins de l’outil cible.
+
+
+> **Fichier** `revue-code/plugin.json` : voir le panneau Fichiers
+
+
+
+> **Fichier** `revue-code/skills/relire-modifications/SKILL.md` : voir le panneau Fichiers
+
+
+
+> **Fichier** `revue-code/README.md` : voir le panneau Fichiers

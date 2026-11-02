@@ -1,4 +1,5 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { env } from '../../../shared/config/env.js';
 import { llamaCpp, llamaInstance } from '../../../shared/config/esm.js';
 import { MS_PER_MINUTE } from '../../../shared/consts.js';
 import { secondsSince } from '../../../shared/time.js';
@@ -11,8 +12,6 @@ import type {
   LanguageModelRuntime,
   RuntimeStatus,
 } from '../domain/language-model-runtime.js';
-
-const DEFAULT_IDLE_MINUTES = 10;
 
 interface LoadedModel {
   key: string;
@@ -31,7 +30,7 @@ export class LlamaRuntime implements LanguageModelRuntime, OnModuleDestroy {
   private queue: Promise<unknown> = Promise.resolve();
   private running = 0;
   private idleTimer: NodeJS.Timeout | undefined;
-  private readonly idleMinutes = Number(process.env.STUDIA_IDLE_MINUTES ?? DEFAULT_IDLE_MINUTES);
+  private readonly idleMinutes = env().STUDIA_IDLE_MINUTES;
 
   status(): RuntimeStatus {
     return {

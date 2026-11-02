@@ -18,9 +18,13 @@ import { GetConversationQuery } from '../application/queries/get-conversation.qu
 import { ListConversationsQuery } from '../application/queries/list-conversations.query.js';
 import {
   InvalidConversationError,
+  conversationInputSchema,
+  type ConversationInput,
   type ConversationSnapshot,
   type ConversationSummary,
 } from '../domain/conversation.js';
+import { ZodValidationPipe } from '../../../shared/validation/zod-validation.pipe.js';
+import { conversationIdSchema } from './conversation-id.schema.js';
 
 @Controller('api/conversations')
 export class ConversationsController {
@@ -35,7 +39,9 @@ export class ConversationsController {
   }
 
   @Get(':id')
-  async get(@Param('id') id: string): Promise<ConversationSnapshot> {
+  async get(
+    @Param('id', new ZodValidationPipe(conversationIdSchema)) id: string,
+  ): Promise<ConversationSnapshot> {
     const conversation: ConversationSnapshot | undefined = await this.queries.execute(
       new GetConversationQuery(id),
     );
@@ -44,8 +50,11 @@ export class ConversationsController {
   }
 
   @Put(':id')
-  async save(@Param('id') id: string, @Body() body: ConversationSnapshot): Promise<ConversationSnapshot> {
-    if (body?.id !== id) throw new BadRequestException('Identifiant incohérent');
+  async save(
+    @Param('id', new ZodValidationPipe(conversationIdSchema)) id: string,
+    @Body(new ZodValidationPipe(conversationInputSchema)) body: ConversationInput,
+  ): Promise<ConversationSnapshot> {
+    if (body.id !== id) throw new BadRequestException('Identifiant incohérent');
     try {
       return await this.commands.execute(new SaveConversationCommand(body));
     } catch (err) {
@@ -55,7 +64,9 @@ export class ConversationsController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<{ deleted: boolean }> {
+  async delete(
+    @Param('id', new ZodValidationPipe(conversationIdSchema)) id: string,
+  ): Promise<{ deleted: boolean }> {
     await this.commands.execute(new DeleteConversationCommand(id));
     return { deleted: true };
   }

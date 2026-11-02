@@ -1,0 +1,193 @@
+réponse coupée : non
+
+[ok] projets-locaux/src/index.ts : Corrigé automatiquement : Ligne ``` retirée autour du code : le modèle avait entouré le fichier d’un bloc Markdown.
+[error] projets-locaux/src/index.ts : Réponse d’erreur sans content : écrire { isError: true, content: [{ type: "text", text: "…" }] }, sinon la compilation échoue.
+
+=== projets-locaux/src/index.ts (modele)
+# réparé : Ligne ``` retirée autour du code : le modèle avait entouré le fichier d’un bloc Markdown.
+import { McpServer } from "@modelcontextprotocol/server";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
+import * as z from "zod/v4";
+import path from "node:path";
+import os from "node:os";
+import fs from "node:fs/promises";
+
+const DOSSIER_AUTORISE = path.join(os.homedir(), "projets");
+
+function cheminAutorise(...parties: string[]): string | undefined {
+  const chemin = path.resolve(DOSSIER_AUTORISE, ...parties);
+  const relatif = path.relative(DOSSIER_AUTORISE, chemin);
+  return relatif.startsWith("..") || path.isAbsolute(relatif) ? undefined : chemin;
+}
+
+function createServer(): McpServer {
+  const server = new McpServer({ name: "projets-locaux", version: "1.0.0" });
+
+  server.registerTool(
+    "lister_projets",
+    {
+      title: "Lister les projets",
+      description: "Liste tous les répertoires dans le dossier ~/projets. Utile pour connaître les projets disponibles.",
+      inputSchema: z.object({}),
+    },
+    async () => {
+      try {
+        const chemin = cheminAutorise();
+        if (!chemin) {
+          return { isError: true, message: "Accès refusé au dossier autorisé." };
+        }
+        const fichiers = await fs.readdir(chemin);
+        const projets = fichiers.filter(fichier => 
+          fs.stat(path.join(chemin, fichier)).then(stat => stat.isDirectory())
+        );
+        const resultats = await Promise.all(projets.map(async (nom) => {
+          const cheminProjet = cheminAutorise(nom);
+          if (!cheminProjet) return null;
+          try {
+            const stats = await fs.stat(cheminProjet);
+            return {
+              nom,
+              dateCreation: stats.birthtime.toISOString(),
+            };
+          } catch (e) {
+            console.error(`Erreur lors de la lecture des stats du projet ${nom}:`, e);
+            return { nom, dateCreation: null };
+          }
+        }));
+        return { content: [{ type: "text", text: JSON.stringify(resultats.filter(Boolean)) }] };
+      } catch (error) {
+        console.error("Erreur lors de la liste des projets:", error);
+        return { isError: true, message: "Impossible de lire les projets." };
+      }
+    },
+  );
+
+  server.registerTool(
+    "lire_claude_md",
+    {
+      title: "Lire le CLAUDE.md d'un projet",
+      description: "Lit le contenu du fichier CLAUDE.md d'un projet spécifique. Utile pour obtenir les instructions ou notes du projet.",
+      inputSchema: z.object({
+        nom_projet: z.string().describe("Nom du dossier du projet (ex: 'mon-projet')"),
+      }),
+    },
+    async ({ nom_projet }) => {
+      try {
+        const cheminProjet = cheminAutorise(nom_projet);
+        if (!cheminProjet) {
+          return { isError: true, message: "Accès refusé au projet spécifié." };
+        }
+        const cheminFichier = path.join(cheminProjet, "CLAUDE.md");
+        const contenu = await fs.readFile(cheminFichier, "utf-8");
+        return { content: [{ type: "text", text: contenu }] };
+      } catch (error) {
+        console.error(`Erreur lors de la lecture du fichier CLAUDE.md pour le projet ${nom_projet}:`, error);
+        return { isError: true, message: `Impossible de lire le fichier CLAUDE.md pour le projet ${nom_projet}.` };
+      }
+    },
+  );
+
+  return server;
+}
+
+void serveStdio(createServer);
+
+
+=== projets-locaux/README.md (modele)
+# Connecteur MCP « projets-locaux »
+
+Ce connecteur permet d'interagir avec les projets stockés dans le dossier `~/projets`.
+
+## Outils
+
+### lister_projets
+Liste tous les répertoires dans le dossier `~/projets`. Utile pour connaître les projets disponibles.
+
+### lire_claude_md
+Lit le contenu du fichier `CLAUDE.md` d'un projet spécifique. Utile pour obtenir les instructions ou notes du projet.
+
+## Installation
+
+1. npm install
+2. npm run build (crée dist/index.js, le fichier lancé par l'IA)
+3. npm run inspect (tester les outils dans l'inspecteur MCP)
+4. Configuration : fusionner le contenu du dossier `config/` dans la configuration de Claude :
+   - Pour Claude Code : fusionner dans `.mcp.json` à la racine du projet.
+   - Pour Claude Desktop : fusionner dans `claude_desktop_config.json`.
+5. Remplacer `/CHEMIN/ABSOLU/VERS` par le chemin réel du dossier du connecteur.
+
+À vérifier :
+- Le dossier `~/projets` existe bien et est accessible.
+- Les fichiers `CLAUDE.md` sont présents dans les projets.
+- La configuration MCP est correctement fusionnée dans le fichier de l'IA cible.
+
+
+=== projets-locaux/package.json (gabarit)
+{
+  "name": "projets-locaux",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": { "projets-locaux": "dist/index.js" },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "inspect": "npx @modelcontextprotocol/inspector node dist/index.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}
+
+
+=== projets-locaux/tsconfig.json (gabarit)
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}
+
+
+=== projets-locaux/.gitignore (gabarit)
+node_modules/
+dist/
+
+
+=== projets-locaux/config/claude-mcp.json (gabarit)
+{
+  "mcpServers": {
+    "projets-locaux": {
+      "command": "node",
+      "args": ["/CHEMIN/ABSOLU/VERS/projets-locaux/dist/index.js"]
+    }
+  }
+}
+
+
+=== texte affiché
+Ce connecteur MCP « projets-locaux » permet d'interagir avec les projets stockés dans le dossier ~/projets. Il offre deux outils en lecture seule :
+1. `lister_projets` : liste tous les répertoires dans ~/projets.
+2. `lire_claude_md` : lit le contenu du fichier CLAUDE.md d'un projet donné.
+
+Les chemins sont sécurisés pour ne pas sortir du dossier autorisé ~/projets. Le code utilise Zod pour valider les entrées et renvoyer des erreurs lisibles.
+
+
+> **Fichier** `projets-locaux/src/index.ts` : voir le panneau Fichiers
+
+
+
+> **Fichier** `projets-locaux/README.md` : voir le panneau Fichiers

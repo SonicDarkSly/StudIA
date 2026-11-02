@@ -12,7 +12,7 @@ import { Logo } from '@/components/Logo';
 import './AppHeader.css';
 
 interface Props {
-  mode: ThemeMode;
+  themeMode: ThemeMode;
   machine?: MachineProfile;
   runtime?: RuntimeStatus;
   models: ModelView[];
@@ -30,7 +30,7 @@ const gpuLabel = (gpu: MachineProfile['gpu']) => {
   return ` · ${gpu === 'metal' ? 'Metal' : gpu.toUpperCase()}`;
 };
 
-export function AppHeader({ mode, machine, runtime, models, showRight, ...actions }: Props) {
+export function AppHeader({ themeMode, machine, runtime, models, showRight, ...actions }: Props) {
   const runtimeLabel = runtime?.loadingKey
     ? 'chargement…'
     : (models.find((m) => m.key === runtime?.loadedKey)?.label ?? 'en veille');
@@ -71,11 +71,11 @@ export function AppHeader({ mode, machine, runtime, models, showRight, ...action
           onClick={actions.onHelp}
         />
       </Tooltip>
-      <Tooltip title={mode === 'dark' ? 'Thème clair' : 'Thème néon'}>
+      <Tooltip title={themeMode === 'dark' ? 'Thème clair' : 'Thème néon'}>
         <Button
           type="text"
-          icon={mode === 'dark' ? <SunOutlined aria-hidden /> : <MoonOutlined aria-hidden />}
-          aria-label={mode === 'dark' ? 'Passer au thème clair' : 'Passer au thème néon'}
+          icon={themeMode === 'dark' ? <SunOutlined aria-hidden /> : <MoonOutlined aria-hidden />}
+          aria-label={themeMode === 'dark' ? 'Passer au thème clair' : 'Passer au thème néon'}
           onClick={actions.onToggleTheme}
         />
       </Tooltip>

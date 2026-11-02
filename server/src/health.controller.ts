@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { env } from './shared/config/env.js';
 
 @Controller('api')
 export class HealthController {
@@ -13,7 +14,7 @@ export class HealthController {
       name: 'StudIA',
       author: 'SonicDarkSly',
       license: 'Apache-2.0',
-      lan: process.env.STUDIA_LAN === '1',
+      lan: env().STUDIA_LAN,
       node: process.version,
     };
   }

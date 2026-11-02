@@ -1,0 +1,20 @@
+réponse coupée : non
+
+[warning] .github/prompts/verifier.prompt.md : Outil(s) Copilot renommé(s) : runCommands. Pour lancer des commandes, utiliser execute.
+[warning] .github/prompts/verifier.prompt.md : Variable(s) non documentée(s) par VS Code : ${file}. Préférer #file:chemin ou ${selection}.
+
+=== .github/prompts/verifier.prompt.md (modele)
+---
+description: Lance le typecheck
+agent: agent
+tools: ['search', 'runCommands']
+---
+Lance npm run typecheck sur ${file} et résume les erreurs.
+
+
+=== texte affiché
+Une commande Copilot.
+
+
+> **Fichier** `.github/prompts/verifier.prompt.md` : voir le panneau Fichiers
+

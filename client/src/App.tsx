@@ -11,21 +11,21 @@ import { ProjectsPanel } from './components/ProjectsPanel';
 import { SettingsPanel } from './components/SettingsPanel';
 import { SidePanel } from './components/SidePanel';
 import { Sidebar } from './components/Sidebar';
-import { DEFAULT_GENERATOR, DEFAULT_SETTINGS, DEFAULT_TARGET } from './consts';
+import { DEFAULT_MODE, DEFAULT_SETTINGS, DEFAULT_TARGET } from './consts';
 import { newConversation, useChatSession } from './hooks/useChatSession';
 import { useConversations } from './hooks/useConversations';
 import { useModels } from './hooks/useModels';
-import { useGenerators, useProjects } from './hooks/useStaticData';
+import { useModes, useProjects } from './hooks/useStaticData';
 import { useTheme } from './hooks/useTheme';
 import { antdTheme } from './theme';
-import type { GenerationSettings, GeneratorKey, PanelTab, TargetKey } from './types';
+import type { GenerationSettings, ModeKey, PanelTab, TargetKey } from './types';
 import { parseFiles } from './utils/files';
 import { isBlocked } from './utils/models';
 import { loadPreferredTarget, savePreferredTarget } from './utils/targets';
 
 export default function App() {
-  const { mode, toggle } = useTheme();
-  const { generators, targets } = useGenerators();
+  const { mode: themeMode, toggle } = useTheme();
+  const { modes, targets } = useModes();
   const { models, runtime, machine, error: modelsError, download, cancel, unload, uninstall } = useModels();
   const [preferredTarget, setPreferredTarget] = useState<TargetKey>(loadPreferredTarget);
   const { projects, loading: projectsLoading, refresh: refreshProjects } = useProjects();
@@ -39,8 +39,8 @@ export default function App() {
   const [filesIndex, setFilesIndex] = useState<number>();
 
   const pickModel = useCallback(
-    (generatorKey: GeneratorKey) => {
-      const g = generators.find((x) => x.key === generatorKey);
+    (modeKey: ModeKey) => {
+      const g = modes.find((x) => x.key === modeKey);
       const usable = models.filter((m) => !isBlocked(m, machine));
       const preferred = usable.find((m) => m.key === g?.recommendedModel);
       if (preferred?.status === 'present') return preferred.key;
@@ -52,7 +52,7 @@ export default function App() {
         ''
       );
     },
-    [generators, models, machine],
+    [modes, models, machine],
   );
 
   const chooseTarget = useCallback((key: TargetKey) => {
@@ -61,38 +61,28 @@ export default function App() {
   }, []);
 
   const initialSettings = useCallback(
-    (generatorKey: GeneratorKey, modelKey: string): Partial<GenerationSettings> => ({
+    (modeKey: ModeKey, modelKey: string): Partial<GenerationSettings> => ({
       ...(models.find((m) => m.key === modelKey)?.recommended ?? {}),
-      ...(generators.find((g) => g.key === generatorKey)?.recommendedSettings ?? {}),
+      ...(modes.find((g) => g.key === modeKey)?.recommendedSettings ?? {}),
     }),
-    [generators, models],
+    [modes, models],
   );
 
   const startNew = useCallback(
-    (
-      generatorKey = DEFAULT_GENERATOR,
-      projectNames: string[] = [],
-      targetKey: TargetKey = preferredTarget,
-    ) => {
-      const modelKey = pickModel(generatorKey);
+    (modeKey = DEFAULT_MODE, projectNames: string[] = [], targetKey: TargetKey = preferredTarget) => {
+      const modelKey = pickModel(modeKey);
       setConversation(
-        newConversation(
-          generatorKey,
-          targetKey,
-          modelKey,
-          initialSettings(generatorKey, modelKey),
-          projectNames,
-        ),
+        newConversation(modeKey, targetKey, modelKey, initialSettings(modeKey, modelKey), projectNames),
       );
       setFilesIndex(undefined);
     },
     [initialSettings, pickModel, preferredTarget, setConversation],
   );
 
-  if (!conversation && generators.length && models.length) startNew();
+  if (!conversation && modes.length && models.length) startNew();
 
   const model = models.find((m) => m.key === conversation?.modelKey);
-  const generator = generators.find((g) => g.key === conversation?.generatorKey);
+  const mode = modes.find((g) => g.key === conversation?.modeKey);
   const settings: GenerationSettings = useMemo(
     () => ({ ...DEFAULT_SETTINGS, ...(model?.recommended ?? {}), ...(conversation?.settings ?? {}) }),
     [model, conversation?.settings],
@@ -130,12 +120,12 @@ export default function App() {
   const targetKey: TargetKey = conversation.targetKey ?? DEFAULT_TARGET;
   const changeTarget = (key: TargetKey) => {
     chooseTarget(key);
-    if (conversation.messages.length) startNew(conversation.generatorKey, conversation.projectNames, key);
+    if (conversation.messages.length) startNew(conversation.modeKey, conversation.projectNames, key);
     else update((c) => ({ ...c, targetKey: key }));
   };
-  const changeGenerator = (key: GeneratorKey) => {
+  const changeMode = (key: ModeKey) => {
     const modelKey = pickModel(key);
-    update((c) => ({ ...c, generatorKey: key, modelKey, settings: initialSettings(key, modelKey) }));
+    update((c) => ({ ...c, modeKey: key, modelKey, settings: initialSettings(key, modelKey) }));
   };
   const openPanel = (t: PanelTab) => {
     setShowRight(true);
@@ -143,14 +133,14 @@ export default function App() {
   };
 
   return (
-    <ConfigProvider locale={frFR} theme={antdTheme(mode)}>
+    <ConfigProvider locale={frFR} theme={antdTheme(themeMode)}>
       <a className="skip-link" href="#contenu">
         Aller à la conversation
       </a>
       <div className="studia-bg" aria-hidden />
       <div className={`studia-shell${showRight ? '' : ' no-right'}`}>
         <AppHeader
-          mode={mode}
+          themeMode={themeMode}
           machine={machine}
           runtime={runtime}
           models={models}
@@ -164,7 +154,7 @@ export default function App() {
         <Sidebar
           conversations={convs.list}
           activeId={conversation.id}
-          generators={generators}
+          modes={modes}
           onNew={() => startNew()}
           onOpen={async (id) => {
             if (stream.active) return;
@@ -179,15 +169,15 @@ export default function App() {
 
         <ChatView
           conversation={conversation}
-          generators={generators}
+          modes={modes}
           targets={targets}
           models={models}
           machine={machine}
           stream={stream}
           onPickTarget={changeTarget}
-          onPickGenerator={(key) => {
+          onPickMode={(key) => {
             if (locked) startNew(key, conversation.projectNames, targetKey);
-            else changeGenerator(key);
+            else changeMode(key);
           }}
           onSend={(text) => {
             setFilesIndex(undefined);
@@ -215,7 +205,7 @@ export default function App() {
               model: (
                 <ModelPanel
                   models={models}
-                  generators={generators}
+                  modes={modes}
                   runtime={runtime}
                   machine={machine}
                   selected={conversation.modelKey}
@@ -224,7 +214,7 @@ export default function App() {
                     update((c) => ({
                       ...c,
                       modelKey: key,
-                      settings: { ...c.settings, ...initialSettings(c.generatorKey, key) },
+                      settings: { ...c.settings, ...initialSettings(c.modeKey, key) },
                     }))
                   }
                   onDownload={(key) => void download(key)}
@@ -235,20 +225,18 @@ export default function App() {
               ),
               settings: (
                 <SettingsPanel
-                  generators={generators}
+                  modes={modes}
                   targets={targets}
-                  generatorKey={conversation.generatorKey}
+                  modeKey={conversation.modeKey}
                   targetKey={targetKey}
                   onTarget={changeTarget}
                   model={model}
                   settings={settings}
                   extraInstructions={conversation.systemPrompt ?? ''}
                   locked={locked}
-                  onGenerator={changeGenerator}
+                  onMode={changeMode}
                   onChange={(patch) => update((c) => ({ ...c, settings: { ...c.settings, ...patch } }))}
-                  onReset={() =>
-                    update((c) => ({ ...c, settings: initialSettings(c.generatorKey, c.modelKey) }))
-                  }
+                  onReset={() => update((c) => ({ ...c, settings: initialSettings(c.modeKey, c.modelKey) }))}
                   onInstructions={(text) => update((c) => ({ ...c, systemPrompt: text }))}
                 />
               ),
@@ -266,7 +254,7 @@ export default function App() {
                 <FilesPanel
                   key={`${conversation.id}:${shownIndex ?? '-'}`}
                   text={filesText}
-                  generator={generator}
+                  mode={mode}
                   targetKey={targetKey}
                   live={stream.active && shownIndex === conversation.messages.length - 1}
                 />
@@ -275,7 +263,7 @@ export default function App() {
           />
         )}
       </div>
-      <HelpModal open={help} onClose={() => setHelp(false)} generators={generators} targets={targets} />
+      <HelpModal open={help} onClose={() => setHelp(false)} modes={modes} targets={targets} />
     </ConfigProvider>
   );
 }

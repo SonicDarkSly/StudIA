@@ -1,0 +1,105 @@
+=== FICHIER: verifier-changelog/SKILL.md ===
+---
+name: verify-changelog
+description: Vérifie qu'un fichier CHANGELOG.md respecte le format Keep a Changelog, avant une release. S'applique aux fichiers de type "CHANGELOG.md" et contrôle la présence des sections Unreleased, les dates au format AAAA-MM-JJ, et les catégories Added / Changed / Fixed / Removed / Security.
+---
+# Vérification du CHANGELOG.md
+
+## Quand utiliser cette skill
+Utilisez cette skill quand vous voulez vérifier qu'un fichier `CHANGELOG.md` respecte le format [Keep a Changelog](https://keepachangelog.com/). Elle est particulièrement utile avant une release pour s'assurer de la conformité du journal des modifications.
+
+## Ce que produit cette skill
+Un rapport de vérification qui indique si le CHANGELOG.md est conforme ou non, avec les erreurs trouvées. Si tout est correct, le rapport est vide ou indique "Aucune erreur trouvée".
+
+## Procédure de vérification
+
+1. Vérifiez que le fichier `CHANGELOG.md` existe dans le projet.
+2. Lisez le contenu du fichier pour identifier les sections :
+   - Une section **Unreleased** en premier.
+   - Des versions datées au format `AAAA-MM-JJ`.
+3. Pour chaque version, vérifiez qu’elle contient au moins une des catégories suivantes :
+   - Added
+   - Changed
+   - Fixed
+   - Removed
+   - Security
+4. Vérifiez que les dates sont bien au format AAAA-MM-JJ.
+5. Vérifiez qu’il n’y a pas de section non reconnue (ex : "Deprecated", "Improved").
+6. Exécutez le script `scripts/verify_changelog.sh` pour automatiser la vérification.
+
+### Pourquoi ?
+- Le format Keep a Changelog est un standard reconnu qui permet d’assurer la lisibilité et la cohérence du journal des modifications.
+- Une mauvaise mise en forme peut nuire à l'automatisation de déploiements ou à la compréhension par les utilisateurs.
+
+## Fichiers nécessaires
+
+- `CHANGELOG.md` : le fichier à vérifier.
+- `scripts/verify_changelog.sh` : script de vérification automatisée.
+
+## Exemple d'utilisation
+
+```bash
+$ bash scripts/verify_changelog.sh
+```
+
+## À vérifier avant de rendre le résultat
+
+- [ ] Le fichier `CHANGELOG.md` est bien présent dans le projet.
+- [ ] Le script `scripts/verify_changelog.sh` est exécutable.
+- [ ] Les sections Unreleased et versions datées sont présentes.
+- [ ] Les catégories Added / Changed / Fixed / Removed / Security sont utilisées correctement.
+- [ ] Aucune erreur n’est renvoyée par le script de vérification.
+
+=== FIN ===
+
+=== FICHIER: verify-changelog/scripts/verify_changelog.sh ===
+#!/bin/bash
+
+# Script de vérification du format CHANGELOG.md
+# Vérifie la conformité au standard Keep a Changelog
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$SCRIPT_DIR/../.."
+
+CHANGELOG_FILE="$PROJECT_ROOT/CHANGELOG.md"
+
+if [[ ! -f "$CHANGELOG_FILE" ]]; then
+  echo "ERREUR: Le fichier CHANGELOG.md est introuvable."
+  exit 1
+fi
+
+# Lecture du contenu
+content=$(cat "$CHANGELOG_FILE")
+
+# Vérification de la présence de la section Unreleased
+if ! grep -q "^## Unreleased" <<< "$content"; then
+  echo "ERREUR: La section 'Unreleased' est absente."
+  exit 1
+fi
+
+# Vérification des formats de date
+if ! grep -q "^\*\*[^**]*\*\* \- [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}" <<< "$content"; then
+  echo "ERREUR: Format de date incorrect. Doit être au format AAAA-MM-JJ."
+  exit 1
+fi
+
+# Vérification des catégories
+categories=("Added" "Changed" "Fixed" "Removed" "Security")
+for category in "${categories[@]}"; do
+  if ! grep -q "^### $category" <<< "$content"; then
+    echo "ATTENTION: La catégorie '$category' est absente."
+  fi
+done
+
+# Vérification des sections non reconnues
+if grep -q "^### [^A-Z]" <<< "$content"; then
+  echo "ERREUR: Une section non reconnue a été détectée (ex: Deprecated, Improved)."
+  exit 1
+fi
+
+echo "Aucune erreur trouvée."
+exit 0
+
+=== FIN ===

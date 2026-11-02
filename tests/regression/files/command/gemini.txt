@@ -1,0 +1,20 @@
+réponse coupée : non
+
+[ok] .gemini/commands/verifier.toml : Corrigé automatiquement : Ligne ``` retirée autour du code : le modèle avait entouré le fichier d’un bloc Markdown.
+[warning] .gemini/commands/verifier.toml : npm run typecheck est injectée par !{…} et demandée en plus dans la consigne : elle tournera deux fois. Garder l’une des deux.
+
+=== .gemini/commands/verifier.toml (modele)
+# réparé : Ligne ``` retirée autour du code : le modèle avait entouré le fichier d’un bloc Markdown.
+description = "Lance le typecheck et résume les erreurs"
+prompt = """
+Lance `npm run typecheck` puis résume les erreurs par fichier.
+!{npm run typecheck}
+"""
+
+
+=== texte affiché
+Une commande Gemini CLI.
+
+
+> **Fichier** `.gemini/commands/verifier.toml` : voir le panneau Fichiers
+

@@ -1,0 +1,100 @@
+réponse coupée : non
+
+[ok] - : Aucun problème détecté par les contrôles automatiques.
+
+=== revue-code/plugin.json (modele)
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "revue-code",
+  "version": "1.0.0",
+  "description": "Permet de relire les modifications en cours avant un commit, en analysant les fichiers modifiés et en fournissant un résumé structuré."
+}
+
+
+=== revue-code/README.md (modele)
+# Plugin `revue-code`
+
+Ce plugin ajoute une skill permettant de relire les modifications en cours dans le dépôt Git avant d'effectuer un commit. Il analyse les fichiers modifiés, propose un résumé des changements et aide à détecter les erreurs ou omissions courantes.
+
+## Fonctionnalités
+
+- **Skill `relire-modifications`** : analyse les fichiers ajoutés ou modifiés dans l'index Git et génère un résumé clair des modifications.
+
+## Installation
+
+1. Placez le dossier `revue-code` dans votre dépôt à la racine.
+2. Ajoutez le plugin à la marketplace locale en créant ou mettant à jour le fichier `.agents/plugins/marketplace.json` :
+
+```json
+{
+  "name": "local",
+  "plugins": [
+    {
+      "name": "revue-code",
+      "source": {
+        "source": "local",
+        "path": "./revue-code"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
+```
+
+3. Installez le plugin depuis la CLI Codex :
+
+```bash
+codex plugin marketplace add .
+codex plugin install revue-code
+```
+
+## Utilisation
+
+Exécutez la skill directement via la commande Codex :
+
+```bash
+$revue-code:relire-modifications
+```
+
+La skill affichera un résumé des fichiers modifiés, avec un aperçu des changements et une suggestion de vérification.
+
+## À vérifier
+
+- Le plugin suppose que `git status` et `git diff --cached` sont disponibles dans le contexte d'exécution.
+- L'analyse des modifications est basée sur la sortie brute de Git ; aucun traitement sémantique n'est effectué.
+- Aucun serveur MCP n’est requis pour cette fonctionnalité.
+
+
+=== revue-code/skills/relire-modifications/SKILL.md (modele)
+---
+name: relire-modifications
+description: Relit les modifications en cours dans le dépôt Git avant un commit. À utiliser quand l'utilisateur veut s'assurer que les changements sont corrects, complets et conformes aux bonnes pratiques.
+---
+1. Exécutez `git status --porcelain` pour lister tous les fichiers modifiés, ajoutés ou supprimés.
+2. Pour chaque fichier identifié :
+   - Si le fichier est ajouté (`A`), affichez son nom et un aperçu des premières lignes du contenu.
+   - Si le fichier est modifié (`M`), exécutez `git diff --cached <fichier>` pour voir les modifications préparées pour le commit.
+3. Rassemblez tous les aperçus dans un résumé structuré :
+   - Liste des fichiers ajoutés ou modifiés.
+   - Aperçu des changements principaux (max 5 lignes par fichier).
+4. Fournissez une suggestion : "Vérifiez que ces modifications sont correctes et complètes avant de continuer."
+5. Retournez le résumé final dans un format lisible, avec une structure claire.
+
+
+=== texte affiché
+Ce plugin permet à l'utilisateur de vérifier les modifications en cours dans son dépôt Git avant d'effectuer un commit, en analysant les fichiers modifiés via une skill dédiée. Il s'intègre directement dans le flux de travail Codex pour renforcer la qualité du code avant validation. La skill « relire-modifications » examine les changements actuels et fournit un résumé structuré.
+
+
+> **Fichier** `revue-code/plugin.json` : voir le panneau Fichiers
+
+
+
+> **Fichier** `revue-code/README.md` : voir le panneau Fichiers
+
+
+
+> **Fichier** `revue-code/skills/relire-modifications/SKILL.md` : voir le panneau Fichiers

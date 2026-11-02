@@ -7,7 +7,7 @@ import { toPrettyJson } from '../../../shared/json.js';
 import {
   Conversation,
   InvalidConversationError,
-  type ConversationSnapshot,
+  conversationInputSchema,
   type ConversationSummary,
 } from '../domain/conversation.js';
 import type { ConversationRepository } from '../domain/conversation.repository.js';
@@ -35,8 +35,8 @@ export class FileConversationRepository implements ConversationRepository {
     const path = this.path(id);
     if (!path || !existsSync(path)) return undefined;
     try {
-      const snapshot: ConversationSnapshot = JSON.parse(await readFile(path, 'utf8'));
-      return Conversation.restore(snapshot);
+      const parsed = conversationInputSchema.safeParse(JSON.parse(await readFile(path, 'utf8')));
+      return parsed.success ? Conversation.restore(parsed.data) : undefined;
     } catch {
       return undefined;
     }

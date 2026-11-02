@@ -1,18 +1,14 @@
 import JSZip from 'jszip';
-import type { FileIssue, GeneratedFile, GeneratorKey, ScaffoldFile, TargetFormat } from '@/types';
+import type { FileIssue, GeneratedFile, ModeKey, ScaffoldFile, TargetFormat } from '@/types';
 import { errorMessage } from './errors';
 import { FIX_MESSAGES } from './consts';
-import { cleanContent, dropTrailingSeparator, frontmatter } from './frontmatter';
-import { checkCommands } from './commands';
-import { checkMcp } from './mcp';
-import { checkPlugin } from './plugins';
-import { checkSkills, gnuOnlyIssue, isSkillFile } from './skills';
+import { cleanContent, dropTrailingSeparator } from './frontmatter';
+import { checkModeFiles } from '@/modes';
 
 const START = /^=== ?FICHIER ?: ?(.+?) ?===\s*$/;
 const END = /^=== ?FIN ?(?:===)?\s*$/;
 const CHECKLIST = /^\s*(?:\*\*|#+\s*)?À vérifier\b[^\n]*:/;
 const PLUGIN_MANIFEST = /^([^/]+)\/(?:\.claude-plugin\/plugin|plugin|gemini-extension)\.json$/;
-const NAMED_HOOK_GROUPS = '.agents/hooks.json';
 const README = /(^|\/)README[^/]*$/i;
 const OBJECT_URL_LIFETIME_MS = 2000;
 
@@ -125,11 +121,7 @@ export function withScaffold(files: GeneratedFile[], scaffold: ScaffoldFile[]): 
   return [...kept, ...[...provided.values()].filter((s) => !existing.has(s.path))];
 }
 
-export function validateFiles(
-  generatorKey: GeneratorKey,
-  files: GeneratedFile[],
-  format?: TargetFormat,
-): FileIssue[] {
+export function validateFiles(modeKey: ModeKey, files: GeneratedFile[], format?: TargetFormat): FileIssue[] {
   const issues: FileIssue[] = [];
   if (!files.length) return issues;
 
@@ -170,97 +162,7 @@ export function validateFiles(
     for (const fix of f.fixes ?? [])
       issues.push({ level: 'ok', path: f.path, message: `Corrigé automatiquement : ${fix}` });
 
-  const hasSkill = files.some((f) => isSkillFile(f.path));
-  if (generatorKey === 'skill' || hasSkill) issues.push(...checkSkills(files, format));
-
-  if ((generatorKey === 'agent' || generatorKey === 'command') && !hasSkill) {
-    for (const f of files.filter((f) => f.path.endsWith('.md') && !f.path.startsWith('.cursor/commands/'))) {
-      const fm = frontmatter(f.content);
-      if (!fm) {
-        issues.push({ level: 'warning', path: f.path, message: 'En-tête YAML manquant.' });
-        continue;
-      }
-      if (!fm.description)
-        issues.push({ level: 'error', path: f.path, message: 'Champ « description » manquant.' });
-      if (generatorKey === 'agent' && !fm.name && !f.path.startsWith('.github/'))
-        issues.push({ level: 'error', path: f.path, message: 'Champ « name » manquant.' });
-    }
-    for (const f of files.filter((f) => f.path.endsWith('.toml'))) {
-      const required = f.path.startsWith('.codex/agents/')
-        ? ['name', 'description', 'developer_instructions']
-        : ['prompt'];
-      for (const key of required)
-        if (!new RegExp(`^${key}\\s*=`, 'm').test(f.content))
-          issues.push({ level: 'error', path: f.path, message: `Clé TOML « ${key} » manquante.` });
-    }
-  }
-
-  if (generatorKey === 'command') issues.push(...checkCommands(files));
-
-  if (generatorKey === 'mcp') issues.push(...checkMcp(files));
-
-  if (generatorKey === 'plugin') issues.push(...checkPlugin(files, format));
-
-  if (generatorKey === 'hooks') {
-    for (const config of files.filter((f) => f.path.endsWith('.json'))) {
-      try {
-        const json = JSON.parse(config.content);
-        if (config.path === NAMED_HOOK_GROUPS) {
-          if (json.hooks)
-            issues.push({
-              level: 'error',
-              path: config.path,
-              message: 'Pas de clé « hooks » englobante ici : chaque clé est le nom d’un groupe de hooks.',
-            });
-        } else if (!json.hooks)
-          issues.push({ level: 'error', path: config.path, message: 'Clé « hooks » absente.' });
-        if (/^\.(cursor|github)\//.test(config.path) && json.version !== 1)
-          issues.push({ level: 'warning', path: config.path, message: 'Champ « version »: 1 attendu.' });
-      } catch {}
-    }
-    const configs = files.filter((f) => f.path.endsWith('.json'));
-    if (!configs.length)
-      issues.push({
-        level: 'error',
-        message: 'Aucun fichier de configuration des hooks : les scripts ne seront jamais lancés.',
-      });
-    for (const f of files.filter((f) => f.path.endsWith('.sh'))) {
-      const scriptName = f.path.split('/').pop() ?? f.path;
-      if (configs.length && !configs.some((config) => config.content.includes(scriptName)))
-        issues.push({
-          level: 'warning',
-          path: f.path,
-          message: 'Script cité par aucun fichier de configuration : il ne sera jamais lancé.',
-        });
-      if (!f.content.startsWith('#!'))
-        issues.push({ level: 'warning', path: f.path, message: 'Ligne #! manquante en tête du script.' });
-      const gnuOnly = gnuOnlyIssue(f);
-      if (gnuOnly) issues.push(gnuOnly);
-    }
-  }
-
-  if (generatorKey === 'claudemd') {
-    for (const f of files.filter((f) => f.path.endsWith('.mdc'))) {
-      const fm = frontmatter(f.content);
-      if (!fm || fm.alwaysApply !== 'true')
-        issues.push({
-          level: 'warning',
-          path: f.path,
-          message: 'En-tête « alwaysApply: true » absent : la règle ne sera pas appliquée partout.',
-        });
-    }
-    for (const f of files.filter((f) =>
-      /(CLAUDE|AGENTS|GEMINI|copilot-instructions)\.md$|\.mdc$/.test(f.path),
-    )) {
-      const todo = (f.content.match(/À compléter/g) ?? []).length;
-      if (todo)
-        issues.push({
-          level: 'warning',
-          path: f.path,
-          message: `${todo} point(s) « À compléter » à renseigner.`,
-        });
-    }
-  }
+  issues.push(...checkModeFiles(modeKey, files, format));
 
   if (!issues.some((i) => i.level !== 'ok'))
     issues.push({ level: 'ok', message: 'Aucun problème détecté par les contrôles automatiques.' });

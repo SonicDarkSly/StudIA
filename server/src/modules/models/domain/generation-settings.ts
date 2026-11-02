@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export interface GenerationSettings {
   temperature: number;
   topP: number;
@@ -13,6 +15,24 @@ export interface GenerationSettings {
   thinking: boolean;
   thoughtBudget?: number;
 }
+
+export const generationSettingsSchema = z.object({
+  temperature: z.number(),
+  topP: z.number(),
+  topK: z.number(),
+  minP: z.number(),
+  repeatPenalty: z.number(),
+  frequencyPenalty: z.number(),
+  presencePenalty: z.number(),
+  repeatLastTokens: z.number(),
+  maxTokens: z.number(),
+  contextSize: z.number(),
+  seed: z.number().optional(),
+  thinking: z.boolean(),
+  thoughtBudget: z.number().optional(),
+}) satisfies z.ZodType<GenerationSettings>;
+
+export const partialSettingsSchema = generationSettingsSchema.partial();
 
 export const DEFAULT_SETTINGS: GenerationSettings = {
   temperature: 0.7,

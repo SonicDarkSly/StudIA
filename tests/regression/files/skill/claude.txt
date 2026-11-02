@@ -1,0 +1,236 @@
+réponse coupée : non
+
+[ok] .claude/skills/verifier-changelog/SKILL.md : Corrigé automatiquement : Placé dans .claude/skills/verifier-changelog/ : le modèle avait oublié le dossier attendu par l’IA choisie.
+[ok] .claude/skills/verifier-changelog/scripts/verifier.sh : Corrigé automatiquement : Placé dans .claude/skills/verifier-changelog/ : le modèle avait oublié le dossier attendu par l’IA choisie.
+[ok] .claude/skills/verifier-changelog/references/exemple-changelog.md : Corrigé automatiquement : Placé dans .claude/skills/verifier-changelog/ : le modèle avait oublié le dossier attendu par l’IA choisie.
+[ok] .claude/skills/verifier-changelog/references/regles-verif.md : Corrigé automatiquement : Placé dans .claude/skills/verifier-changelog/ : le modèle avait oublié le dossier attendu par l’IA choisie.
+[ok] .claude/skills/verifier-changelog/assets/template-changelog.md : Corrigé automatiquement : Placé dans .claude/skills/verifier-changelog/ : le modèle avait oublié le dossier attendu par l’IA choisie.
+[warning] .claude/skills/verifier-changelog/scripts/verifier.sh : Le script déduit le dossier du projet de son propre emplacement : il cherchera les fichiers du projet dans le dossier de la skill. Les fichiers du projet se lisent dans le dossier courant ou se passent en argument.
+[warning] .claude/skills/verifier-changelog/scripts/verifier.sh : Pour l’IA choisie, citer le script sous la forme ${CLAUDE_SKILL_DIR}/scripts/verifier.sh : un autre chemin serait cherché dans le dossier courant du projet.
+[warning] .claude/skills/verifier-changelog/references/exemple-changelog.md : Fichier jamais cité dans SKILL.md : il ne sera jamais lu ni lancé.
+[warning] .claude/skills/verifier-changelog/references/regles-verif.md : Fichier jamais cité dans SKILL.md : il ne sera jamais lu ni lancé.
+[warning] .claude/skills/verifier-changelog/assets/template-changelog.md : Fichier jamais cité dans SKILL.md : il ne sera jamais lu ni lancé.
+
+=== .claude/skills/verifier-changelog/SKILL.md (modele)
+# réparé : Placé dans .claude/skills/verifier-changelog/ : le modèle avait oublié le dossier attendu par l’IA choisie.
+---
+name: verifier-changelog
+description: Vérifie qu'un fichier CHANGELOG.md respecte le format Keep a Changelog avant une release. S'active automatiquement quand l'utilisateur mentionne "vérifier le changelog" ou "valider le journal des modifications". Produit une liste d'erreurs si le format est incorrect.
+---
+## Utilisation
+Cette skill vérifie que le fichier `CHANGELOG.md` respecte les conventions du format [Keep a Changelog](https://keepachangelog.com/). Elle s'active automatiquement lorsque l'utilisateur demande explicitement de "vérifier le changelog" ou "valider le journal des modifications".
+
+## Procédure de vérification
+1. Vérifie que le fichier `CHANGELOG.md` existe dans le projet.
+2. Lit le contenu du fichier et analyse les sections :
+   - La première section doit être **Unreleased** (non datée).
+   - Les versions suivantes doivent être datées au format AAAA-MM-JJ.
+   - Chaque version doit contenir des sous-sections pour les catégories : Added, Changed, Fixed, Removed, Deprecated, Security.
+3. Si des erreurs sont trouvées, elles sont listées avec leur ligne respective.
+
+## Pourquoi cette procédure ?
+Le format Keep a Changelog est une convention largement adoptée dans les projets open source pour maintenir un journal des modifications lisible et structuré. Une vérification automatique évite les erreurs humaines avant une release.
+
+## Résultats attendus
+Un rapport d'erreurs si le fichier ne respecte pas le format, ou un message confirmant que le fichier est valide.
+
+## Fichiers utilisés
+- `CHANGELOG.md` : le fichier à vérifier (dans le projet).
+- `scripts/verifier.sh` : script de vérification avec les règles précises.
+
+## À vérifier
+- Le fichier `CHANGELOG.md` existe bien dans le projet.
+- Le script `scripts/verifier.sh` est exécutable.
+
+
+=== .claude/skills/verifier-changelog/scripts/verifier.sh (modele)
+# réparé : Placé dans .claude/skills/verifier-changelog/ : le modèle avait oublié le dossier attendu par l’IA choisie.
+#!/bin/bash
+
+set -euo pipefail
+
+# Récupère le chemin du dossier de la skill
+SKILL_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(dirname "$SKILL_DIR")"
+
+CHANGELOG_FILE="$PROJECT_ROOT/CHANGELOG.md"
+
+if [[ ! -f "$CHANGELOG_FILE" ]]; then
+  echo "ERREUR: Le fichier CHANGELOG.md est introuvable dans le projet."
+  exit 1
+fi
+
+# Vérifie que la première section est "Unreleased"
+first_line=$(head -n 1 "$CHANGELOG_FILE")
+if [[ ! "$first_line" =~ ^##\ Unreleased$ ]]; then
+  echo "ERREUR: La première section doit être '## Unreleased', trouvée : '$first_line'"
+  exit 1
+fi
+
+# Vérifie les sections de version datées
+awk '
+BEGIN { in_version = 0; expected_categories = "Added,Changed,Fixed,Removed,Deprecated,Security" }
+/^## / {
+  if (in_version == 1) {
+    # On quitte la section précédente
+    print "ERREUR: La section de version n\'a pas de catégories valides."
+    exit 1
+  }
+  in_version = 0
+  line = $0
+  if (line ~ /^## Unreleased$/) {
+    # C\'est OK, c\'est la section non datée
+    next
+  } else if (line ~ /^## \[.*\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$/) {
+    # C\'est une version datée
+    in_version = 1
+    next
+  } else {
+    print "ERREUR: Format de version incorrect : " line
+    exit 1
+  }
+}
+in_version == 1 && /^### / {
+  category = $0
+  gsub(/^### /, "", category)
+  if (category !~ /^(Added|Changed|Fixed|Removed|Deprecated|Security)$/) {
+    print "ERREUR: Catégorie inconnue dans la version : " category
+    exit 1
+  }
+}
+' "$CHANGELOG_FILE"
+
+echo "SUCCESS: Le fichier CHANGELOG.md respecte le format Keep a Changelog."
+
+
+=== .claude/skills/verifier-changelog/references/exemple-changelog.md (modele)
+# réparé : Placé dans .claude/skills/verifier-changelog/ : le modèle avait oublié le dossier attendu par l’IA choisie.
+# Changelog
+
+Tous les changements notables de ce projet seront documentés dans ce fichier.
+
+Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+et ce projet suit le versionnement sémantique [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- Ajout d'une nouvelle fonctionnalité
+
+### Changed
+- Amélioration de l'interface utilisateur
+
+### Fixed
+- Correction d'un bug critique
+
+## [1.2.0] - 2023-05-15
+
+### Added
+- Nouvelle API pour les intégrations
+
+### Changed
+- Refactorisation du module de gestion des utilisateurs
+
+### Fixed
+- Correction d'une erreur dans le traitement des données
+
+## [1.1.0] - 2023-04-10
+
+### Added
+- Support pour les notifications push
+
+### Fixed
+- Correction d'un bug d'affichage sur mobile
+
+
+=== .claude/skills/verifier-changelog/references/regles-verif.md (modele)
+# réparé : Placé dans .claude/skills/verifier-changelog/ : le modèle avait oublié le dossier attendu par l’IA choisie.
+# Règles de vérification du CHANGELOG.md
+
+## Format général
+Le fichier doit suivre le format [Keep a Changelog](https://keepachangelog.com/).
+
+## Première section
+La première section doit être `## Unreleased`.
+
+## Sections de versions
+Les sections de version doivent être au format :
+`## [VERSION] - AAAA-MM-JJ`
+
+Exemple : `## [1.2.0] - 2023-05-15`
+
+## Catégories
+Chaque version doit contenir les sous-sections suivantes (dans l'ordre) :
+1. Added
+2. Changed
+3. Fixed
+4. Removed
+5. Deprecated
+6. Security
+
+Les catégories doivent être écrites avec une majuscule au début : `### Added`, `### Changed`, etc.
+
+## Exemple de structure valide
+```
+# Changelog
+
+## [Unreleased]
+### Added
+- Nouvelle fonctionnalité
+
+### Changed
+- Amélioration
+
+## [1.0.0] - 2023-01-01
+### Fixed
+- Correction d'un bug
+```
+
+
+=== .claude/skills/verifier-changelog/assets/template-changelog.md (modele)
+# réparé : Placé dans .claude/skills/verifier-changelog/ : le modèle avait oublié le dossier attendu par l’IA choisie.
+# Changelog
+
+Tous les changements notables de ce projet seront documentés dans ce fichier.
+
+Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+et ce projet suit le versionnement sémantique [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+### Deprecated
+
+### Security
+
+## [0.1.0] - 2023-01-01
+
+### Added
+- Première version du projet
+
+
+=== texte affiché
+
+> **Fichier** `SKILL.md` : voir le panneau Fichiers
+
+
+> **Fichier** `scripts/verifier.sh` : voir le panneau Fichiers
+
+
+
+> **Fichier** `references/exemple-changelog.md` : voir le panneau Fichiers
+
+
+
+> **Fichier** `references/regles-verif.md` : voir le panneau Fichiers
+
+
+
+> **Fichier** `assets/template-changelog.md` : voir le panneau Fichiers
