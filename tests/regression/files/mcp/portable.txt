@@ -1,7 +1,7 @@
 réponse coupée : non
 
+[warning] projets-locaux/README.md : Consigne destinée au modèle recopiée dans le fichier (« FORMAT POUR L’IA CIBLE »…) : la remplacer par le vrai texte.
 [ok] projets-locaux/src/index.ts : Corrigé automatiquement : Ligne ``` retirée autour du code : le modèle avait entouré le fichier d’un bloc Markdown.
-[ok] - : Aucun problème détecté par les contrôles automatiques.
 
 === projets-locaux/src/index.ts (modele)
 # réparé : Ligne ``` retirée autour du code : le modèle avait entouré le fichier d’un bloc Markdown.

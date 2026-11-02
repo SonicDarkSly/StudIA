@@ -77,8 +77,9 @@ TU LIVRES UNIQUEMENT :
   1. npm install
   2. npm run build (crée dist/index.js, le fichier lancé par l'IA)
   3. npm run inspect (tester les outils dans l'inspecteur MCP)
-  4. Configuration : où fusionner le fichier du dossier config/ (voir FORMAT POUR L'IA CIBLE).
-  5. Une phrase qui dit de remplacer /CHEMIN/ABSOLU/VERS par le chemin réel du dossier du connecteur.
+  4. Configuration : <ici, où fusionner le fichier du dossier config/, d'après FORMAT POUR L'IA CIBLE>
+  5. Remplacer /CHEMIN/ABSOLU/VERS par le chemin réel du dossier du connecteur.
+Les lignes 1, 2, 3 et 5 se recopient telles quelles ; la ligne 4 est à rédiger (ne jamais recopier le texte entre < >).
 Le README renvoie à ce fichier de configuration fourni par l'application : n'invente ni ne recopie aucun autre format.
 
 MODÈLE DE CODE À SUIVRE (SDK @modelcontextprotocol/server 2.x, modules ES, zod 4). Ne pas utiliser l'ancien paquet

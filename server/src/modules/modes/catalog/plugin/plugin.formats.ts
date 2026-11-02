@@ -128,9 +128,12 @@ symbolique), puis la commande « Developer: Reload Window ».`,
     paths: [],
     instructions: `Structure (ne créer que le manifeste, le README et les dossiers des éléments demandés) :
 <nom>/gemini-extension.json :
-{ "name": "<nom>", "version": "1.0.0", "description": "…", "contextFileName": "GEMINI.md" }
-  facultatif : "excludeTools": ["run_shell_command(rm -rf)"], "mcpServers": { "<serveur>": { "command": "npx", "args": ["-y", "<paquet>"] } }
-<nom>/GEMINI.md : contexte ajouté à chaque session (seulement si utile).
+{ "name": "<nom>", "version": "1.0.0", "description": "…" }
+  facultatif : "contextFileName": "GEMINI.md" (seulement si GEMINI.md est livré), "excludeTools": ["run_shell_command(rm -rf)"],
+  "mcpServers": { "<serveur>": { "command": "npx", "args": ["-y", "<paquet>"] } }
+<nom>/README.md (obligatoire) : à quoi sert l'extension, ses éléments, l'installation.
+<nom>/GEMINI.md : contexte ajouté à chaque session, seulement si la demande en a besoin (il ne remplace pas le README).
+Les dossiers ci-dessous seulement pour les éléments que la demande cite (une skill demandée : pas de commands/).
 <nom>/commands/<commande>.toml : description = "…" et prompt = """…""" ({{args}}, !{commande}, @{fichier}) ;
   sous-dossier = espace de noms (git/commit.toml donne /git:commit).
 ${PLUGIN_SKILL}

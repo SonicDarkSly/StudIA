@@ -18,6 +18,8 @@ const WILDCARD_SUFFIX = /(\s\*|:\*)$/;
 const ALLOWED_TOOLS = 'allowed-tools';
 const OUTDATED_COPILOT_TOOLS = ['runCommands'];
 const UNDOCUMENTED_COPILOT_VARIABLES = ['${file}'];
+const UNNAMED_INPUT = '${input}';
+const COPILOT_AGENTS = ['ask', 'edit', 'agent'];
 const TRIPLE_QUOTE = /"""/g;
 const PAIR = 2;
 const GEMINI_SHELL = /!\{([^}]+)\}/g;
@@ -83,6 +85,19 @@ function checkCopilotPrompt(file: GeneratedFile): FileIssue[] {
       level: 'warning',
       path: file.path,
       message: `Variable(s) non documentée(s) par VS Code : ${variables.join(', ')}. Préférer #file:chemin ou \${selection}.`,
+    });
+  if (file.content.includes(UNNAMED_INPUT))
+    issues.push({
+      level: 'warning',
+      path: file.path,
+      message: 'Variable ${input} sans nom : VS Code ne la remplace pas. Écrire ${input:nom:indice}.',
+    });
+  const agent = frontmatter(file.content)?.agent;
+  if (agent && !COPILOT_AGENTS.includes(agent))
+    issues.push({
+      level: 'warning',
+      path: file.path,
+      message: `agent: ${agent} n’est pas un mode de VS Code (${COPILOT_AGENTS.join(', ')}) : à garder seulement si c’est le nom d’un agent personnalisé du projet.`,
     });
   return issues;
 }

@@ -78,7 +78,9 @@ tools: ['search', 'read', 'edit', 'execute']
 ---
 Outils : search (chercher), read (lire), edit (modifier), execute (lancer des commandes dans le terminal) ;
 n'en garder que le nécessaire.
-Corps : la consigne. Variables : \${input:nom:indice} (demande une valeur), \${selection} (texte sélectionné) ;
+agent vaut ask, edit ou agent (jamais copilot ni un autre nom, sauf agent personnalisé existant).
+Corps : la consigne. Variables : \${input:nom:indice} (demande une valeur ; jamais \${input} seul), \${selection}
+(texte sélectionné) ;
 #file:chemin joint un fichier. Préciser dans « À vérifier » que ces fichiers ne fonctionnent que dans VS Code et Visual Studio.`,
   },
   cursor: {

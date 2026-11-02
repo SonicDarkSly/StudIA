@@ -1,0 +1,252 @@
+Je vais créer une skill qui ajoute un lanceur double-clic (exécutable autonome) à un projet, conforme aux conventions de vos projets existants. Cette skill génère un lanceur fonctionnel sur macOS, Linux et Windows, avec un script d’initialisation, une icône intégrée (si disponible), et une configuration adaptée au stack de votre projet.
+
+Avant de livrer les fichiers, voici mes hypothèses basées sur vos projets existants :
+- Vous utilisez un projet Node.js ou Python (le plus courant dans vos exemples).
+- Le lanceur doit être exécutable via double-clic sans terminal.
+- Vous avez déjà des scripts `start`, `dev`, ou `run` dans `package.json` ou `pyproject.toml`.
+- Vous souhaitez un fichier `.app` sur macOS, `.desktop` sur Linux, et `.exe` sur Windows (via pkg ou PyInstaller).
+- Le lanceur doit être autonome, sans dépendance externe au moment de l’exécution.
+
+Si ces hypothèses ne correspondent pas à votre projet réel, veuillez préciser :
+1. Le stack principal (Node.js, Python, Rust, etc.) ?
+2. Le nom du script d’entrée (ex: `src/main.py`, `index.js`) ?
+3. Souhaitez-vous une icône personnalisée ? (Sinon, on utilisera une icône par défaut.)
+
+---
+
+=== FICHIER: .cursor/skills/ajouter-lanceur-double-clic/SKILL.md ===
+---
+name: ajouter-lanceur-double-clic
+description: Ajoute un lanceur autonome (double-clic) pour le projet, compatible macOS, Linux et Windows. À utiliser quand l'utilisateur demande « créer un lanceur », « générer un exécutable », « faire un fichier .app / .exe / .desktop » ou « rendre mon projet exécutable en un clic ».
+---
+### Objectif
+Créer un lanceur double-clic autonome pour le projet, fonctionnel sur macOS, Linux et Windows, avec une icône intégrée si disponible.
+
+### Étapes
+
+1. **Identifier le stack du projet**  
+   Vérifiez si le projet est Node.js (présence de `package.json`) ou Python (présence de `pyproject.toml` ou `setup.py`).  
+   *Pourquoi* : Le lanceur utilise des outils spécifiques selon le langage (pkg pour Node, PyInstaller pour Python).
+
+2. **Créer un script d’initialisation**  
+   Créez `scripts/start-lanceur.sh` (Linux/macOS) et `scripts/start-lanceur.bat` (Windows) si non existants.  
+   - Pour Node.js : `node src/index.js` ou `npm run start`  
+   - Pour Python : `python src/main.py` ou `python -m main`  
+   *Pourquoi* : Le lanceur doit exécuter le bon script d’entrée, même si le projet est dans un sous-dossier.
+
+3. **Générer le lanceur autonome**  
+   - **Node.js** : Utilisez `pkg` pour packager l’application.  
+     Lancez : `npx pkg --targets node18-linux-x64,node18-win-x64,node18-darwin-x64 .`  
+     *Pourquoi* : `pkg` crée un exécutable autonome sans besoin de Node installé.
+   - **Python** : Utilisez `pyinstaller` avec un fichier `.spec`.  
+     Créez `assets/pyinstaller.spec` (voir référence) et lancez : `pyinstaller assets/pyinstaller.spec`  
+     *Pourquoi* : `pyinstaller` packagé l’application avec toutes ses dépendances.
+
+4. **Ajouter une icône**  
+   - Placez une image `assets/icon.png` (1024x1024 px, PNG) dans le projet.  
+   - Si non présente, utilisez `assets/icon-default.png` fourni par la skill.  
+   *Pourquoi* : Une icône améliore l’expérience utilisateur et rend le lanceur professionnel.
+
+5. **Créer les fichiers système**  
+   - **macOS** : Créez un `.app` via `pkg` ou `pyinstaller`. Le dossier `.app` est généré automatiquement.
+   - **Linux** : Créez un fichier `assets/myapp.desktop` avec le contenu standard.  
+     *Pourquoi* : Le fichier `.desktop` permet l’affichage dans le menu d’applications et le double-clic.
+   - **Windows** : Le `.exe` est généré par `pkg` ou `pyinstaller`. Ajoutez une icône via `--icon=assets/icon.ico`.
+
+6. **Ajouter un fichier de documentation**  
+   Créez `docs/lanceur.md` avec :
+   ```
+   # Lanceur double-clic
+   Ce projet inclut un lanceur autonome pour démarrer l'application en un clic.
+   
+   ## Utilisation
+   - macOS : Double-cliquez sur `build/myapp.app`
+   - Linux : Double-cliquez sur `build/myapp.desktop` ou installez via `make install`
+   - Windows : Double-cliquez sur `build/myapp.exe`
+   
+   ## Dépendances
+   - Node.js (si stack Node)
+   - Python + PyInstaller (si stack Python)
+   ```
+   *Pourquoi* : Aide les nouveaux utilisateurs à comprendre comment lancer le projet.
+
+7. **Mettre à jour le fichier `.gitignore`**  
+   Ajoutez `build/`, `*.exe`, `*.app`, `*.desktop` si non présents.  
+   *Pourquoi* : Évite de commiter des fichiers binaires inutiles.
+
+### Pièges
+- ❌ Oublier d’ajouter les dépendances (`pkg`, `pyinstaller`) dans `package.json` ou `requirements.txt`.  
+  ✅ Correction : Installez-les via `npm install -g pkg` ou `pip install pyinstaller`.
+- ❌ Utiliser un chemin relatif incorrect pour le script d’entrée.  
+  ✅ Correction : Vérifiez que le script est exécutable depuis le dossier `build/`.
+- ❌ Oublier de convertir l’icône PNG en ICO pour Windows.  
+  ✅ Correction : Utilisez `convert assets/icon.png -resize 256x256 assets/icon.ico` (via ImageMagick).
+
+### Checklist
+- [ ] Le stack est identifié (Node.js ou Python)
+- [ ] Le script d’entrée est correctement référencé
+- [ ] Les dépendances nécessaires sont installées
+- [ ] L’icône est présente et au bon format
+- [ ] Le fichier `.gitignore` inclut `build/`
+- [ ] Le fichier `docs/lanceur.md` est créé
+
+### Fichiers de la skill
+- references/stacks.md : Détails sur les stacks Node.js et Python
+- assets/icon-default.png : Icône par défaut si aucune n’est fournie
+- assets/pyinstaller.spec : Fichier de configuration pour PyInstaller
+- scripts/start-lanceur.sh : Script d’initialisation (Linux/macOS)
+- scripts/start-lanceur.bat : Script d’initialisation (Windows)
+- docs/lanceur.md : Documentation du lanceur
+
+=== FIN ===
+
+=== FICHIER: .cursor/skills/ajouter-lanceur-double-clic/references/stacks.md ===
+---
+name: stacks
+description: Détails sur les configurations pour Node.js et Python
+---
+### Stack Node.js
+- Utilise `pkg` pour packager l’application.
+- Le fichier d’entrée est souvent `index.js`, `src/index.js`, ou défini dans `package.json` via `"main"` ou `"start"`.
+- Commande : `npx pkg --targets node18-linux-x64,node18-win-x64,node18-darwin-x64 .`
+
+### Stack Python
+- Utilise `pyinstaller` avec un fichier `.spec`.
+- Le script d’entrée est souvent `main.py`, `app.py`, ou `src/main.py`.
+- Commande : `pyinstaller assets/pyinstaller.spec`
+- Le fichier `.spec` doit inclure `--onefile --windowed --icon=assets/icon.ico`
+
+=== FIN ===
+
+=== FICHIER: .cursor/skills/ajouter-lanceur-double-clic/assets/icon-default.png ===
+(Contenu binaire : icône par défaut en PNG, 1024x1024 px)
+
+=== FIN ===
+
+=== FICHIER: .cursor/skills/ajouter-lanceur-double-clic/assets/pyinstaller.spec ===
+# PyInstaller spec file
+# Généré par la skill ajouter-lanceur-double-clic
+
+# -*- mode: python ; coding: utf-8 -*-
+
+block_cipher = None
+
+a = Analysis(
+    ['src/main.py'],  # À remplacer par le script d'entrée réel
+    pathex=[],
+    binaries=[],
+    datas=[],
+    hiddenimports=[],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=block_cipher,
+    noarchive=False,
+)
+
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    [],
+    name='myapp',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=False,  # Fenêtre cachée (interface graphique)
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+    icon='assets/icon.ico'  # Icône intégrée
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='myapp'
+)
+
+app = BUNDLE(
+    coll,
+    name='myapp.app',
+    icon='assets/icon.ico',
+    bundle_identifier=None
+)
+
+=== FIN ===
+
+=== FICHIER: .cursor/skills/ajouter-lanceur-double-clic/scripts/start-lanceur.sh ===
+#!/bin/bash
+# Script d'initialisation pour le lanceur (Linux/macOS)
+# Appelle le script principal du projet
+# À adapter selon le stack réel
+
+if [ -f "package.json" ]; then
+  echo "Démarrage via Node.js..."
+  npm run start
+elif [ -f "pyproject.toml" ] || [ -f "setup.py" ]; then
+  echo "Démarrage via Python..."
+  python src/main.py
+else
+  echo "Aucun script de démarrage trouvé. Vérifiez le projet."
+  exit 1
+fi
+
+=== FIN ===
+
+=== FICHIER: .cursor/skills/ajouter-lanceur-double-clic/scripts/start-lanceur.bat ===
+@echo off
+:: Script d'initialisation pour le lanceur (Windows)
+:: Appelle le script principal du projet
+
+if exist package.json (
+    echo Démarrage via Node.js...
+    npm run start
+) else if exist pyproject.toml (
+    echo Démarrage via Python...
+    python src/main.py
+) else (
+    echo Aucun script de démarrage trouvé. Vérifiez le projet.
+    exit /b 1
+)
+
+=== FIN ===
+
+=== FICHIER: .cursor/skills/ajouter-lanceur-double-clic/docs/lanceur.md ===
+# Lanceur double-clic
+Ce projet inclut un lanceur autonome pour démarrer l'application en un clic.
+
+## Utilisation
+- macOS : Double-cliquez sur `build/myapp.app`
+- Linux : Double-cliquez sur `build/myapp.desktop` ou installez via `make install`
+- Windows : Double-cliquez sur `build/myapp.exe`
+
+## Dépendances
+- Node.js (si stack Node)
+- Python + PyInstaller (si stack Python)
+
+=== FIN ===
+
+À vérifier
+- [ ] Le stack du projet est bien identifié (Node.js ou Python)
+- [ ] Le script d’entrée (`src/main.py`, `index.js`, etc.) existe
+- [ ] Les dépendances `pkg` ou `pyinstaller` sont installées
+- [ ] L’icône `assets/icon.png` est au bon format et taille
+- [ ] Le dossier `build/` est ajouté à `.gitignore`

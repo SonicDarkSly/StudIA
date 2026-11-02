@@ -1,6 +1,6 @@
 réponse coupée : non
 
-[ok] - : Aucun problème détecté par les contrôles automatiques.
+[warning] .github/hooks/block-dangerous-commands.sh : Décision de refus (JSON) écrite sur stderr : l’outil la lit sur stdout, le motif ne sera pas affiché (le code 2 bloque quand même). Retirer >&2.
 
 === .github/hooks/block-dangerous-commands.json (modele)
 {

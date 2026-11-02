@@ -1,10 +1,11 @@
 import type { FileIssue, GeneratedFile, ModeRules } from '@/types';
-import { gnuOnlyIssue } from '@/modes/utils/shell';
+import { shellIssues } from '@/modes/utils/shell';
 import { parseJson } from '@/utils/json';
 import { z } from '@/utils/zod';
 
 const NAMED_HOOK_GROUPS = '.agents/hooks.json';
 const VERSIONED_CONFIG = /^\.(cursor|github)\//;
+const DENY_JSON_ON_STDERR = /\bdeny\\?"[^\n]*>&2/;
 const CONFIG_VERSION = 1;
 
 const hooksConfigSchema = z
@@ -47,8 +48,14 @@ function checkHooks(files: GeneratedFile[]): FileIssue[] {
       });
     if (!f.content.startsWith('#!'))
       issues.push({ level: 'warning', path: f.path, message: 'Ligne #! manquante en tête du script.' });
-    const gnuOnly = gnuOnlyIssue(f);
-    if (gnuOnly) issues.push(gnuOnly);
+    if (DENY_JSON_ON_STDERR.test(f.content))
+      issues.push({
+        level: 'warning',
+        path: f.path,
+        message:
+          'Décision de refus (JSON) écrite sur stderr : l’outil la lit sur stdout, le motif ne sera pas affiché (le code 2 bloque quand même). Retirer >&2.',
+      });
+    issues.push(...shellIssues(f));
   }
   return issues;
 }

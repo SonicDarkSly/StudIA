@@ -10,6 +10,9 @@ const END = /^=== ?FIN ?(?:===)?\s*$/;
 const CHECKLIST = /^\s*(?:\*\*|#+\s*)?À vérifier\b[^\n]*:/;
 const PLUGIN_MANIFEST = /^([^/]+)\/(?:\.claude-plugin\/plugin|plugin|gemini-extension)\.json$/;
 const README = /(^|\/)README[^/]*$/i;
+const PROMPT_LEAK = /FORMAT POUR L'IA CIBLE|TA MISSION :/;
+const BINARY_FILE =
+  /\.(png|jpe?g|gif|webp|ico|icns|bmp|tiff?|pdf|zip|gz|tgz|7z|rar|exe|dll|dmg|app|woff2?|ttf|otf|mp3|mp4|wav|mov)$/i;
 const OBJECT_URL_LIFETIME_MS = 2000;
 
 function safePath(raw: string): string | undefined {
@@ -37,6 +40,20 @@ function toFile(path: string, lines: string[], end: FileEnd): GeneratedFile {
   };
 }
 
+function dropIdenticalDuplicates(files: GeneratedFile[]): GeneratedFile[] {
+  const kept: GeneratedFile[] = [];
+  for (const file of files) {
+    const index = kept.findIndex((k) => k.path === file.path && k.content === file.content);
+    if (index < 0) kept.push(file);
+    else
+      kept[index] = {
+        ...kept[index],
+        fixes: [...new Set([...(kept[index].fixes ?? []), FIX_MESSAGES.identicalDuplicate])],
+      };
+  }
+  return kept;
+}
+
 export function parseFiles(text: string): { files: GeneratedFile[]; partial: boolean } {
   const files: GeneratedFile[] = [];
   let current: { path: string; lines: string[] } | undefined;
@@ -62,7 +79,7 @@ export function parseFiles(text: string): { files: GeneratedFile[]; partial: boo
   }
   const partial = current !== undefined;
   if (current) files.push(toFile(current.path, current.lines, 'coupe'));
-  return { files, partial };
+  return { files: dropIdenticalDuplicates(files), partial };
 }
 
 export function stripFiles(text: string): { prose: string; count: number } {
@@ -136,6 +153,22 @@ export function validateFiles(modeKey: ModeKey, files: GeneratedFile[], format?:
         });
     }
   }
+
+  for (const f of files.filter((f) => f.origin === 'modele' && PROMPT_LEAK.test(f.content)))
+    issues.push({
+      level: 'warning',
+      path: f.path,
+      message:
+        'Consigne destinée au modèle recopiée dans le fichier (« FORMAT POUR L’IA CIBLE »…) : la remplacer par le vrai texte.',
+    });
+
+  for (const f of files.filter((f) => BINARY_FILE.test(f.path)))
+    issues.push({
+      level: 'error',
+      path: f.path,
+      message:
+        'Fichier binaire écrit en texte par le modèle : il est inutilisable. Le retirer ou le fournir soi-même.',
+    });
 
   for (const f of files) {
     if (f.path.endsWith('.json')) {

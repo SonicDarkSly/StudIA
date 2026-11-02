@@ -125,11 +125,24 @@ function checkReadme(readme: GeneratedFile, configs: GeneratedFile[]): FileIssue
     .map((m) => m[1])
     .filter((block) => block.includes('command'));
   const isExpected = (block: string) => keys.some((key) => block.includes(key));
+  const uncovered = configs
+    .map((config, index) => ({ name: names[index], key: configKey(config) }))
+    .filter(
+      ({ name, key }) =>
+        !readme.content.includes(name) && !(key && configBlocks.some((b) => b.includes(key))),
+    )
+    .map(({ name }) => name);
   if (keys.length && configBlocks.some((block) => !isExpected(block)))
     issues.push({
       level: 'error',
       path: readme.path,
       message: `Configuration recopiée dans le README au mauvais format (clé attendue : ${keys.join(' ou ')}) : renvoyer au fichier ${names.join(', ')}.`,
+    });
+  else if (names.length > 1 && uncovered.length)
+    issues.push({
+      level: 'warning',
+      path: readme.path,
+      message: `Le README n’explique pas la configuration de chaque outil : manque ${uncovered.join(', ')}.`,
     });
   else if (!citesConfig(readme, names) && !configBlocks.some(isExpected))
     issues.push({

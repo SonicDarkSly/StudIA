@@ -5,6 +5,7 @@ export const FIX_MESSAGES = {
   bareHeader: 'En-tête YAML entouré des lignes --- qui manquaient.',
   trailingHeader: 'Champ(s) d’en-tête écrit(s) après le corps, replacé(s) dans l’en-tête.',
   scaffoldWins: 'Fichier fourni par StudIA : la version écrite par le modèle, différente, a été remplacée.',
+  identicalDuplicate: 'Fichier livré plusieurs fois à l’identique : un seul exemplaire gardé.',
   codeFence: 'Ligne ``` retirée autour du code : le modèle avait entouré le fichier d’un bloc Markdown.',
   trailingRule: 'Ligne --- isolée retirée en fin de fichier.',
   leadingSeparator: 'Ligne --- isolée retirée en tête du fichier : il n’a pas d’en-tête YAML.',

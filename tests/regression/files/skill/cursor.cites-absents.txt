@@ -1,0 +1,225 @@
+réponse coupée : non
+
+[error] .cursor/skills/add-launcher/SKILL.md : Fichier(s) annoncé(s) dans « Fichiers de la skill » mais non livré(s) : assets/launcher.sh, assets/launcher.bat, assets/launcher.applescript, assets/launcher.json. L’agent les cherchera sans les trouver.
+
+=== .cursor/skills/add-launcher/SKILL.md (modele)
+---
+name: add-launcher
+description: Ajoute un lanceur double-clic autonome (macOS, Linux, Windows) à un projet Node.js, en suivant les conventions de mes projets existants. À utiliser quand l'utilisateur demande « ajouter un lanceur », « créer un exécutable », ou « faire un fichier .app/.exe/.bin pour lancer mon projet ».
+---
+1. Vérifie que le projet contient un `package.json` avec un script `start` (ex: `"start": "node src/index.js"`).  
+   *Pourquoi* : Le lanceur doit exécuter le même point d’entrée que `npm start`.
+
+2. Crée le fichier `assets/launcher.sh` si absent, avec le contenu suivant :
+```bash
+#!/bin/bash
+# Lanceur pour macOS/Linux (exécutable autonome)
+set -e
+
+# Chemin du dossier courant
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Démarrer l'application via Node.js
+exec node "$DIR/src/index.js" "$@"
+```
+   *Pourquoi* : Ce script est le point d’entrée pour les systèmes Unix. Il garantit que `node` est lancé avec le bon chemin relatif.
+
+3. Crée le fichier `assets/launcher.bat` si absent, avec le contenu suivant :
+```bat
+@echo off
+:: Lanceur pour Windows (exécutable autonome)
+setlocal
+
+:: Chemin du dossier courant
+cd /d "%~dp0"
+
+:: Démarrer l'application via Node.js
+node src/index.js %*
+```
+   *Pourquoi* : Windows nécessite une syntaxe `.bat` différente pour le chemin et les arguments.
+
+4. Crée le fichier `assets/launcher.applescript` si absent, avec le contenu suivant :
+```applescript
+-- Lanceur pour macOS (fichier .app)
+tell application "Terminal"
+    do script "cd '" & POSIX path of (path to me) & "' && node src/index.js"
+end tell
+```
+   *Pourquoi* : Sur macOS, un `.app` peut être créé avec un script AppleScript pour ouvrir une fenêtre de terminal et lancer le projet.
+
+5. Crée le fichier `assets/launcher.json` avec la configuration pour `pkg` :
+```json
+{
+  "targets": [
+    "node18-macos-x64",
+    "node18-linux-x64",
+    "node18-win-x64"
+  ],
+  "outputPath": "dist/",
+  "scripts": [
+    "src/index.js"
+  ],
+  "assets": [
+    "assets/launcher.sh",
+    "assets/launcher.bat",
+    "assets/launcher.applescript"
+  ],
+  "name": "mon-projet-lanceur"
+}
+```
+   *Pourquoi* : `pkg` nécessite une configuration précise pour packager les fichiers et cibler les OS.
+
+6. Si le projet n’a pas encore `pkg` installé, exécute :
+```bash
+npm install --save-dev pkg
+```
+
+7. Ajoute un script dans `package.json` :
+```json
+"scripts": {
+  "start": "node src/index.js",
+  "build:launcher": "pkg assets/launcher.json"
+}
+```
+   *Pourquoi* : Permet de générer les lanceurs via `npm run build:launcher`.
+
+8. Génère les exécutables en lançant :
+```bash
+npm run build:launcher
+```
+   *Pourquoi* : Cela crée `dist/mon-projet-lanceur-macos`, `dist/mon-projet-lanceur-linux`, `dist/mon-projet-lanceur-win.exe`.
+
+9. Pour macOS, crée un `.app` :
+   - Crée un dossier `dist/mon-projet-lanceur.app`
+   - Copie `dist/mon-projet-lanceur-macos` à l’intérieur, dans `Contents/MacOS/mon-projet-lanceur`
+   - Copie `assets/launcher.applescript` dans `Contents/Resources/`
+   - Crée un fichier `Contents/Info.plist` avec :
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleExecutable</key>
+    <string>mon-projet-lanceur</string>
+    <key>CFBundleIdentifier</key>
+    <string>fr.monprojet.lanceur</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>Mon Projet Lanceur</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>10.12.0</string>
+    <key>NSAppleScriptEnabled</key>
+    <true/>
+</dict>
+</plist>
+```
+   *Pourquoi* : macOS exige une structure `.app` pour un lanceur double-clic propre.
+
+10. Pour Windows, le fichier `dist/mon-projet-lanceur-win.exe` est déjà un exécutable double-clic.
+
+11. Pour Linux, `dist/mon-projet-lanceur-linux` est un binaire exécutable : donne-lui les droits avec :
+```bash
+chmod +x dist/mon-projet-lanceur-linux
+```
+
+12. Fournis une note dans `README.md` (si absent) ou ajoute à la fin du fichier :
+```
+## Lanceurs
+- macOS : double-cliquez sur `dist/mon-projet-lanceur.app`
+- Linux : exécutez `./dist/mon-projet-lanceur-linux`
+- Windows : double-cliquez sur `dist/mon-projet-lanceur-win.exe`
+```
+
+### Pièges
+- ❌ Ne pas installer `pkg` → le build échoue. *Correction* : exécuter `npm install --save-dev pkg`.
+- ❌ Oublier de donner les droits d’exécution sur Linux → le fichier ne démarre pas. *Correction* : `chmod +x dist/mon-projet-lanceur-linux`.
+- ❌ Utiliser un chemin absolu dans les scripts → ne fonctionne pas en copiant le lanceur ailleurs. *Correction* : utiliser `"$DIR"` ou `%~dp0` pour le chemin relatif.
+- ❌ Ne pas inclure `assets/launcher.sh` dans `pkg` → l’exécutable échoue sur Unix. *Correction* : vérifier que `assets/` est listé dans `launcher.json`.
+
+### Checklist
+- [ ] `package.json` contient un script `start`
+- [ ] `pkg` est installé en dev
+- [ ] `assets/launcher.sh`, `.bat`, `.applescript` existent
+- [ ] `assets/launcher.json` est configuré
+- [ ] `npm run build:launcher` fonctionne
+- [ ] Les fichiers exécutables sont générés dans `dist/`
+- [ ] Le `.app` macOS est bien structuré
+- [ ] Le README mentionne les lanceurs
+
+### Fichiers de la skill
+- references/ : aucun (pas utilisé)
+- assets/launcher.sh : étape 2
+- assets/launcher.bat : étape 3
+- assets/launcher.applescript : étape 4
+- assets/launcher.json : étape 5
+- scripts/ : aucun (pas nécessaire)
+
+
+=== .cursor/skills/add-launcher/README.md (modele)
+# Skill `add-launcher`
+
+Ajoute un lanceur double-clic autonome pour macOS, Linux et Windows à un projet Node.js.
+
+## Fonctionnalités
+- Génère des exécutables via `pkg`
+- Supporte les trois systèmes d’exploitation
+- Crée un `.app` propre pour macOS
+- Ajoute un script de build dans `package.json`
+
+## Utilisation
+1. Active la skill en demandant « ajouter un lanceur »
+2. Elle génère automatiquement :
+   - Scripts de lancement (`assets/launcher.sh`, `.bat`, `.applescript`)
+   - Configuration `pkg` (`assets/launcher.json`)
+   - Ajoute le script `build:launcher` dans `package.json`
+3. Lance `npm run build:launcher` pour produire les exécutables
+
+## Prérequis
+- Projet Node.js avec `src/index.js` et `package.json`
+- `pkg` installé (`npm install --save-dev pkg`)
+
+## Fichiers produits
+- `dist/mon-projet-lanceur-macos`
+- `dist/mon-projet-lanceur-linux`
+- `dist/mon-projet-lanceur-win.exe`
+- `dist/mon-projet-lanceur.app` (macOS)
+- `README.md` mis à jour (si nécessaire)
+
+## À vérifier
+- Le script principal est `src/index.js` — si non, modifie `assets/launcher.json` pour le changer.
+- Tu dois avoir `pkg` installé en dev : si non, exécute `npm install --save-dev pkg`.
+- Sur macOS, l’application peut être bloquée par sécurité. Si c’est le cas, ouvre `System Settings > Privacy & Security`, puis autorise l’exécutable.
+- Le projet ne doit pas contenir de dépendances natives non compatibles (ex: `node-gyp`), car elles ne seront pas packagées.
+
+
+=== texte affiché
+Tu veux une skill qui ajoute un lanceur double-clic (exécutable autonome) à un projet, compatible macOS, Linux et Windows, en suivant les conventions de tes projets existants. Comme aucun projet n’est fourni en contexte, je vais partir d’une hypothèse réaliste : tu utilises un projet Node.js avec une structure classique (fichier `package.json`, dossier `src/`, script principal `index.js`), et tu veux un lanceur qui démarre ton app via `node src/index.js`.
+
+Je propose une skill nommée `add-launcher` qui génère un lanceur autonome (exécutable) pour chaque OS, en utilisant `pkg` (outil populaire pour packager Node.js en exécutable), avec un script de génération automatique.
+
+---
+
+
+> **Fichier** `.cursor/skills/add-launcher/SKILL.md` : voir le panneau Fichiers
+
+
+
+> **Fichier** `.cursor/skills/add-launcher/README.md` : voir le panneau Fichiers
+
+
+---
+
+À vérifier :
+- Le point d’entrée du projet est bien `src/index.js`. Si ce n’est pas le cas, modifie `assets/launcher.json`.
+- Tu as installé `pkg` en dev (`npm install --save-dev pkg`).
+- Sur macOS, tu dois autoriser l’exécutable dans les paramètres de sécurité si bloqué.
+- Le projet ne contient pas de dépendances natives non-packagées (ex: `sqlite3`, `sharp`).

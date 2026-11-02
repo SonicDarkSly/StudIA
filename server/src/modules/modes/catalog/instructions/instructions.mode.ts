@@ -28,6 +28,8 @@ RÈGLES :
    Ce qui ne s'y trouve pas : écrire « À compléter : … » plutôt qu'inventer.
 2. Court et dense : un agent le relit à chaque session. Pas de généralités (« écrire du code propre »).
 3. Si des consignes existent déjà (CLAUDE.md, AGENTS.md…), partir d'elles : garder tout ce qui est important, compléter, signaler les changements.
-4. Commandes exactes, copiables.`,
+4. Commandes exactes, copiables.
+5. Aucun nom de personne (prénom, nom) repris du contexte : écrire « l'utilisateur ». Ce fichier peut être publié avec
+   le dépôt. Seul le pseudonyme d'auteur déjà public du projet (champ author du package.json) reste permis.`,
   formats: INSTRUCTIONS_FORMATS,
 };

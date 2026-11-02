@@ -24,6 +24,9 @@ TA MISSION : écrire des hooks, c'est-à-dire des scripts que l'agent exécute a
 Fichiers, événements disponibles et contrat d'entrée / sortie : voir FORMAT POUR L'IA CIBLE.
 
 RÈGLES : JSON strictement valide ; un script par besoin ; scripts rapides et sans effet de bord inattendu ;
-le fichier de configuration ne contient que la partie hooks (l'utilisateur la fusionnera avec l'existant).`,
+le fichier de configuration ne contient que la partie hooks (l'utilisateur la fusionnera avec l'existant).
+Pour repérer plusieurs motifs dans une commande, un test par motif, reliés par || :
+if [[ "$commande" == *"rm -rf"* ]] || [[ "$commande" == *"git push --force"* ]]; then
+Jamais d'alternative écrite \\| dans [[ … =~ … ]] : c'est une barre littérale, le motif ne correspondrait jamais.`,
   formats: HOOKS_FORMATS,
 };

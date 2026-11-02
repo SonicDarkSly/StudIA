@@ -98,7 +98,8 @@ En-tête YAML limité aux champs communs :
 name: nom-en-minuscules-avec-tirets
 description: quand déléguer à ce sous-agent
 ---
-Corps : le prompt système. Dans « À vérifier », écrire exactement cette ligne :
+Corps : le prompt système. Après les fichiers, la liste « À vérifier » commence par cette ligne, recopiée telle
+quelle :
 - Lu par Claude Code, GitHub Copilot et Cursor ; Codex (.codex/agents/*.toml), Gemini CLI (.gemini/agents/) et Antigravity (.agents/agents/) demandent leur propre fichier.`,
   },
 };

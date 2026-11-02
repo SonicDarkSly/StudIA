@@ -1,7 +1,7 @@
 import type { FileIssue, GeneratedFile, ModeRules, PluginRules, TargetFormat } from '@/types';
 import { FIX_MESSAGES, KEBAB } from '@/utils/consts';
 import { frontmatter, markdownBody } from '@/utils/frontmatter';
-import { gnuOnlyIssue } from '@/modes/utils/shell';
+import { shellIssues } from '@/modes/utils/shell';
 import { isSkillFile, unknownTools } from '@/modes/utils/skills';
 import { parseJson } from '@/utils/json';
 import { z } from '@/utils/zod';
@@ -102,8 +102,7 @@ function checkScripts(files: GeneratedFile[]): FileIssue[] {
   for (const script of files.filter((f) => f.path.endsWith(SHELL_SCRIPT))) {
     if (!script.content.startsWith(SHEBANG))
       issues.push({ level: 'warning', path: script.path, message: 'Ligne #! manquante en tête du script.' });
-    const gnuOnly = gnuOnlyIssue(script);
-    if (gnuOnly) issues.push(gnuOnly);
+    issues.push(...shellIssues(script));
   }
   return issues;
 }

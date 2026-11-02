@@ -2,7 +2,7 @@ import type { FileIssue, GeneratedFile, TargetFormat } from '@/types';
 import { approxTokens, fmtNumber } from '@/utils/format';
 import { KEBAB } from '@/utils/consts';
 import { frontmatter, listValue, markdownBody } from '@/utils/frontmatter';
-import { gnuOnlyIssue } from './shell';
+import { shellIssues } from './shell';
 
 const SKILL_FILE = 'SKILL.md';
 const SKILL_PATH = /(^|\/)SKILL\.md$/;
@@ -28,6 +28,8 @@ const SKILL_DIR_TOKEN = '{{dossier}}';
 const TRUE_VALUE = /^(true|yes|on|1)$/i;
 const IMPLICIT_INVOCATION_OFF = /^\s*allow_implicit_invocation:\s*false\s*$/m;
 const MANUAL_ONLY_FIELD = 'disable-model-invocation';
+const FILES_SECTION = /Fichiers de la skill/i;
+const LISTED_FILE = /(?:references|assets|scripts)\/[\w./-]*[\w-]/g;
 const MCP_TOOL_PREFIX = 'mcp__';
 const ALLOWED_TOOLS = 'allowed-tools';
 
@@ -131,6 +133,23 @@ function scriptCitation(format: TargetFormat | undefined, base: string, rel: str
   return `${prefix.split(SKILL_DIR_TOKEN).join(base)}${rel}`;
 }
 
+function missingListedFiles(skill: GeneratedFile, files: GeneratedFile[]): FileIssue[] {
+  const body = markdownBody(skill.content);
+  const start = body.search(FILES_SECTION);
+  if (start < 0) return [];
+  const base = skillBase(skill.path);
+  const listed = new Set([...body.slice(start).matchAll(LISTED_FILE)].map((m) => m[0]));
+  const missing = [...listed].filter((rel) => !files.some((f) => f.path === `${base}${rel}`));
+  if (!missing.length) return [];
+  return [
+    {
+      level: 'error',
+      path: skill.path,
+      message: `Fichier(s) annoncé(s) dans « Fichiers de la skill » mais non livré(s) : ${missing.join(', ')}. L’agent les cherchera sans les trouver.`,
+    },
+  ];
+}
+
 function checkResources(skill: GeneratedFile, files: GeneratedFile[], format?: TargetFormat): FileIssue[] {
   const issues: FileIssue[] = [];
   const base = skillBase(skill.path);
@@ -149,8 +168,7 @@ function checkResources(skill: GeneratedFile, files: GeneratedFile[], format?: T
     if (!rel.startsWith(SCRIPTS_DIR)) continue;
     if (other.path.endsWith('.sh') && !other.content.startsWith('#!'))
       issues.push({ level: 'warning', path: other.path, message: 'Ligne #! manquante en tête du script.' });
-    const gnuOnly = gnuOnlyIssue(other);
-    if (gnuOnly) issues.push(gnuOnly);
+    issues.push(...shellIssues(other));
     if (PROJECT_FROM_SCRIPT.test(other.content))
       issues.push({
         level: 'warning',
@@ -234,6 +252,7 @@ export function checkSkills(files: GeneratedFile[], format?: TargetFormat): File
         message: `Corps long (${lines} lignes) : déplacer le détail dans references/.`,
       });
     issues.push(...checkResources(skill, files, format));
+    issues.push(...missingListedFiles(skill, files));
   }
   return issues;
 }

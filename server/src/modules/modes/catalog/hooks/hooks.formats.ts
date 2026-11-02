@@ -50,7 +50,8 @@ postToolUseFailure, subagentStart, subagentStop, agentStop, errorOccurred.
 Entrée de preToolUse (JSON sur stdin) : toolName ("bash" pour le terminal), toolArgs (arguments de l'outil, parfois
 sous forme de chaîne JSON). Lire la commande avec :
 jq -r '(.toolArgs | if type == "string" then fromjson else . end).command // empty'
-Refus : code 2 (message sur stderr), ou sur stdout { "permissionDecision": "deny", "permissionDecisionReason": "…" }.
+Refus, au choix : exit 2 avec un message texte sur stderr ; ou { "permissionDecision": "deny",
+"permissionDecisionReason": "…" } sur stdout (sans >&2) puis exit 0. Jamais ce JSON sur stderr : il ne serait pas lu.
 Attention : dans preToolUse, tout code de sortie différent de 0 refuse l'action ; un dépassement de délai la laisse passer.
 ${HOOK_SCRIPT_RULES}`,
   },

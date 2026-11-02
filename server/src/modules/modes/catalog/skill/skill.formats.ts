@@ -24,7 +24,8 @@ disable-model-invocation (true = seulement via /nom, uniquement si l'utilisateur
 autorisés sans confirmation).
 allowed-tools s'écrit sur une ligne, séparé par des espaces, avec les vrais noms d'outils de Claude Code : Read,
 Write, Edit, Glob, Grep, Bash(commande *), WebFetch. Exemple : allowed-tools: Read Write Bash(git status *)
-Seulement si l'utilisateur demande un script, il se cite avec \${CLAUDE_SKILL_DIR} (dossier de la skill) :
+Un script (à n'ajouter que dans les cas de la règle 5) se cite toujours ainsi, dans les étapes comme dans
+« Fichiers de la skill », avec \${CLAUDE_SKILL_DIR} (dossier de la skill) :
 « Lancer \`bash \${CLAUDE_SKILL_DIR}/scripts/<script>.sh <fichier>\` », et s'autorise par
 allowed-tools: Bash(bash \${CLAUDE_SKILL_DIR}/scripts/<script>.sh *)`,
     skill: SKILL_RULES.claude,
@@ -41,7 +42,8 @@ que sur appel ($nom) ; dans ce cas seulement, ajouter agents/openai.yaml dans le
 dossier de la skill :
 policy:
   allow_implicit_invocation: false
-Seulement si l'utilisateur demande un script, il se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/<script>.sh\` ».`,
+Un script (à n'ajouter que dans les cas de la règle 5) se cite toujours ainsi, dans les étapes comme dans
+« Fichiers de la skill », par son chemin depuis la racine de la skill : « Lancer \`bash scripts/<script>.sh\` ».`,
     skill: SKILL_RULES.codex,
   },
   copilot: {
@@ -66,7 +68,8 @@ Emplacement : .cursor/skills/<nom>/SKILL.md
 Champs facultatifs : paths, liste de motifs de fichiers (ex. ["src/**/*.tsx"]) pour limiter le déclenchement ;
 disable-model-invocation (true = seulement via /nom, uniquement si l'utilisateur le demande). Pas de champ
 allowed-tools.
-Seulement si l'utilisateur demande un script, il se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/<script>.sh\` ».`,
+Un script (à n'ajouter que dans les cas de la règle 5) se cite toujours ainsi, dans les étapes comme dans
+« Fichiers de la skill », par son chemin depuis la racine de la skill : « Lancer \`bash scripts/<script>.sh\` ».`,
     skill: SKILL_RULES.cursor,
   },
   gemini: {
@@ -75,7 +78,8 @@ Seulement si l'utilisateur demande un script, il se cite par son chemin depuis l
     paths: ['.gemini/skills/'],
     instructions: `${SKILL_COMMON}
 Emplacement : .gemini/skills/<nom>/SKILL.md. N'utiliser que name et description dans l'en-tête.
-Seulement si l'utilisateur demande un script, il se cite par son chemin complet depuis le projet :
+Un script (à n'ajouter que dans les cas de la règle 5) se cite toujours ainsi, dans les étapes comme dans
+« Fichiers de la skill », par son chemin complet depuis le projet :
 « Lancer \`bash .gemini/skills/<nom>/scripts/<script>.sh\` ».`,
     skill: SKILL_RULES.gemini,
   },
@@ -87,7 +91,8 @@ Seulement si l'utilisateur demande un script, il se cite par son chemin complet 
     instructions: `${SKILL_COMMON}
 Emplacement : .agents/skills/<nom>/SKILL.md (Antigravity ne lit ni .gemini/skills/ ni .claude/). N'utiliser que name
 et description dans l'en-tête. La skill s'appelle aussi en tapant /nom.
-Seulement si l'utilisateur demande un script, il se cite par son chemin complet depuis le projet :
+Un script (à n'ajouter que dans les cas de la règle 5) se cite toujours ainsi, dans les étapes comme dans
+« Fichiers de la skill », par son chemin complet depuis le projet :
 « Lancer \`bash .agents/skills/<nom>/scripts/<script>.sh\` ».`,
     skill: SKILL_RULES.antigravity,
   },
@@ -99,7 +104,8 @@ Seulement si l'utilisateur demande un script, il se cite par son chemin complet 
     instructions: `${SKILL_COMMON}
 Emplacement : .agents/skills/<nom>/SKILL.md. N'utiliser que les champs du standard (name, description, et si utile
 license, compatibility, metadata). Aucune syntaxe propre à un outil dans le corps.
-Seulement si l'utilisateur demande un script, il se cite par son chemin depuis la racine de la skill : « Lancer \`bash scripts/<script>.sh\` ».
+Un script (à n'ajouter que dans les cas de la règle 5) se cite toujours ainsi, dans les étapes comme dans
+« Fichiers de la skill », par son chemin depuis la racine de la skill : « Lancer \`bash scripts/<script>.sh\` ».
 Dans « À vérifier », rappeler que Claude Code ne lit que .claude/skills/ : y copier le même dossier.`,
     skill: SKILL_RULES.portable,
   },

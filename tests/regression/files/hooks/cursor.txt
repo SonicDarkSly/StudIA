@@ -1,6 +1,6 @@
 réponse coupée : non
 
-[ok] - : Aucun problème détecté par les contrôles automatiques.
+[warning] .cursor/hooks/block-destructive.sh : Décision de refus (JSON) écrite sur stderr : l’outil la lit sur stdout, le motif ne sera pas affiché (le code 2 bloque quand même). Retirer >&2.
 
 === .cursor/hooks/block-destructive.sh (modele)
 #!/usr/bin/env bash

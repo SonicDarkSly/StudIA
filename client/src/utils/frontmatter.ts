@@ -5,6 +5,7 @@ const FENCES_PER_BLOCK = 2;
 const OPENING_FENCE = /^```/;
 const CLOSING_FENCE = /^```\s*$/;
 const YAML_FENCE = /^```\s*(ya?ml)?\s*$/i;
+const MARKDOWN_WRAPPER = /^```\s*(markdown|md|ya?ml)?\s*$/i;
 const HEADER_LINE = /^([A-Za-z_-]+):\s*(.*)$/;
 const HEADER_START = /^(name|description):/;
 const DASHES = /^---\s*$/;
@@ -28,7 +29,7 @@ export function unfence(content: string): string {
   const lines = trimBlankEdges(content).split('\n');
   if (
     lines.length >= MIN_FENCED_LINES &&
-    OPENING_FENCE.test(lines[0]) &&
+    MARKDOWN_WRAPPER.test(lines[0]) &&
     CLOSING_FENCE.test(lines[lines.length - 1])
   ) {
     return dropUnbalancedClosingFence(trimBlankEdges(lines.slice(1, -1).join('\n')).split('\n')).join('\n');

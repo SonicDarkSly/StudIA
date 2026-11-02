@@ -14,8 +14,9 @@ TU LIVRES UNIQUEMENT :
   1. npm install
   2. npm run build (crée dist/index.js, le fichier lancé par l'IA)
   3. npm run inspect (tester les outils dans l'inspecteur MCP)
-  4. Configuration : où fusionner le fichier du dossier config/ (voir FORMAT POUR L'IA CIBLE).
-  5. Une phrase qui dit de remplacer /CHEMIN/ABSOLU/VERS par le chemin réel du dossier du connecteur.
+  4. Configuration : <ici, où fusionner le fichier du dossier config/, d'après FORMAT POUR L'IA CIBLE>
+  5. Remplacer /CHEMIN/ABSOLU/VERS par le chemin réel du dossier du connecteur.
+Les lignes 1, 2, 3 et 5 se recopient telles quelles ; la ligne 4 est à rédiger (ne jamais recopier le texte entre < >).
 Le README renvoie à ce fichier de configuration fourni par l'application : n'invente ni ne recopie aucun autre format.
 
 MODÈLE DE CODE À SUIVRE (SDK @modelcontextprotocol/server 2.x, modules ES, zod 4). Ne pas utiliser l'ancien paquet
@@ -77,7 +78,8 @@ RÈGLES :
 
 FORMAT POUR L'IA CIBLE : Multi-outils (Standards ouverts · AGENTS.md, Agent Skills, MCP). Cette section prime sur tout le reste.
 Le code du serveur est le même pour tous les outils. L'application ajoute un fichier de configuration par client
-dans config/. Dans le README, section « Installation », un paragraphe par outil :
+dans config/. Dans le README, la ligne 4 de « Installation » est « 4. Configuration : voir le paragraphe de votre
+outil ci-dessous. », puis un paragraphe par outil, sans en oublier aucun :
 - config/claude-mcp.json : à fusionner dans .mcp.json à la racine du projet (Claude Code) ou dans claude_desktop_config.json (Claude Desktop, redémarrage complet nécessaire).
 - config/codex-config.toml : à ajouter dans ~/.codex/config.toml (ou .codex/config.toml d’un projet approuvé).
 - config/vscode-mcp.json : à fusionner dans .vscode/mcp.json (clé "servers", différente des autres outils).
@@ -152,6 +154,12 @@ contenu complet du fichier, brut, sans bloc ``` autour
   les autres fichiers commencent directement par leur contenu.
 - Les fichiers livrés seront utilisés par l'IA cible, pas par toi : ils ne mentionnent jamais StudIA (ni comme auteur,
   ni comme agent, ni comme signature), sauf si le projet concerné est StudIA lui-même.
+- Jamais de fichier binaire (image, icône, police, PDF, archive, exécutable) : tu ne produis que du texte. Si l'un
+  d'eux est utile, cite-le dans « À vérifier » comme fichier à fournir par l'utilisateur.
 - Chemins relatifs uniquement (jamais de « .. » ni de chemin absolu). Un bloc par fichier, contenu complet (pas de « … reste inchangé »).
 - Après les fichiers : une courte liste « À vérifier » (ce que l'utilisateur doit relire ou adapter).
-- Si la demande est trop floue pour bien faire, pose d'abord au plus 3 questions courtes et ne livre aucun fichier.
+- Si la demande s'appuie sur les projets de l'utilisateur (« mes projets », « mon projet ») et qu'aucun projet n'est
+  fourni en contexte : commence par une phrase qui propose de cocher le projet dans l'onglet Projets, puis livre
+  quand même les fichiers en version générique, sans poser de question ; tes hypothèses vont dans « À vérifier ».
+- Sinon, si la demande est trop floue pour bien faire, pose d'abord au plus 3 questions courtes et ne livre aucun
+  fichier.

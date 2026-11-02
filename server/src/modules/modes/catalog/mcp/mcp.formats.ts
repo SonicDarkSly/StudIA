@@ -91,7 +91,8 @@ export const MCP_FORMATS: TargetFormats = {
     summary: 'Serveur MCP universel, avec une configuration prête pour chaque outil (dossier config/).',
     paths: [],
     instructions: `Le code du serveur est le même pour tous les outils. L'application ajoute un fichier de configuration par client
-dans config/. Dans le README, section « Installation », un paragraphe par outil :
+dans config/. Dans le README, la ligne 4 de « Installation » est « 4. Configuration : voir le paragraphe de votre
+outil ci-dessous. », puis un paragraphe par outil, sans en oublier aucun :
 ${Object.values(MCP_WHERE)
   .map((w) => `- ${w}`)
   .join('\n')}
