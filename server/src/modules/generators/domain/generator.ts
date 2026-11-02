@@ -1,7 +1,16 @@
 import type { GenerationSettings } from '../../models/domain/generation-settings.js';
 import type { TargetFormat, TargetKey } from './ai-target.js';
 
-export const GENERATOR_KEYS = ['chat', 'skill', 'mcp', 'command', 'agent', 'claudemd', 'hooks'] as const;
+export const GENERATOR_KEYS = [
+  'chat',
+  'skill',
+  'mcp',
+  'command',
+  'agent',
+  'claudemd',
+  'hooks',
+  'plugin',
+] as const;
 
 export type GeneratorKey = (typeof GENERATOR_KEYS)[number];
 

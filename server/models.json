@@ -19,7 +19,8 @@
         "skill",
         "command",
         "agent",
-        "claudemd"
+        "claudemd",
+        "plugin"
       ],
       "description": "Le meilleur généraliste du catalogue pour concevoir des skills, des consignes de projet et des sous-agents. Rapide pour sa taille : seuls 3 Md de paramètres travaillent à chaque token.",
       "pros": "Qualité de rédaction, suit bien les consignes et les formats.",
@@ -122,7 +123,8 @@
         "skill",
         "command",
         "agent",
-        "claudemd"
+        "claudemd",
+        "plugin"
       ],
       "description": "Modèle de Mistral AI, entreprise française : excellent en français, précis sur les formats et le code.",
       "pros": "Français naturel, réponses concises, bon compromis qualité / taille.",

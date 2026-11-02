@@ -1,5 +1,6 @@
 import {
   ApiOutlined,
+  AppstoreAddOutlined,
   CodeOutlined,
   ExperimentOutlined,
   FileTextOutlined,
@@ -18,6 +19,7 @@ const ICONS: Record<GeneratorKey, ReactNode> = {
   agent: <RobotOutlined aria-hidden />,
   claudemd: <FileTextOutlined aria-hidden />,
   hooks: <ThunderboltOutlined aria-hidden />,
+  plugin: <AppstoreAddOutlined aria-hidden />,
 };
 
 export const generatorIcon = (key: GeneratorKey): ReactNode => ICONS[key];

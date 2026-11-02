@@ -98,9 +98,10 @@ Si des projets sont fournis, reprends leurs conventions réelles (stack, command
     "start": "node dist/index.js",
     "inspect": "npx @modelcontextprotocol/inspector node dist/index.js"
   },
+  "engines": { "node": ">=20" },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.32.0",
-    "zod": "^3.25.0"
+    "@modelcontextprotocol/server": "^2.4.0",
+    "zod": "^4.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
@@ -148,27 +149,41 @@ TU LIVRES UNIQUEMENT :
   5. Une phrase qui dit de remplacer /CHEMIN/ABSOLU/VERS par le chemin réel du dossier du connecteur.
 Le README renvoie à ce fichier de configuration fourni par l'application : n'invente ni ne recopie aucun autre format.
 
-MODÈLE DE CODE À SUIVRE (SDK @modelcontextprotocol/sdk 1.x, modules ES, zod 3) :
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
+MODÈLE DE CODE À SUIVRE (SDK @modelcontextprotocol/server 2.x, modules ES, zod 4). Ne pas utiliser l'ancien paquet
+@modelcontextprotocol/sdk ni server.connect(new StdioServerTransport()) : serveStdio sert à la fois les anciens et les
+nouveaux clients MCP.
+import { McpServer } from "@modelcontextprotocol/server";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
+import * as z from "zod/v4";
+import path from "node:path";
+import os from "node:os";
 
-const server = new McpServer({ name: "nom-du-connecteur", version: "1.0.0" });
+function createServer(): McpServer {
+  const server = new McpServer({ name: "nom-du-connecteur", version: "1.0.0" });
 
-server.registerTool(
-  "nom_outil",
-  {
-    title: "Titre lisible",
-    description: "Ce que fait l'outil ET quand l'utiliser (c'est ce que lit le modèle pour décider).",
-    inputSchema: { parametre: z.string().describe("À quoi sert ce paramètre") },
-  },
-  async ({ parametre }) => {
-    // ... travail réel ...
-    return { content: [{ type: "text", text: "résultat lisible" }] };
-  },
-);
+  server.registerTool(
+    "nom_outil",
+    {
+      title: "Titre lisible",
+      description: "Ce que fait l'outil ET quand l'utiliser (c'est ce que lit le modèle pour décider).",
+      inputSchema: z.object({ parametre: z.string().describe("À quoi sert ce paramètre") }),
+    },
+    async ({ parametre }) => {
+      // ... travail réel ...
+      if (!parametre) return { isError: true, content: [{ type: "text", text: "Message d'erreur lisible" }] };
+      return { content: [{ type: "text", text: "résultat lisible" }] };
+    },
+  );
 
-await server.connect(new StdioServerTransport());
+  return server;
+}
+
+void serveStdio(createServer);
+
+Un outil sans paramètre : inputSchema: z.object({}).
+Toute réponse, erreur comprise, a la forme { content: [{ type: "text", text: "…" }] } (isError: true en plus pour une
+erreur) : jamais { message: … } ni { error: … }, refusés à la compilation.
+Ne garder que les dossiers : (await readdir(dossier, { withFileTypes: true })).filter((e) => e.isDirectory()).
 
 RÈGLES :
 1. Noms d'outils en snake_case, descriptions précises (quoi + quand), un paramètre = une description.
@@ -176,7 +191,9 @@ RÈGLES :
 3. Valider les entrées (zod), renvoyer des erreurs lisibles avec isError: true plutôt que de planter.
 4. Pas de console.log (stdout sert au protocole) : console.error pour les journaux.
 5. Pas de secret en dur : variables d'environnement documentées dans le README.
-6. Chemins de fichiers : refuser ce qui sort du dossier autorisé avec cette fonction, telle quelle (jamais startsWith sur le chemin : « ~/projets-secret » commence aussi par « ~/projets ») :
+6. Chemins de fichiers : refuser ce qui sort du dossier autorisé avec cette fonction, recopiée mot pour mot avec
+   import path from "node:path" (pas d'import nommé de resolve ou relative) ; jamais startsWith sur le chemin :
+   « ~/projets-secret » commence aussi par « ~/projets » :
    function cheminAutorise(...parties: string[]): string | undefined {
      const chemin = path.resolve(DOSSIER_AUTORISE, ...parties);
      const relatif = path.relative(DOSSIER_AUTORISE, chemin);
@@ -301,6 +318,42 @@ Fichiers, événements disponibles et contrat d'entrée / sortie : voir FORMAT P
 
 RÈGLES : JSON strictement valide ; un script par besoin ; scripts rapides et sans effet de bord inattendu ;
 le fichier de configuration ne contient que la partie hooks (l'utilisateur la fusionnera avec l'existant).`,
+  },
+  {
+    key: 'plugin',
+    label: 'Plugin',
+    short: 'Un paquet de skills, agents, hooks… à installer',
+    description:
+      'Un plugin (ou extension) regroupe plusieurs éléments (skills, commandes, sous-agents, hooks, serveurs MCP) pour les installer en une fois et les partager. Son manifeste et sa structure dépendent de l’IA cible.',
+    examples: [
+      'Crée un plugin « revue-code » avec une skill qui relit les modifications en cours avant un commit.',
+      'Crée un plugin « docs-projet » avec une skill de rédaction de README et un sous-agent qui cherche où une notion est définie.',
+      'Crée un plugin « securite » avec un hook qui bloque la lecture des fichiers .env et une skill qui vérifie les dépendances.',
+    ],
+    recommendedModel: 'qwen3-30b',
+    recommendedSettings: { temperature: 0.3, maxTokens: 6144 },
+    needsProject: false,
+    scaffold: [],
+    usesFiles: true,
+    systemPrompt: `${BASE}
+
+TA MISSION : assembler un plugin (aussi appelé extension) : un dossier qui regroupe plusieurs éléments pour l'agent de
+code de l'IA cible et s'installe en une fois. Manifeste, dossiers reconnus et installation : voir FORMAT POUR L'IA CIBLE.
+
+RÈGLES :
+1. Tous les fichiers sont dans un seul dossier racine <nom-du-plugin>/ (minuscules, chiffres et tirets) ; le nom du
+   manifeste est identique à ce dossier.
+2. Seulement les éléments demandés, chacun complet et au format de l'IA cible. Aucun fichier de remplissage (licence,
+   changelog, .gitignore, package.json, tests) : ils alourdissent sans rien apporter.
+3. Chaque skill suit le standard Agent Skills : <nom-du-plugin>/skills/<skill>/SKILL.md, name identique au dossier de
+   la skill, description qui dit ce qu'elle fait et quand l'utiliser.
+4. Le manifeste est du JSON strictement valide, avec uniquement les champs du format.
+5. Un serveur MCP n'est inclus que s'il est demandé, sous forme de configuration d'un serveur existant (paquet lancé par
+   npx) ; si aucun serveur n'est connu, l'écrire dans « À vérifier » au lieu d'inventer un paquet. Pas de code de
+   serveur ici : c'est le rôle du mode Connecteur MCP.
+6. Un README.md à la racine du plugin : à quoi il sert, ce qu'il contient, comment l'installer et le tester
+   (commandes exactes du format).
+7. Aucun secret ; chemins relatifs au plugin.`,
   },
 ];
 

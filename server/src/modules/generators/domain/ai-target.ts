@@ -1,6 +1,6 @@
 import type { ScaffoldFile } from './generator.js';
 
-export type TargetKey = 'claude' | 'codex' | 'copilot' | 'cursor' | 'gemini' | 'portable';
+export type TargetKey = 'claude' | 'codex' | 'copilot' | 'cursor' | 'gemini' | 'antigravity' | 'portable';
 
 export interface AiTarget {
   key: TargetKey;
@@ -46,7 +46,16 @@ export const TARGETS: AiTarget[] = [
     label: 'Gemini CLI',
     vendor: 'Google',
     tools: 'Gemini CLI',
-    description: 'Dossier .gemini/ et GEMINI.md. Commandes en TOML, hooks et MCP dans settings.json.',
+    description:
+      'Dossier .gemini/ et GEMINI.md. Commandes en TOML, hooks et MCP dans settings.json. Pour une clé API payante ou Code Assist Standard / Enterprise ; les comptes gratuits et Google One passent à Antigravity.',
+  },
+  {
+    key: 'antigravity',
+    label: 'Antigravity',
+    vendor: 'Google',
+    tools: 'Antigravity CLI (agy)',
+    description:
+      'Dossier .agents/ et AGENTS.md : skills (aussi appelées par /nom), sous-agents, hooks.json et mcp_config.json.',
   },
   {
     key: 'portable',
@@ -73,6 +82,13 @@ export interface SkillRules {
   scriptPrefix?: string;
 }
 
+export interface PluginRules {
+  manifest: string;
+  schema?: string;
+  mcpFile?: string;
+  mcpNeedsType?: boolean;
+}
+
 export interface TargetFormat {
   status: SupportLevel;
   summary: string;
@@ -80,4 +96,5 @@ export interface TargetFormat {
   instructions: string;
   scaffold?: ScaffoldFile[];
   skill?: SkillRules;
+  plugin?: PluginRules;
 }

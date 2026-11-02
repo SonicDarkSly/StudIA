@@ -1,5 +1,9 @@
 import type { FileIssue, GeneratedFile } from '@/types';
 
+const LEGACY_SDK = /@modelcontextprotocol\/sdk/;
+const ERROR_WITHOUT_CONTENT = /isError:\s*true\s*,\s*(?:message|error|text)\s*:/;
+const RELATIVE_ON_STRING = /\)\s*\.relative\(/;
+const LEGACY_STDIO = /\.connect\(\s*new\s+StdioServerTransport/;
 const SERVER_FILE = 'src/index.ts';
 const README_FILE = /(^|\/)README\.md$/;
 const CONFIG_FOLDER = '/config/';
@@ -28,11 +32,39 @@ function checkServer(index: GeneratedFile): FileIssue[] {
   const issues: FileIssue[] = [];
   if (!/registerTool\(|\.tool\(/.test(index.content))
     issues.push({ level: 'warning', path: index.path, message: 'Aucun outil déclaré (registerTool).' });
-  if (!/StdioServerTransport|StreamableHTTPServerTransport/.test(index.content))
+  if (LEGACY_SDK.test(index.content))
+    issues.push({
+      level: 'error',
+      path: index.path,
+      message:
+        'Import de l’ancien SDK @modelcontextprotocol/sdk : le package.json fourni installe @modelcontextprotocol/server (v2), la compilation échouera.',
+    });
+  else if (LEGACY_STDIO.test(index.content))
+    issues.push({
+      level: 'warning',
+      path: index.path,
+      message:
+        'server.connect(new StdioServerTransport()) ne sert que les anciens clients : utiliser serveStdio(createServer).',
+    });
+  if (!/serveStdio|createMcpHandler|StdioServerTransport|StreamableHTTPServerTransport/.test(index.content))
     issues.push({
       level: 'error',
       path: index.path,
       message: 'Aucun transport : le serveur ne pourra pas communiquer.',
+    });
+  if (RELATIVE_ON_STRING.test(index.content))
+    issues.push({
+      level: 'error',
+      path: index.path,
+      message:
+        'relative() appelé sur une chaîne : la fonction cheminAutorise a été modifiée et ne compilera pas. Écrire path.relative(DOSSIER_AUTORISE, chemin).',
+    });
+  if (ERROR_WITHOUT_CONTENT.test(index.content))
+    issues.push({
+      level: 'error',
+      path: index.path,
+      message:
+        'Réponse d’erreur sans content : écrire { isError: true, content: [{ type: "text", text: "…" }] }, sinon la compilation échoue.',
     });
   if (/console\.log\(/.test(index.content))
     issues.push({

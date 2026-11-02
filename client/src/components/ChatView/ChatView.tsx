@@ -18,6 +18,9 @@ import { Composer } from './Composer';
 import { Message } from './Message';
 import './ChatView.css';
 
+const STICK_TO_BOTTOM_PX = 80;
+const SCROLL_UP_KEYS = ['ArrowUp', 'PageUp', 'Home'];
+
 interface Props {
   conversation: Conversation;
   generators: Generator[];
@@ -51,14 +54,55 @@ export function ChatView(props: Props) {
   const needsProject = generator?.needsProject && conversation.projectNames.length === 0;
   const cannotSend = !!modelMissing || tooHeavy || unavailable;
 
+  const stickToBottom = useRef(true);
+  const lastScrollTop = useRef(0);
+  const followed = useRef({ id: conversation.id, count: conversation.messages.length });
+
+  const trackScroll = () => {
+    const el = scroller.current;
+    if (!el) return;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < STICK_TO_BOTTOM_PX) stickToBottom.current = true;
+    else if (el.scrollTop < lastScrollTop.current) stickToBottom.current = false;
+    lastScrollTop.current = el.scrollTop;
+  };
+
   useEffect(() => {
     const el = scroller.current;
-    if (el) el.scrollTop = conversation.messages.length ? el.scrollHeight : 0;
-  }, [conversation.messages]);
+    if (!el) return;
+    const release = () => {
+      stickToBottom.current = false;
+    };
+    const onWheel = (event: WheelEvent) => {
+      if (event.deltaY < 0) release();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (SCROLL_UP_KEYS.includes(event.key)) release();
+    };
+    el.addEventListener('wheel', onWheel, { passive: true });
+    el.addEventListener('touchmove', release, { passive: true });
+    el.addEventListener('keydown', onKeyDown);
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('touchmove', release);
+      el.removeEventListener('keydown', onKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const count = conversation.messages.length;
+    const previous = followed.current;
+    if (previous.id !== conversation.id || count > previous.count) stickToBottom.current = true;
+    followed.current = { id: conversation.id, count };
+    if (!count) el.scrollTop = 0;
+    else if (stickToBottom.current) el.scrollTop = el.scrollHeight;
+    lastScrollTop.current = el.scrollTop;
+  }, [conversation.id, conversation.messages]);
 
   return (
     <main id="contenu" className="studia-center glass" tabIndex={-1} aria-label="Conversation">
-      <div className="chat-scroll" ref={scroller}>
+      <div className="chat-scroll" ref={scroller} onScroll={trackScroll}>
         <div className="chat-inner">
           {empty ? (
             <div className="welcome">

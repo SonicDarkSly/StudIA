@@ -5,11 +5,14 @@ import { FIX_MESSAGES } from './consts';
 import { cleanContent, dropTrailingSeparator, frontmatter } from './frontmatter';
 import { checkCommands } from './commands';
 import { checkMcp } from './mcp';
+import { checkPlugin } from './plugins';
 import { checkSkills, gnuOnlyIssue, isSkillFile } from './skills';
 
 const START = /^=== ?FICHIER ?: ?(.+?) ?===\s*$/;
-const END = /^=== ?FIN ?===\s*$/;
+const END = /^=== ?FIN ?(?:===)?\s*$/;
 const CHECKLIST = /^\s*(?:\*\*|#+\s*)?À vérifier\b[^\n]*:/;
+const PLUGIN_MANIFEST = /^([^/]+)\/(?:\.claude-plugin\/plugin|plugin|gemini-extension)\.json$/;
+const NAMED_HOOK_GROUPS = '.agents/hooks.json';
 const README = /(^|\/)README[^/]*$/i;
 const OBJECT_URL_LIFETIME_MS = 2000;
 
@@ -89,6 +92,8 @@ export function stripFiles(text: string): { prose: string; count: number } {
 }
 
 export function archiveName(files: GeneratedFile[]): string {
+  const plugin = files.map((f) => f.path.match(PLUGIN_MANIFEST)?.[1]).find(Boolean);
+  if (plugin) return plugin;
   for (const f of files) {
     const m = f.path.match(
       /(?:skills|agents|commands|prompts)\/([^/]+?)(?:\.agent|\.prompt)?(?:\.md|\.toml)?(?:\/|$)/,
@@ -194,17 +199,39 @@ export function validateFiles(
 
   if (generatorKey === 'mcp') issues.push(...checkMcp(files));
 
+  if (generatorKey === 'plugin') issues.push(...checkPlugin(files, format));
+
   if (generatorKey === 'hooks') {
     for (const config of files.filter((f) => f.path.endsWith('.json'))) {
       try {
         const json = JSON.parse(config.content);
-        if (!json.hooks)
+        if (config.path === NAMED_HOOK_GROUPS) {
+          if (json.hooks)
+            issues.push({
+              level: 'error',
+              path: config.path,
+              message: 'Pas de clé « hooks » englobante ici : chaque clé est le nom d’un groupe de hooks.',
+            });
+        } else if (!json.hooks)
           issues.push({ level: 'error', path: config.path, message: 'Clé « hooks » absente.' });
         if (/^\.(cursor|github)\//.test(config.path) && json.version !== 1)
           issues.push({ level: 'warning', path: config.path, message: 'Champ « version »: 1 attendu.' });
       } catch {}
     }
+    const configs = files.filter((f) => f.path.endsWith('.json'));
+    if (!configs.length)
+      issues.push({
+        level: 'error',
+        message: 'Aucun fichier de configuration des hooks : les scripts ne seront jamais lancés.',
+      });
     for (const f of files.filter((f) => f.path.endsWith('.sh'))) {
+      const scriptName = f.path.split('/').pop() ?? f.path;
+      if (configs.length && !configs.some((config) => config.content.includes(scriptName)))
+        issues.push({
+          level: 'warning',
+          path: f.path,
+          message: 'Script cité par aucun fichier de configuration : il ne sera jamais lancé.',
+        });
       if (!f.content.startsWith('#!'))
         issues.push({ level: 'warning', path: f.path, message: 'Ligne #! manquante en tête du script.' });
       const gnuOnly = gnuOnlyIssue(f);

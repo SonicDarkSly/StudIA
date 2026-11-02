@@ -1,4 +1,4 @@
-import type { TargetFormat, TargetKey } from './ai-target.js';
+import type { PluginRules, TargetFormat, TargetKey } from './ai-target.js';
 import type { GeneratorKey, ScaffoldFile } from './generator.js';
 
 type Formats = Record<TargetKey, TargetFormat>;
@@ -173,10 +173,22 @@ Si la skill a un script (rare), il se cite par son chemin complet depuis le proj
 « Lancer \`bash .gemini/skills/<nom>/scripts/<script>.sh\` ».`,
     skill: { fields: ['name', 'description'], scriptPrefix: '{{dossier}}' },
   },
+  antigravity: {
+    status: 'natif',
+    summary:
+      'Dossier .agents/skills/<nom>/ : Antigravity CLI la charge quand la demande correspond, ou avec /nom.',
+    paths: ['.agents/skills/'],
+    instructions: `${SKILL_COMMON}
+Emplacement : .agents/skills/<nom>/SKILL.md (Antigravity ne lit ni .gemini/skills/ ni .claude/). N'utiliser que name
+et description dans l'en-tête. La skill s'appelle aussi en tapant /nom.
+Si la skill a un script (rare), il se cite par son chemin complet depuis le projet :
+« Lancer \`bash .agents/skills/<nom>/scripts/<script>.sh\` ».`,
+    skill: { fields: ['name', 'description'], scriptPrefix: '{{dossier}}' },
+  },
   portable: {
     status: 'natif',
     summary:
-      'Dossier .agents/skills/<nom>/ : lu par Codex, Copilot, Cursor et Gemini CLI. Pour Claude, copier le dossier dans .claude/skills/.',
+      'Dossier .agents/skills/<nom>/ : lu par Codex, Copilot, Cursor, Gemini CLI et Antigravity. Pour Claude, copier le dossier dans .claude/skills/.',
     paths: ['.agents/skills/'],
     instructions: `${SKILL_COMMON}
 Emplacement : .agents/skills/<nom>/SKILL.md. N'utiliser que les champs du standard (name, description, et si utile
@@ -292,6 +304,13 @@ ajouté à la fin ; ne pas l'écrire si la commande n'en a pas besoin).
 alors sur cette sortie et ne demande pas de relancer la commande. @{chemin} insère le contenu d'un fichier.
 Le fichier doit être du TOML valide (chaînes multilignes entre triples guillemets) : rien après le """ final.`,
   },
+  antigravity: {
+    status: 'adapte',
+    summary:
+      'Antigravity transforme chaque skill en commande : StudIA livre une skill .agents/skills/<nom>/, appelée avec /nom.',
+    paths: ['.agents/skills/'],
+    instructions: SKILL_AS_COMMAND('.agents/skills', "L'utilisateur la lance avec /nom suivi de son texte."),
+  },
   portable: {
     status: 'adapte',
     summary:
@@ -299,7 +318,7 @@ Le fichier doit être du TOML valide (chaînes multilignes entre triples guillem
     paths: ['.agents/skills/'],
     instructions: SKILL_AS_COMMAND(
       '.agents/skills',
-      'Rappeler dans « À vérifier » comment l’appeler : $nom (Codex), /nom (Copilot, Cursor, Gemini), et copier le dossier dans .claude/skills/ pour Claude.',
+      'Rappeler dans « À vérifier » comment l’appeler : $nom (Codex), /nom (Copilot, Cursor, Gemini, Antigravity), et copier le dossier dans .claude/skills/ pour Claude.',
     ),
   },
 };
@@ -375,10 +394,26 @@ tools: [read_file, list_directory]   (facultatif, liste minimale)
 ---
 Corps : le prompt système du sous-agent.`,
   },
+  antigravity: {
+    status: 'natif',
+    summary: 'Fichier .agents/agents/<nom>.md : un sous-agent qu’Antigravity CLI peut appeler.',
+    paths: ['.agents/agents/'],
+    instructions: `Emplacement : .agents/agents/<nom>.md
+En-tête YAML :
+---
+name: nom-du-sous-agent (obligatoire)
+description: quand l'utiliser (obligatoire)
+model: inherit
+---
+Facultatif : commandExecutionPolicy: off pour un sous-agent qui ne doit lancer aucune commande ; tools: [view_file,
+grep_search] pour restreindre les outils (un nom d'outil mal écrit bloque le sous-agent : en cas de doute, ne pas
+mettre tools).
+Corps : le prompt système du sous-agent.`,
+  },
   portable: {
     status: 'adapte',
     summary:
-      'Format Claude (.claude/agents/<nom>.md), également lu par Copilot et Cursor. Codex et Gemini ont leur propre format.',
+      'Format Claude (.claude/agents/<nom>.md), également lu par Copilot et Cursor. Codex, Gemini CLI et Antigravity ont leur propre format.',
     paths: ['.claude/agents/'],
     instructions: `Emplacement : .claude/agents/<nom>.md (ce dossier est aussi lu par GitHub Copilot et Cursor).
 En-tête YAML limité aux champs communs :
@@ -386,8 +421,8 @@ En-tête YAML limité aux champs communs :
 name: nom-en-minuscules-avec-tirets
 description: quand déléguer à ce sous-agent
 ---
-Corps : le prompt système. Signaler dans « À vérifier » que Codex (.codex/agents/*.toml) et Gemini CLI (.gemini/agents/)
-demandent un autre format.`,
+Corps : le prompt système. Dans « À vérifier », écrire exactement cette ligne :
+- Lu par Claude Code, GitHub Copilot et Cursor ; Codex (.codex/agents/*.toml), Gemini CLI (.gemini/agents/) et Antigravity (.agents/agents/) demandent leur propre fichier.`,
   },
 };
 
@@ -439,10 +474,17 @@ Puis le contenu en Markdown.\n${MEMORY_STRUCTURE}`,
     paths: ['GEMINI.md'],
     instructions: `Fichier : GEMINI.md à la racine du projet.\n${MEMORY_STRUCTURE}`,
   },
+  antigravity: {
+    status: 'natif',
+    summary:
+      'Fichier AGENTS.md à la racine, lu par Antigravity CLI à chaque session (GEMINI.md aussi accepté).',
+    paths: ['AGENTS.md'],
+    instructions: `Fichier : AGENTS.md à la racine du projet (Markdown simple, sans en-tête YAML).\n${MEMORY_STRUCTURE}`,
+  },
   portable: {
     status: 'natif',
     summary:
-      'Fichier AGENTS.md, lu par Codex, Copilot et Cursor ; Claude Code le lit s’il n’y a pas de CLAUDE.md.',
+      'Fichier AGENTS.md, lu par Codex, Copilot, Cursor et Antigravity ; Claude Code le lit s’il n’y a pas de CLAUDE.md.',
     paths: ['AGENTS.md'],
     instructions: `Fichier : AGENTS.md à la racine du projet, rédigé de façon neutre (aucune syntaxe propre à un outil).
 Dans « À vérifier », rappeler : Claude Code ne le lit que si aucun CLAUDE.md n'existe ; Gemini CLI le lit si
@@ -450,7 +492,8 @@ settings.json contient "context": { "fileName": ["AGENTS.md", "GEMINI.md"] }.\n$
   },
 };
 
-const HOOK_SCRIPT_RULES = `Scripts bash : #!/usr/bin/env bash puis set -euo pipefail, rapides, chemins entre guillemets.
+const HOOK_SCRIPT_RULES = `Livrer TOUJOURS le fichier de configuration ET le ou les scripts : sans configuration, un script n'est jamais lancé.
+Scripts bash : #!/usr/bin/env bash puis set -euo pipefail, rapides, chemins entre guillemets.
 Ils reçoivent un JSON sur l'entrée standard : le lire avec jq. Expliquer dans le texte comment les rendre
 exécutables (chmod +x) et comment fusionner le fichier de configuration avec l'existant.`;
 
@@ -464,7 +507,8 @@ Format :
 { "hooks": { "PreToolUse": [ { "matcher": "Bash", "hooks": [ { "type": "command", "command": "\\"$CLAUDE_PROJECT_DIR\\"/.claude/hooks/<nom>.sh" } ] } ] } }
 Événements : PreToolUse, PostToolUse (matcher = nom d'outil : Bash, Edit, Write, Read… ou « Edit|Write »),
 UserPromptSubmit, Stop, SubagentStop, SessionStart, SessionEnd, PreCompact, Notification.
-Entrée : tool_name, tool_input.command, tool_input.file_path…
+Entrée (JSON sur stdin) : tool_name, tool_input.command (commande Bash), tool_input.file_path…
+Lire la commande avec : jq -r '.tool_input.command // empty'
 Sortie : code 0 = on continue ; code 2 = on bloque et le message écrit sur stderr est renvoyé à Claude
 (le code 1 ne bloque pas).
 ${HOOK_SCRIPT_RULES}`,
@@ -479,6 +523,8 @@ Format (même structure que Claude Code, timeout en secondes) :
 { "hooks": { "PreToolUse": [ { "matcher": "Bash", "hooks": [ { "type": "command", "command": ".codex/hooks/<nom>.sh", "timeout": 30 } ] } ] } }
 Événements : PreToolUse, PostToolUse, PermissionRequest, UserPromptSubmit, Stop, SubagentStart, SubagentStop,
 SessionStart, SessionEnd, PreCompact, PostCompact.
+Entrée (JSON sur stdin, comme Claude Code) : tool_name, tool_input.command (commande Bash), tool_input.file_path…
+Lire la commande avec : jq -r '.tool_input.command // empty'
 Sortie : code 0 = on continue ; code 2 = on bloque, le message de stderr est renvoyé au modèle.
 Rappeler dans « À vérifier » : les hooks d'un projet ne se chargent que si le projet est approuvé, et chaque hook
 doit être validé avec la commande /hooks.
@@ -493,6 +539,10 @@ Format :
 { "version": 1, "hooks": { "preToolUse": [ { "type": "command", "bash": "./.github/hooks/<nom>.sh", "timeoutSec": 30 } ] } }
 Événements (camelCase) : sessionStart, sessionEnd, userPromptSubmitted, preToolUse, postToolUse,
 postToolUseFailure, subagentStart, subagentStop, agentStop, errorOccurred.
+Entrée de preToolUse (JSON sur stdin) : toolName ("bash" pour le terminal), toolArgs (arguments de l'outil, parfois
+sous forme de chaîne JSON). Lire la commande avec :
+jq -r '(.toolArgs | if type == "string" then fromjson else . end).command // empty'
+Refus : code 2 (message sur stderr), ou sur stdout { "permissionDecision": "deny", "permissionDecisionReason": "…" }.
 Attention : dans preToolUse, tout code de sortie différent de 0 refuse l'action ; un dépassement de délai la laisse passer.
 ${HOOK_SCRIPT_RULES}`,
   },
@@ -505,8 +555,10 @@ Format :
 { "version": 1, "hooks": { "beforeShellExecution": [ { "command": ".cursor/hooks/<nom>.sh" } ] } }
 Événements : sessionStart, beforeSubmitPrompt, preToolUse, postToolUse, beforeShellExecution, beforeMCPExecution,
 beforeReadFile, afterFileEdit, stop, subagentStop, preCompact.
-Sortie : code 0 = on lit le JSON écrit sur stdout ; code 2 = refus. JSON possible :
-{ "permission": "deny", "user_message": "…", "agent_message": "…" }.
+Entrée de beforeShellExecution (JSON sur stdin) : command (la commande complète), cwd.
+Lire la commande avec : jq -r '.command // empty'
+Sortie : écrire sur stdout { "permission": "deny", "user_message": "…", "agent_message": "…" } pour refuser,
+{ "permission": "allow" } sinon, puis exit 0 (code 2 = refus aussi ; un autre code ou un plantage laisse passer).
 ${HOOK_SCRIPT_RULES}`,
   },
   gemini: {
@@ -518,7 +570,25 @@ Format (timeout en millisecondes) :
 { "hooks": { "BeforeTool": [ { "matcher": "run_shell_command", "hooks": [ { "type": "command", "command": ".gemini/hooks/<nom>.sh", "timeout": 30000 } ] } ] } }
 Événements : BeforeTool, AfterTool, BeforeAgent, AfterAgent, BeforeModel, AfterModel, SessionStart, SessionEnd,
 Notification, PreCompress. Outils courants : run_shell_command, write_file, replace, read_file.
-Sortie : stdout ne doit contenir QUE du JSON ; code 2 = blocage ; JSON possible : { "decision": "deny", "reason": "…" }.
+Entrée de BeforeTool (JSON sur stdin) : tool_name, tool_input (pour run_shell_command : tool_input.command).
+Lire la commande avec : jq -r '.tool_input.command // empty'
+Sortie : stdout ne doit contenir QUE du JSON ; refus : { "decision": "deny", "reason": "…" } puis exit 0
+(code 2 = blocage aussi, avec le motif sur stderr).
+${HOOK_SCRIPT_RULES}`,
+  },
+  antigravity: {
+    status: 'natif',
+    summary: 'Fichier .agents/hooks.json + scripts dans .agents/hooks/.',
+    paths: ['.agents/'],
+    instructions: `Fichiers : .agents/hooks.json et .agents/hooks/<nom>.sh
+Format : chaque clé de premier niveau est le nom d'un groupe de hooks, sans clé "hooks" englobante :
+{ "<nom-du-groupe>": { "PreToolUse": [ { "matcher": "run_command", "hooks": [ { "type": "command", "command": ".agents/hooks/<nom>.sh", "timeout": 10 } ] } ] } }
+Événements : SessionStart, PreToolUse, PostToolUse, PreInvocation, PostInvocation, Stop.
+Outils courants pour matcher : run_command (terminal), view_file, grep_search.
+Entrée (JSON sur stdin) : toolCall.name (nom de l'outil) et toolCall.args (ses arguments) ; pour run_command la
+commande est dans toolCall.args.CommandLine. Lire la commande avec : jq -r '.toolCall.args.CommandLine // empty'
+Sortie : uniquement du JSON sur stdout. Dans PreToolUse, { "decision": "deny", "reason": "…" } refuse l'action,
+{ "decision": "allow" } la laisse passer ; toujours terminer par exit 0 (les codes de sortie ne sont pas documentés).
 ${HOOK_SCRIPT_RULES}`,
   },
   portable: {
@@ -566,6 +636,7 @@ args = ["/CHEMIN/ABSOLU/VERS/{{name}}/dist/index.js"]
   ),
   cursor: mcpConfig('cursor-mcp.json', JSON_MCP_SERVERS),
   gemini: mcpConfig('gemini-settings.json', JSON_MCP_SERVERS),
+  antigravity: mcpConfig('antigravity-mcp.json', JSON_MCP_SERVERS),
 };
 const MCP_WHERE: Record<Exclude<TargetKey, 'portable'>, string> = {
   claude:
@@ -577,13 +648,23 @@ const MCP_WHERE: Record<Exclude<TargetKey, 'portable'>, string> = {
   cursor: 'config/cursor-mcp.json : à fusionner dans .cursor/mcp.json du projet ou ~/.cursor/mcp.json.',
   gemini:
     'config/gemini-settings.json : à fusionner dans .gemini/settings.json du projet ou ~/.gemini/settings.json.',
+  antigravity:
+    'config/antigravity-mcp.json : à fusionner dans .agents/mcp_config.json du projet ou ~/.gemini/config/mcp_config.json.',
+};
+const MCP_CLIENTS: Record<Exclude<TargetKey, 'portable'>, string> = {
+  claude: 'Claude Code et Claude Desktop',
+  codex: 'Codex',
+  copilot: 'VS Code',
+  cursor: 'Cursor',
+  gemini: 'Gemini CLI',
+  antigravity: 'Antigravity CLI',
 };
 const describeConfig = (config: ScaffoldFile): string =>
   `Pour information, contenu de ${config.path.replace('{{name}}/', '')}, fourni par l'application (ne pas le livrer ; <nom> = nom du connecteur) :\n${config.content.split('{{name}}').join('<nom>')}`;
 
 const mcpFormat = (key: Exclude<TargetKey, 'portable'>): TargetFormat => ({
   status: 'natif',
-  summary: `Serveur MCP universel ; configuration prête pour ${key === 'copilot' ? 'VS Code' : key === 'claude' ? 'Claude Code et Claude Desktop' : key === 'codex' ? 'Codex' : key === 'cursor' ? 'Cursor' : 'Gemini CLI'}.`,
+  summary: `Serveur MCP universel ; configuration prête pour ${MCP_CLIENTS[key]}.`,
   paths: [],
   instructions: `Le code du serveur est le même pour tous les outils. L'application ajoute le fichier de configuration du client.
 Dans le README, section « Installation », expliquer : ${MCP_WHERE[key]}
@@ -597,6 +678,7 @@ const MCP: Formats = {
   copilot: mcpFormat('copilot'),
   cursor: mcpFormat('cursor'),
   gemini: mcpFormat('gemini'),
+  antigravity: mcpFormat('antigravity'),
   portable: {
     status: 'natif',
     summary: 'Serveur MCP universel, avec une configuration prête pour chaque outil (dossier config/).',
@@ -623,7 +705,162 @@ const CHAT: Formats = {
   copilot: CHAT_FORMAT,
   cursor: CHAT_FORMAT,
   gemini: CHAT_FORMAT,
+  antigravity: CHAT_FORMAT,
   portable: CHAT_FORMAT,
+};
+
+const AGENT_PLUGIN_MANIFEST = `<nom>/plugin.json (standard Agent Plugins 1.0.0) :
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "<nom>",
+  "version": "1.0.0",
+  "description": "Ce que contient le plugin, en une phrase"
+}
+Champs permis : $schema et name (obligatoires), version, description, author { name }, homepage, repository, license,
+keywords. Jamais hooks, agents, commands ni mcpServers dans plugin.json.`;
+const AGENT_PLUGIN_SKILLS = `<nom>/skills/<skill>/SKILL.md : une skill par dossier, au standard Agent Skills.`;
+const AGENT_PLUGIN_MCP = `<nom>/mcp.json, seulement si un serveur MCP est demandé :
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "<serveur>": { "type": "stdio", "command": "npx", "args": ["-y", "<paquet>"] }
+  }
+}
+"type" est obligatoire pour chaque serveur ("stdio" ou "streamable-http" avec "url").`;
+const AGENT_PLUGIN_RULES: PluginRules = {
+  manifest: 'plugin.json',
+  schema: 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json',
+  mcpFile: 'mcp.json',
+  mcpNeedsType: true,
+};
+
+const PLUGIN: Formats = {
+  claude: {
+    status: 'natif',
+    summary:
+      'Plugin Claude Code : <nom>/.claude-plugin/plugin.json, avec skills/, commands/, agents/, hooks/ et .mcp.json.',
+    paths: [],
+    instructions: `Structure :
+<nom>/.claude-plugin/plugin.json : le manifeste, seul fichier de ce dossier :
+{ "name": "<nom>", "version": "1.0.0", "description": "…", "author": { "name": "…" } }   (seul name est obligatoire)
+<nom>/skills/<skill>/SKILL.md : skills (aussi appelées par /<nom>:<skill>).
+<nom>/commands/<commande>.md : commandes (en-tête description, argument-hint, allowed-tools ; corps = consigne).
+<nom>/agents/<agent>.md : sous-agents (en-tête name, description, tools, model: inherit).
+<nom>/hooks/hooks.json : { "hooks": { "PreToolUse": [ { "matcher": "Read|Edit|Write", "hooks": [ { "type": "command",
+  "command": "\${CLAUDE_PLUGIN_ROOT}/hooks/<script>.sh" } ] } ] } } ; scripts dans <nom>/hooks/ (code 2 = blocage,
+  message sur stderr). \${CLAUDE_PLUGIN_ROOT} désigne le dossier du plugin installé.
+<nom>/.mcp.json : { "mcpServers": { "<serveur>": { "command": "npx", "args": ["-y", "<paquet>"] } } }
+Installation à décrire dans le README : tester avec claude --plugin-dir ./<nom> ; vérifier avec
+claude plugin validate ./<nom> ; partager par une marketplace (fichier .claude-plugin/marketplace.json d'un dépôt :
+{ "name": "<marketplace>", "owner": { "name": "…" }, "plugins": [ { "name": "<nom>", "source": "./<nom>" } ] }),
+puis /plugin marketplace add <dépôt> et /plugin install <nom>@<marketplace>.`,
+    plugin: { manifest: '.claude-plugin/plugin.json', mcpFile: '.mcp.json' },
+  },
+  codex: {
+    status: 'natif',
+    summary:
+      'Plugin au standard Agent Plugins : <nom>/plugin.json, skills/ et mcp.json, installé depuis une marketplace.',
+    paths: [],
+    instructions: `Structure :
+${AGENT_PLUGIN_MANIFEST}
+${AGENT_PLUGIN_SKILLS} Codex les appelle avec $<skill> : une commande demandée devient une skill.
+${AGENT_PLUGIN_MCP}
+Les sous-agents et hooks ne sont pas portables dans ce format : s'ils sont demandés, le dire dans « À vérifier ».
+Installation à décrire dans le README : déclarer le plugin dans une marketplace locale, fichier
+.agents/plugins/marketplace.json à la racine du dépôt :
+{ "name": "local", "plugins": [ { "name": "<nom>", "source": { "source": "local", "path": "./<nom>" },
+  "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" }, "category": "Productivity" } ] }
+puis codex plugin marketplace add . et installer le plugin depuis /plugins.`,
+    plugin: AGENT_PLUGIN_RULES,
+  },
+  copilot: {
+    status: 'natif',
+    summary:
+      'Plugin au standard Agent Plugins pour Copilot CLI et VS Code : plugin.json, skills/, mcp.json, com.github.copilot/.',
+    paths: [],
+    instructions: `Structure :
+${AGENT_PLUGIN_MANIFEST}
+${AGENT_PLUGIN_SKILLS}
+${AGENT_PLUGIN_MCP}
+Éléments propres à Copilot, dans le dossier <nom>/com.github.copilot/ :
+- agents/<agent>.agent.md : en-tête name, description, tools: ['read', 'search'] ;
+- hooks/hooks.json : { "version": 1, "hooks": { "preToolUse": [ { "type": "command", "bash": "./hooks/<script>.sh", "timeoutSec": 30 } ] } }
+  (tout code de sortie non nul refuse l'action).
+Installation à décrire dans le README : copilot plugin install ./<nom> (Copilot CLI ; réinstaller après une
+modification) ; dans VS Code, activer chat.plugins.enabled puis « Install a plugin from source ».`,
+    plugin: AGENT_PLUGIN_RULES,
+  },
+  cursor: {
+    status: 'natif',
+    summary: 'Plugin au standard Agent Plugins (skills et MCP), copié dans ~/.cursor/plugins/local/<nom>/.',
+    paths: [],
+    instructions: `Structure :
+${AGENT_PLUGIN_MANIFEST}
+${AGENT_PLUGIN_SKILLS}
+${AGENT_PLUGIN_MCP}
+Cursor ne remplace pas \${PLUGIN_ROOT} : ne pas l'utiliser, préférer un serveur lancé par npx.
+Sous-agents, règles et hooks ne passent pas par ce format : s'ils sont demandés, le dire dans « À vérifier ».
+Installation à décrire dans le README : copier le dossier dans ~/.cursor/plugins/local/<nom>/ (pas de lien
+symbolique), puis la commande « Developer: Reload Window ».`,
+    plugin: AGENT_PLUGIN_RULES,
+  },
+  gemini: {
+    status: 'natif',
+    summary:
+      'Extension Gemini CLI : <nom>/gemini-extension.json, GEMINI.md, commands/, skills/, installée par gemini extensions.',
+    paths: [],
+    instructions: `Structure :
+<nom>/gemini-extension.json :
+{ "name": "<nom>", "version": "1.0.0", "description": "…", "contextFileName": "GEMINI.md" }
+  facultatif : "excludeTools": ["run_shell_command(rm -rf)"], "mcpServers": { "<serveur>": { "command": "npx", "args": ["-y", "<paquet>"] } }
+<nom>/GEMINI.md : contexte ajouté à chaque session (seulement si utile).
+<nom>/commands/<commande>.toml : description = "…" et prompt = """…""" ({{args}}, !{commande}, @{fichier}) ;
+  sous-dossier = espace de noms (git/commit.toml donne /git:commit).
+<nom>/skills/<skill>/SKILL.md : skills.
+<nom>/agents/<agent>.md : sous-agents (en-tête name, description).
+<nom>/hooks/hooks.json : { "hooks": { "BeforeTool": [ { "matcher": "read_file", "hooks": [ { "type": "command",
+  "command": "\${extensionPath}/hooks/<script>.sh" } ] } ] } } ; sortie standard en JSON uniquement.
+Installation à décrire dans le README : gemini extensions link ./<nom> pendant le développement, gemini extensions
+install <url du dépôt> pour l'installer ailleurs.`,
+    plugin: { manifest: 'gemini-extension.json' },
+  },
+  antigravity: {
+    status: 'natif',
+    summary:
+      'Plugin Antigravity : <nom>/plugin.json, skills/, agents/, rules/, hooks.json et mcp_config.json.',
+    paths: [],
+    instructions: `Structure :
+<nom>/plugin.json :
+{ "$schema": "https://antigravity.google/schemas/v1/plugin.json", "name": "<nom>", "version": "1.0.0", "description": "…" }
+<nom>/skills/<skill>/SKILL.md : skills (aussi appelées par /<skill>).
+<nom>/agents/<agent>.md : sous-agents (en-tête name, description, model: inherit).
+<nom>/rules/<règle>.md : règles ; en-tête trigger: always_on, model_decision (avec description), glob (avec globs) ou manual.
+<nom>/hooks.json : groupes nommés, sans clé "hooks" englobante :
+{ "<groupe>": { "PreToolUse": [ { "matcher": "view_file", "hooks": [ { "type": "command", "command": "./hooks/<script>.sh", "timeout": 10 } ] } ] } }
+  le script répond en JSON sur stdout, { "decision": "deny" } pour refuser.
+<nom>/mcp_config.json : { "mcpServers": { "<serveur>": { "command": "npx", "args": ["-y", "<paquet>"] } } }
+Installation à décrire dans le README : agy plugin validate --strict ./<nom>, puis agy plugin install ./<nom>.`,
+    plugin: {
+      manifest: 'plugin.json',
+      schema: 'https://antigravity.google/schemas/v1/plugin.json',
+      mcpFile: 'mcp_config.json',
+    },
+  },
+  portable: {
+    status: 'natif',
+    summary: 'Standard Agent Plugins 1.0.0 (skills et MCP) : lu par Codex, Copilot, Cursor et VS Code.',
+    paths: [],
+    instructions: `Uniquement le standard portable, sans élément propre à un outil :
+${AGENT_PLUGIN_MANIFEST}
+${AGENT_PLUGIN_SKILLS}
+${AGENT_PLUGIN_MCP}
+Ne pas utiliser \${PLUGIN_ROOT} (Cursor ne le remplace pas) : préférer un serveur lancé par npx.
+Dans « À vérifier », écrire exactement cette ligne :
+- Format lu par Codex, Copilot, Cursor et VS Code ; Claude Code (.claude-plugin/), Gemini CLI (gemini-extension.json) et Antigravity (schéma Google) demandent leur propre manifeste.
+Installation à décrire dans le README : Copilot CLI (copilot plugin install ./<nom>), Cursor (copie dans
+~/.cursor/plugins/local/<nom>/), Codex (marketplace .agents/plugins/marketplace.json puis /plugins).`,
+    plugin: AGENT_PLUGIN_RULES,
+  },
 };
 
 export const TARGET_FORMATS: Record<GeneratorKey, Formats> = {
@@ -634,4 +871,5 @@ export const TARGET_FORMATS: Record<GeneratorKey, Formats> = {
   agent: AGENT,
   claudemd: CLAUDEMD,
   hooks: HOOKS,
+  plugin: PLUGIN,
 };

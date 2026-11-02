@@ -2,15 +2,15 @@
 
 Studio d'éléments pour l'IA, **100 % local**. Un chat façon Claude ou Gemini qui tourne entièrement sur
 l'ordinateur et qui aide à fabriquer des **skills**, des **connecteurs MCP**, des **commandes slash**, des
-**sous-agents**, des **fichiers de consignes** (CLAUDE.md, AGENTS.md, GEMINI.md…) et des **hooks**, en
-s'appuyant sur ses propres projets.
+**sous-agents**, des **fichiers de consignes** (CLAUDE.md, AGENTS.md, GEMINI.md…), des **hooks** et des
+**plugins**, en s'appuyant sur ses propres projets.
 
 - Aucun appel à un service en ligne : les modèles tournent avec `node-llama-cpp`, les conversations restent
   dans `server/data/conversations`.
 - **Autonome** : StudIA ne parcourt aucun dossier de lui-même. Chaque utilisateur ajoute ses projets
   (bouton « Ajouter un projet »), qui sont lus en **lecture seule**. StudIA n'écrit jamais dedans : les fichiers générés s'affichent
   en aperçu et se téléchargent (fichier seul ou archive ZIP).
-- **Une IA cible au choix** : Claude, Codex, GitHub Copilot, Cursor, Gemini CLI ou « Multi-outils ». Les
+- **Une IA cible au choix** : Claude, Codex, GitHub Copilot, Cursor, Gemini CLI, Antigravity ou « Multi-outils ». Les
   dossiers, formats et contrôles automatiques s'adaptent à l'outil choisi.
 - **Adapté à la machine** : StudIA mesure la mémoire et le processeur graphique, classe chaque modèle
   (compatible, limite, trop lourd) et bloque ceux qui ne tiendraient pas.
@@ -56,17 +56,22 @@ tout le catalogue.
 
 ## Générateurs et IA cibles
 
-| Élément             | Claude | Codex  | Copilot | Cursor | Gemini CLI | Multi-outils |
-| ------------------- | ------ | ------ | ------- | ------ | ---------- | ------------ |
-| Skill               | natif  | natif  | natif   | natif  | natif      | natif        |
-| Connecteur MCP      | natif  | natif  | natif   | natif  | natif      | natif        |
-| Commande slash      | natif  | adapté | natif   | natif  | natif      | adapté       |
-| Sous-agent          | natif  | natif  | natif   | natif  | natif      | adapté       |
-| Consignes du projet | natif  | natif  | natif   | natif  | natif      | natif        |
-| Hooks               | natif  | natif  | natif   | natif  | natif      | non          |
+| Élément             | Claude | Codex  | Copilot | Cursor | Gemini CLI | Antigravity | Multi-outils |
+| ------------------- | ------ | ------ | ------- | ------ | ---------- | ----------- | ------------ |
+| Skill               | natif  | natif  | natif   | natif  | natif      | natif       | natif        |
+| Connecteur MCP      | natif  | natif  | natif   | natif  | natif      | natif       | natif        |
+| Commande slash      | natif  | adapté | natif   | natif  | natif      | adapté      | adapté       |
+| Sous-agent          | natif  | natif  | natif   | natif  | natif      | natif       | adapté       |
+| Consignes du projet | natif  | natif  | natif   | natif  | natif      | natif       | natif        |
+| Hooks               | natif  | natif  | natif   | natif  | natif      | natif       | non          |
+| Plugin              | natif  | natif  | natif   | natif  | natif      | natif       | natif        |
 
 « Adapté » : l'outil n'a pas ce format, StudIA livre l'équivalent le plus proche (par exemple une skill
-appelable à la place d'une commande).
+appelable à la place d'une commande). Gemini CLI reste disponible avec une clé API payante ou Gemini Code
+Assist Standard / Enterprise ; les comptes gratuits et Google One utilisent Antigravity CLI. Les connecteurs MCP
+sont écrits avec le SDK officiel v2 (`@modelcontextprotocol/server`), compatible avec les anciens et les nouveaux
+clients. Le mode Plugin suit le standard Agent Plugins (Codex, Copilot, Cursor) ou le format propre à Claude
+Code, Gemini CLI et Antigravity.
 
 ## Configuration (facultative)
 

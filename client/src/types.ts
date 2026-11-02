@@ -120,9 +120,9 @@ export interface ScaffoldFile {
   content: string;
 }
 
-export type TargetKey = 'claude' | 'codex' | 'copilot' | 'cursor' | 'gemini' | 'portable';
+export type TargetKey = 'claude' | 'codex' | 'copilot' | 'cursor' | 'gemini' | 'antigravity' | 'portable';
 
-export type GeneratorKey = 'chat' | 'skill' | 'mcp' | 'command' | 'agent' | 'claudemd' | 'hooks';
+export type GeneratorKey = 'chat' | 'skill' | 'mcp' | 'command' | 'agent' | 'claudemd' | 'hooks' | 'plugin';
 
 export interface AiTarget {
   key: TargetKey;
@@ -141,6 +141,13 @@ export interface SkillRules {
   scriptPrefix?: string;
 }
 
+export interface PluginRules {
+  manifest: string;
+  schema?: string;
+  mcpFile?: string;
+  mcpNeedsType?: boolean;
+}
+
 export interface TargetFormat {
   status: SupportLevel;
   summary: string;
@@ -148,6 +155,7 @@ export interface TargetFormat {
   instructions: string;
   scaffold?: ScaffoldFile[];
   skill?: SkillRules;
+  plugin?: PluginRules;
 }
 
 export interface Generator {
