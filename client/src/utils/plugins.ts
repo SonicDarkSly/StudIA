@@ -1,12 +1,15 @@
 import type { FileIssue, GeneratedFile, PluginRules, TargetFormat } from '@/types';
-import { KEBAB } from './consts';
-import { gnuOnlyIssue } from './skills';
+import { FIX_MESSAGES, KEBAB } from './consts';
+import { frontmatter, markdownBody } from './frontmatter';
+import { gnuOnlyIssue, isSkillFile, unknownTools } from './skills';
 
 const MCP_FILE_NAMES = ['.mcp.json', 'mcp.json', 'mcp_config.json'];
 const AGENT_PLUGIN_FORBIDDEN_KEYS = ['hooks', 'agents', 'commands', 'mcpServers'];
 const README = 'README.md';
 const SHELL_SCRIPT = '.sh';
 const SHEBANG = '#!';
+const MARKDOWN = '.md';
+const ALLOWED_TOOLS = 'allowed-tools';
 
 type JsonObject = Record<string, unknown>;
 
@@ -104,6 +107,44 @@ function checkScripts(files: GeneratedFile[]): FileIssue[] {
   return issues;
 }
 
+function checkElements(files: GeneratedFile[], format: TargetFormat): FileIssue[] {
+  const issues: FileIssue[] = [];
+  const known = format.skill?.toolNames;
+  for (const file of files.filter((f) => f.path.endsWith(MARKDOWN) && !isSkillFile(f.path))) {
+    const fm = frontmatter(file.content);
+    if (!fm) continue;
+    if (!markdownBody(file.content).trim())
+      issues.push({
+        level: 'error',
+        path: file.path,
+        message: 'Corps vide : ce fichier n’a qu’un en-tête, il ne contient aucune consigne.',
+      });
+    const tools = fm[ALLOWED_TOOLS];
+    const invalid = tools && known ? unknownTools(tools, known) : [];
+    if (invalid.length)
+      issues.push({
+        level: 'error',
+        path: file.path,
+        message: `Outil(s) inconnu(s) dans allowed-tools : ${invalid.join(', ')}. Exemples de noms valides : Read, Grep, Bash(git diff *).`,
+      });
+  }
+  return issues;
+}
+
+export function placePluginManifest(files: GeneratedFile[], format?: TargetFormat): GeneratedFile[] {
+  const manifest = format?.plugin?.manifest;
+  if (!manifest || !manifest.includes('/')) return files;
+  const own = files.filter((f) => f.origin === 'modele');
+  const root = own[0] ? rootOf(own[0].path) : undefined;
+  const fileName = manifest.split('/').pop();
+  if (!root || files.some((f) => f.path === `${root}/${manifest}`)) return files;
+  return files.map((f) =>
+    f.origin === 'modele' && f.path === `${root}/${fileName}`
+      ? { ...f, path: `${root}/${manifest}`, fixes: [...(f.fixes ?? []), FIX_MESSAGES.pluginManifestMoved] }
+      : f,
+  );
+}
+
 export function checkPlugin(files: GeneratedFile[], format?: TargetFormat): FileIssue[] {
   const rules = format?.plugin;
   const own = files.filter((f) => f.origin === 'modele');
@@ -138,6 +179,7 @@ export function checkPlugin(files: GeneratedFile[], format?: TargetFormat): File
       level: 'warning',
       message: `${root}/${README} absent : rien n’explique comment installer le plugin.`,
     });
+  issues.push(...checkElements(files, format));
   issues.push(...checkScripts(files));
   return issues;
 }

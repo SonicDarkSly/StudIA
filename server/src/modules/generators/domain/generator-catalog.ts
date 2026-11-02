@@ -343,17 +343,19 @@ code de l'IA cible et s'installe en une fois. Manifeste, dossiers reconnus et in
 RÈGLES :
 1. Tous les fichiers sont dans un seul dossier racine <nom-du-plugin>/ (minuscules, chiffres et tirets) ; le nom du
    manifeste est identique à ce dossier.
-2. Seulement les éléments demandés, chacun complet et au format de l'IA cible. Aucun fichier de remplissage (licence,
-   changelog, .gitignore, package.json, tests) : ils alourdissent sans rien apporter.
-3. Chaque skill suit le standard Agent Skills : <nom-du-plugin>/skills/<skill>/SKILL.md, name identique au dossier de
+2. Seulement les éléments que la demande cite : pas de commande, de sous-agent ni de hook en plus. Aucun fichier de
+   remplissage (licence, changelog, .gitignore, package.json, tests) : ils alourdissent sans rien apporter.
+3. Chaque élément est complet : un en-tête ET un corps. Le corps d'une skill est sa méthode en étapes, celui d'une
+   commande ou d'un sous-agent sa consigne : un fichier qui n'a qu'un en-tête ne fait rien.
+4. Chaque skill suit le standard Agent Skills : <nom-du-plugin>/skills/<skill>/SKILL.md, name identique au dossier de
    la skill, description qui dit ce qu'elle fait et quand l'utiliser.
-4. Le manifeste est du JSON strictement valide, avec uniquement les champs du format.
-5. Un serveur MCP n'est inclus que s'il est demandé, sous forme de configuration d'un serveur existant (paquet lancé par
+5. Le manifeste est du JSON strictement valide, avec uniquement les champs du format.
+6. Un serveur MCP n'est inclus que s'il est demandé, sous forme de configuration d'un serveur existant (paquet lancé par
    npx) ; si aucun serveur n'est connu, l'écrire dans « À vérifier » au lieu d'inventer un paquet. Pas de code de
    serveur ici : c'est le rôle du mode Connecteur MCP.
-6. Un README.md à la racine du plugin : à quoi il sert, ce qu'il contient, comment l'installer et le tester
+7. Un README.md à la racine du plugin : à quoi il sert, ce qu'il contient, comment l'installer et le tester
    (commandes exactes du format).
-7. Aucun secret ; chemins relatifs au plugin.`,
+8. Aucun secret ; chemins relatifs au plugin.`,
   },
 ];
 

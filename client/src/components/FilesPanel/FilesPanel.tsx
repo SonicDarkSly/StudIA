@@ -19,6 +19,7 @@ import {
   validateFiles,
   withScaffold,
 } from '@/utils/files';
+import { placePluginManifest } from '@/utils/plugins';
 import { placeSkillFiles } from '@/utils/skills';
 import { CodeView } from '@/components/CodeView';
 import './FilesPanel.css';
@@ -42,7 +43,7 @@ export function FilesPanel({ text, generator, targetKey, live }: Props) {
   const parsed = useMemo(() => parseFiles(text ?? ''), [text]);
   const files = useMemo(
     () => [
-      ...withScaffold(placeSkillFiles(parsed.files, format), [
+      ...withScaffold(placePluginManifest(placeSkillFiles(parsed.files, format), format), [
         ...(generator?.scaffold ?? []),
         ...(format?.scaffold ?? []),
       ]),

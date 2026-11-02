@@ -10,6 +10,8 @@ export const FIX_MESSAGES = {
   leadingSeparator: 'Ligne --- isolée retirée en tête du fichier : il n’a pas d’en-tête YAML.',
   checklistInFile:
     'La liste « À vérifier » destinée à l’utilisateur était écrite dans le fichier : elle en a été retirée.',
+  pluginManifestMoved:
+    'Manifeste déplacé à l’emplacement attendu par l’IA choisie (le modèle l’avait mis à la racine du plugin).',
   trailingSeparator:
     'Ligne === FIN === manquante : le séparateur --- ajouté par le modèle en fin de fichier a été retiré.',
 };

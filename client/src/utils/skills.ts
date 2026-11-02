@@ -114,10 +114,7 @@ function checkHeader(file: GeneratedFile, fm: Record<string, string>, format?: T
   const tools = fm[ALLOWED_TOOLS];
   if (tools && rules.toolNames) {
     const known = rules.toolNames;
-    const invalid = listValue(tools).filter((tool) => {
-      const base = tool.split('(')[0];
-      return !known.includes(base) && !base.startsWith(MCP_TOOL_PREFIX);
-    });
+    const invalid = unknownTools(tools, known);
     if (invalid.length)
       issues.push({
         level: 'error',
@@ -196,6 +193,13 @@ function checkResources(skill: GeneratedFile, files: GeneratedFile[], format?: T
   return issues;
 }
 
+export function unknownTools(tools: string, known: string[]): string[] {
+  return listValue(tools).filter((tool) => {
+    const base = tool.split('(')[0];
+    return !known.includes(base) && !base.startsWith(MCP_TOOL_PREFIX);
+  });
+}
+
 export function checkSkills(files: GeneratedFile[], format?: TargetFormat): FileIssue[] {
   const skills = files.filter((f) => isSkillFile(f.path));
   if (!skills.length) return [{ level: 'error', message: 'Aucun fichier SKILL.md.' }];
@@ -208,6 +212,12 @@ export function checkSkills(files: GeneratedFile[], format?: TargetFormat): File
         level: 'error',
         path: skill.path,
         message: 'En-tête YAML (--- name / description ---) manquant : l’IA ne reconnaîtra pas la skill.',
+      });
+    if (!markdownBody(skill.content).trim())
+      issues.push({
+        level: 'error',
+        path: skill.path,
+        message: 'Corps vide : la skill n’a qu’un en-tête, elle ne contient aucune instruction.',
       });
     const lines = markdownBody(skill.content).split('\n').length;
     if (lines > SKILL_LIMITS.bodyMaxLines)

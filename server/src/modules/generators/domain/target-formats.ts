@@ -61,6 +61,29 @@ const CLAUDE_TOOLS = [
   'Write',
 ];
 
+const CLAUDE_SKILL_FIELDS = [
+  'name',
+  'description',
+  'when_to_use',
+  'argument-hint',
+  'arguments',
+  'disable-model-invocation',
+  'user-invocable',
+  'allowed-tools',
+  'disallowed-tools',
+  'model',
+  'effort',
+  'context',
+  'agent',
+  'background',
+  'hooks',
+  'paths',
+  'shell',
+  'metadata',
+  'license',
+  'compatibility',
+];
+
 const SKILL: Formats = {
   claude: {
     status: 'natif',
@@ -79,28 +102,7 @@ Si la skill a un script (rare), il se cite avec \${CLAUDE_SKILL_DIR} (dossier de
 allowed-tools: Bash(bash \${CLAUDE_SKILL_DIR}/scripts/<script>.sh *)`,
     skill: {
       scriptPrefix: '${CLAUDE_SKILL_DIR}/',
-      fields: [
-        'name',
-        'description',
-        'when_to_use',
-        'argument-hint',
-        'arguments',
-        'disable-model-invocation',
-        'user-invocable',
-        'allowed-tools',
-        'disallowed-tools',
-        'model',
-        'effort',
-        'context',
-        'agent',
-        'background',
-        'hooks',
-        'paths',
-        'shell',
-        'metadata',
-        'license',
-        'compatibility',
-      ],
+      fields: CLAUDE_SKILL_FIELDS,
       toolNames: CLAUDE_TOOLS,
     },
   },
@@ -718,7 +720,16 @@ const AGENT_PLUGIN_MANIFEST = `<nom>/plugin.json (standard Agent Plugins 1.0.0) 
 }
 Champs permis : $schema et name (obligatoires), version, description, author { name }, homepage, repository, license,
 keywords. Jamais hooks, agents, commands ni mcpServers dans plugin.json.`;
-const AGENT_PLUGIN_SKILLS = `<nom>/skills/<skill>/SKILL.md : une skill par dossier, au standard Agent Skills.`;
+const PLUGIN_SKILL = `<nom>/skills/<skill>/SKILL.md : une skill par dossier, exactement sous cette forme (en-tête entre
+deux lignes ---, puis le corps ; les étapes vont dans le corps, jamais dans l'en-tête) :
+---
+name: <skill>
+description: Ce que fait la skill. À utiliser quand l'utilisateur … (ses mots)
+---
+1. Première étape, concrète.
+2. Étape suivante…
+Format du résultat attendu.`;
+const AGENT_PLUGIN_SKILLS = PLUGIN_SKILL;
 const AGENT_PLUGIN_MCP = `<nom>/mcp.json, seulement si un serveur MCP est demandé :
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
@@ -740,10 +751,11 @@ const PLUGIN: Formats = {
     summary:
       'Plugin Claude Code : <nom>/.claude-plugin/plugin.json, avec skills/, commands/, agents/, hooks/ et .mcp.json.',
     paths: [],
-    instructions: `Structure :
+    instructions: `Structure (ne créer que le manifeste, le README et les dossiers des éléments demandés) :
 <nom>/.claude-plugin/plugin.json : le manifeste, seul fichier de ce dossier :
 { "name": "<nom>", "version": "1.0.0", "description": "…", "author": { "name": "…" } }   (seul name est obligatoire)
-<nom>/skills/<skill>/SKILL.md : skills (aussi appelées par /<nom>:<skill>).
+${PLUGIN_SKILL}
+Les skills d'un plugin Claude s'appellent aussi par /<nom>:<skill>.
 <nom>/commands/<commande>.md : commandes (en-tête description, argument-hint, allowed-tools ; corps = consigne).
 <nom>/agents/<agent>.md : sous-agents (en-tête name, description, tools, model: inherit).
 <nom>/hooks/hooks.json : { "hooks": { "PreToolUse": [ { "matcher": "Read|Edit|Write", "hooks": [ { "type": "command",
@@ -755,13 +767,14 @@ claude plugin validate ./<nom> ; partager par une marketplace (fichier .claude-p
 { "name": "<marketplace>", "owner": { "name": "…" }, "plugins": [ { "name": "<nom>", "source": "./<nom>" } ] }),
 puis /plugin marketplace add <dépôt> et /plugin install <nom>@<marketplace>.`,
     plugin: { manifest: '.claude-plugin/plugin.json', mcpFile: '.mcp.json' },
+    skill: { fields: CLAUDE_SKILL_FIELDS, toolNames: CLAUDE_TOOLS },
   },
   codex: {
     status: 'natif',
     summary:
       'Plugin au standard Agent Plugins : <nom>/plugin.json, skills/ et mcp.json, installé depuis une marketplace.',
     paths: [],
-    instructions: `Structure :
+    instructions: `Structure (ne créer que le manifeste, le README et les dossiers des éléments demandés) :
 ${AGENT_PLUGIN_MANIFEST}
 ${AGENT_PLUGIN_SKILLS} Codex les appelle avec $<skill> : une commande demandée devient une skill.
 ${AGENT_PLUGIN_MCP}
@@ -778,11 +791,11 @@ puis codex plugin marketplace add . et installer le plugin depuis /plugins.`,
     summary:
       'Plugin au standard Agent Plugins pour Copilot CLI et VS Code : plugin.json, skills/, mcp.json, com.github.copilot/.',
     paths: [],
-    instructions: `Structure :
+    instructions: `Structure (ne créer que le manifeste, le README et les dossiers des éléments demandés) :
 ${AGENT_PLUGIN_MANIFEST}
 ${AGENT_PLUGIN_SKILLS}
 ${AGENT_PLUGIN_MCP}
-Éléments propres à Copilot, dans le dossier <nom>/com.github.copilot/ :
+Éléments propres à Copilot, seulement si la demande en contient, dans le dossier <nom>/com.github.copilot/ :
 - agents/<agent>.agent.md : en-tête name, description, tools: ['read', 'search'] ;
 - hooks/hooks.json : { "version": 1, "hooks": { "preToolUse": [ { "type": "command", "bash": "./hooks/<script>.sh", "timeoutSec": 30 } ] } }
   (tout code de sortie non nul refuse l'action).
@@ -794,7 +807,7 @@ modification) ; dans VS Code, activer chat.plugins.enabled puis « Install a plu
     status: 'natif',
     summary: 'Plugin au standard Agent Plugins (skills et MCP), copié dans ~/.cursor/plugins/local/<nom>/.',
     paths: [],
-    instructions: `Structure :
+    instructions: `Structure (ne créer que le manifeste, le README et les dossiers des éléments demandés) :
 ${AGENT_PLUGIN_MANIFEST}
 ${AGENT_PLUGIN_SKILLS}
 ${AGENT_PLUGIN_MCP}
@@ -809,14 +822,14 @@ symbolique), puis la commande « Developer: Reload Window ».`,
     summary:
       'Extension Gemini CLI : <nom>/gemini-extension.json, GEMINI.md, commands/, skills/, installée par gemini extensions.',
     paths: [],
-    instructions: `Structure :
+    instructions: `Structure (ne créer que le manifeste, le README et les dossiers des éléments demandés) :
 <nom>/gemini-extension.json :
 { "name": "<nom>", "version": "1.0.0", "description": "…", "contextFileName": "GEMINI.md" }
   facultatif : "excludeTools": ["run_shell_command(rm -rf)"], "mcpServers": { "<serveur>": { "command": "npx", "args": ["-y", "<paquet>"] } }
 <nom>/GEMINI.md : contexte ajouté à chaque session (seulement si utile).
 <nom>/commands/<commande>.toml : description = "…" et prompt = """…""" ({{args}}, !{commande}, @{fichier}) ;
   sous-dossier = espace de noms (git/commit.toml donne /git:commit).
-<nom>/skills/<skill>/SKILL.md : skills.
+${PLUGIN_SKILL}
 <nom>/agents/<agent>.md : sous-agents (en-tête name, description).
 <nom>/hooks/hooks.json : { "hooks": { "BeforeTool": [ { "matcher": "read_file", "hooks": [ { "type": "command",
   "command": "\${extensionPath}/hooks/<script>.sh" } ] } ] } } ; sortie standard en JSON uniquement.
@@ -829,10 +842,11 @@ install <url du dépôt> pour l'installer ailleurs.`,
     summary:
       'Plugin Antigravity : <nom>/plugin.json, skills/, agents/, rules/, hooks.json et mcp_config.json.',
     paths: [],
-    instructions: `Structure :
+    instructions: `Structure (ne créer que le manifeste, le README et les dossiers des éléments demandés) :
 <nom>/plugin.json :
 { "$schema": "https://antigravity.google/schemas/v1/plugin.json", "name": "<nom>", "version": "1.0.0", "description": "…" }
-<nom>/skills/<skill>/SKILL.md : skills (aussi appelées par /<skill>).
+${PLUGIN_SKILL}
+Les skills s'appellent aussi par /<skill>.
 <nom>/agents/<agent>.md : sous-agents (en-tête name, description, model: inherit).
 <nom>/rules/<règle>.md : règles ; en-tête trigger: always_on, model_decision (avec description), glob (avec globs) ou manual.
 <nom>/hooks.json : groupes nommés, sans clé "hooks" englobante :
