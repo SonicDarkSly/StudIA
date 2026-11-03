@@ -42,7 +42,7 @@ export const CHAT_MODE: Mode = {
   label: 'Discussion libre',
   short: 'Poser une question, réfléchir à un projet',
   description:
-    "Conversation sans format imposé. Utile pour explorer une idée, comprendre un réglage du modèle ou préparer la demande d'un générateur.",
+    'Conversation sans format imposé. Utile pour explorer une idée, comprendre un réglage du modèle ou préparer la demande à envoyer dans un autre mode.',
   examples: [
     'Explique-moi la différence entre une skill, une commande et un sous-agent, avec un exemple tiré de mes projets.',
     'Quelles tâches répétitives de mes projets mériteraient une skill ? Propose une liste classée par intérêt.',

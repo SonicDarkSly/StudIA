@@ -39,7 +39,7 @@ export function HelpModal({ open, onClose, modes, targets }: Props) {
           L’<b>IA cible</b> est l’outil qui utilisera les fichiers (Claude, Codex, Copilot, Cursor, Gemini
           CLI, Antigravity, ou « Multi-outils » pour les standards communs) : elle décide des dossiers et des
           formats. Le <b>mode</b> dit ce que tu fabriques : skill, connecteur MCP, commande, sous-agent,
-          consignes du projet, hooks, ou discussion libre.
+          consignes du projet, hooks, plugin, ou discussion libre.
         </p>
         <h2 className="help-title">2. Choisir un modèle adapté à la machine</h2>
         <p>

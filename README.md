@@ -54,7 +54,7 @@ libre, Skill, Connecteur MCP…, champ `idealFor` de `server/models.json`).
 Repères : 8 Go de mémoire → modèles de 3 à 4 Md de paramètres ; 16 Go → jusqu'à 12-14 Md ; 32 Go et plus →
 tout le catalogue.
 
-## Générateurs et IA cibles
+## Modes et IA cibles
 
 | Élément             | Claude | Codex  | Copilot | Cursor | Gemini CLI | Antigravity | Multi-outils |
 | ------------------- | ------ | ------ | ------- | ------ | ---------- | ----------- | ------------ |
